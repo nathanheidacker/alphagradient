@@ -1,0 +1,4 @@
+.mypy_cache
+__pycache__
+dev.py
+.DS_Store
