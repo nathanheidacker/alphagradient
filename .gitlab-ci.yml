@@ -14,7 +14,7 @@ before_script:
 lint-testing:
   stage: linting
   script:
-    - flake8 AlphaGradient/finance/standard.py
+    - flake8 AlphaGradient/finance/standard.py --verbose
 
 unit-test-standard.py:
   stage: unit
