@@ -1,0 +1,23 @@
+image: python:3
+
+stages:
+  - build
+  - linting
+  - unit
+  - functional
+
+build-code-job:
+  stage: build
+  script:
+    - pip install -r requirements.txt
+    - pip install flake8
+
+lint-testing:
+  stage: linting
+  script:
+    - flake8 AlphaGradient/
+
+unit-test-standard.py:
+  stage: unit
+  script:
+    - python3 tests.unit_test.py
