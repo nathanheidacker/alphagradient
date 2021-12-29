@@ -14,7 +14,7 @@ before_script:
 lint-testing:
   stage: linting
   script:
-    - flake8 AlphaGradient/finance/standard.py --verbose --ignore=E501,E303,E302,F841,E321
+    - flake8 AlphaGradient/finance/standard.py --verbose --ignore=E501,E303,E302,F841,E231
 
 unit-test-standard.py:
   stage: unit
