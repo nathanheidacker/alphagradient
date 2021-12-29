@@ -11,11 +11,13 @@ import pandas as pd
 @unique
 class TYPES(Enum):
 	'''Enum of Asset types that have been delcared, containing references to all instances of assets belonging to that type'''
+
 	def _generate_next_value_(name, *args):
 
 		class Instances(weakref.WeakValueDictionary):
-			'''A special, weakly referential dictionary that keeps track of all in-memory instances of a given asset type'''
+			'''A weakly referential dictionary that keeps track of all in-memory instances of a given asset type'''
 
+			# Treat attribute access like item access, also adding a more descriptive error message
 			def __getattr__(self, item):
 				try:
 					return self[item]
@@ -23,10 +25,11 @@ class TYPES(Enum):
 					raise AttributeError(f'Asset type \'{name}\' has no instance \'{item}\'')
 
 			def __str__(self):
-				return '{' + str([x for x in self.items()])[1:-1] + '}'
+				return str([x for x in self.items()])[1:-1]
 
 		return (name, Instances())
 
+	# Used when the asset type is not specified
 	UNDEFINED = auto()
 		
 	def __str__(self):
@@ -35,9 +38,11 @@ class TYPES(Enum):
 	def __repr__(self):
 		return self.__str__()
 
+	# Item access is directed to the enum's associated weakly referential dictionary
 	def __getitem__(self, item):
 		return self.value[1][item]
 
+	# User access to the weakly referential dictionary
 	@property
 	def instances(self):
 		return self.value[1]
@@ -54,6 +59,10 @@ class Hidden:
 
 
 class AssetDuplicationError(Exception):
+	'''
+	An error that occurs when more than a single instance of an asset is being instantiated. All assets are singletons.
+	'''
+
 	def __init__(self, asset):
 		message = f'Attempted duplication of {asset.name} {asset.type}. Multiple instances of the same asset are not permitted'
 		super().__init__(message)
@@ -61,15 +70,24 @@ class AssetDuplicationError(Exception):
 
 class Asset(ABC):
 	'''Base class representing a financial asset. Used as the basis for all assets within AlphaGradient.'''
+
+	# Used create new enumerations within the TYPES enum for newly created subclasses of Asset
 	def __init_subclass__(cls, **kwargs):
+
+		# All TYPES should be upper, style guideline
 		TYPE = cls.__name__.upper()
+
+		# Extending the enum to accomodate new type, assigning it to the class
 		if all(base not in cls.__bases__ for base in [ABC, Hidden]):
-			if TYPE not in [x.name for x in TYPES]:
+			if TYPE not in [t.name for t in TYPES]:
 				extend_enum(TYPES, TYPE)
 			cls.type = TYPES[TYPE]
+
+		# Used when a new asset subclass is hidden from the AG api using the 'Hidden' class
 		if not getattr(cls, 'type', None):
 			cls.type = TYPES.UNDEFINED
 
+	# All assets must have their initialization behavior defined. All subclasses should call super().__init__() in their init
 	@abstractmethod
 	def __init__(self, name, date=None, data=None, require_data=False, required=None, optional=None, allow_duplicates=False):
 
@@ -119,33 +137,41 @@ class Asset(ABC):
 	def __repr__(self):
 		return self.__str__()
 
+	# (For now) asset equality is determined by identity
 	def __eq__(self, other):
 		if self.__class__ is other.__class__:
 			return self is other
 		else:
 			return NotImplemented
 
+	# Standard function called to update all asset prices when time steps take place. Should not be updated in subclasses
 	def valuate(self, date=None):
 		date = self._normalize_date_input(date)
+
 		if self.data:
 			return self._data_valuate(date)
 		else:
 			return self._valuate()
 
+	# Update asset price using asset data. Should not be updated in subclasses
 	def _data_valuate(self, date=None):
 		date = self._normalize_date_input(date)
 		data = self.data.asof(date)
 		self.price = data[self.valuate_on]
 		return self.price
 
+	# Determines how asset prices update when NOT using data. Must be defined for each new subclass
 	@abstractmethod
 	def _valuate(self):
 		return self.price
 
-	def _normalize_date_input(self, date):
+	# Allows asset to accepts different modalities of date input for intialization and valuation
+	def _normalize_date_input(self, date=None):
+
 		if date is None:
 			return self.date
 
+		# Only accepts isoformatted datestrings for the time being, but may be updated to accept other types of datestring inputs
 		elif isinstance(date, str):
 			return datetime.fromisoformat(date)
 
