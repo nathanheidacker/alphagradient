@@ -1,16 +1,15 @@
 image: python:3
 
 stages:
-  - build
   - linting
   - unit
   - functional
 
-build-code-job:
-  stage: build
-  script:
-    - pip install -r requirements.txt
-    - pip install flake8
+before_script:
+  - python --version
+  - pip install --upgrade pip
+  - pip install flake8
+  - pip install -r requirements.txt
 
 lint-testing:
   stage: linting
