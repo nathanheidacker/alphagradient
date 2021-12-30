@@ -8,13 +8,13 @@ stages:
 before_script:
   - python --version
   - pip install --upgrade pip
-  - pip install flake8
+  - pip install pylint
   - pip install -r requirements.txt
 
 lint-testing:
   stage: linting
   script:
-    - flake8 AlphaGradient/finance/standard.py --verbose --ignore=E501,E303,E302,F841,E231
+    - pylint --fail-under=3 AlphaGradient/*
 
 unit-test-standard.py:
   stage: unit
