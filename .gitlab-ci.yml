@@ -14,7 +14,7 @@ before_script:
 lint-testing:
   stage: linting
   script:
-    - pylint --fail-under=3 AlphaGradient/*
+    - pylint --fail-under=-3 AlphaGradient/*
 
 unit-test-standard.py:
   stage: unit
