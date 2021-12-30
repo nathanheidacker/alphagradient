@@ -19,4 +19,4 @@ lint-testing:
 unit-test-standard.py:
   stage: unit
   script:
-    - python3 tests.unit_test.py
+    - python3 tests/unit_test.py
