@@ -171,7 +171,7 @@ def get_data(asset_type, asset_name, ledger=None):
 		data = from_pickle(asset_type, asset_name)
 		status = status - 1 if data is None else status
 
-	if status < 1:
+	if status <= 1:
 		data = from_raw(asset_type, asset_name)
 
 	return data

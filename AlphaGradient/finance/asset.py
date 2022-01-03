@@ -118,12 +118,10 @@ class Asset(ABC):
 			self.data = data if data else datatools.AssetData(None, required, optional)
 		else:
 			self.data = datatools.AssetData(data, required, optional)
-			'''
-			# Pickling / updating the ldeger should probably be done outside of the initialization of the class instance
+			# Pickling / updating the ledger should probably be done outside of the initialization of the class instance
 			if data:
-				storage_id = datatools.create_id(self.type, self.name)
-				pd.to_pickle(self.data, f'Alphagradient/data/pickles/{storage_id}')
-			'''
+				ledger_id = datatools.Ledger.id(self.type, self.name)
+				pd.to_pickle(self.data, f'Alphagradient/data/pickles/{ledger_id}')
 
 		# Data verification when required
 		if not self.data and require_data:
