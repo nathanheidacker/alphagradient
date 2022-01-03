@@ -52,7 +52,7 @@ class Stock(Asset):
 	def _valuate(self):
 		return self.price
 
-	def _online_data(self):
+	def online_data(self):
 		return datatools.from_yf(self.name)
 
 

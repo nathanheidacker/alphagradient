@@ -119,6 +119,7 @@ def from_pickle(asset_type, asset_name, ledger=None):
 	if status > 1:
 		try:
 			return pd.read_pickle(f'AlphaGradient/data/pickles/{ledger_id}')
+
 		except FileNotFoundError:
 			if status == 2:
 				print('update ledger!')
@@ -138,7 +139,8 @@ def from_raw(asset_type, asset_name, ledger=None):
 
 	if status > 0:
 		try:
-			return AssetData(pd.read_csv(f'AlphaGradient/data/raw/{storage_id}'))
+			return AssetData(pd.read_csv(f'AlphaGradient/data/raw/{ledger_id}'))
+
 		except FileNotFoundError:
 			if status == 1:
 				print('update ledger!')
@@ -148,16 +150,18 @@ def from_raw(asset_type, asset_name, ledger=None):
 
 
 def from_yf(tickers):
-	if not isinstance(ticker, list):
+	if not isinstance(tickers, list):
 		tickers = [tickers]
 	for ticker in tickers:
 		pass
-	return NotImplemented
+
+	return None
 
 
 def get_data(asset_type, asset_name, ledger=None):
 	if not isinstance(ledger, Ledger):
 		ledger = Ledger()
+
 	ledger_id = ledger.id(asset_type, asset_name)
 	status = ledger.get_status(ledger_id)
 
@@ -166,7 +170,8 @@ def get_data(asset_type, asset_name, ledger=None):
 	if status > 1:
 		data = from_pickle(asset_type, asset_name)
 		status = status - 1 if data is None else status
-	if status > 0:
+
+	if status < 1:
 		data = from_raw(asset_type, asset_name)
 
 	return data

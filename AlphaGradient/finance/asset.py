@@ -64,7 +64,7 @@ class AssetDuplicationError(Exception):
 	'''
 
 	def __init__(self, asset):
-		message = f'Attempted duplication of {asset.name} {asset.type}. Multiple instances of the same asset are not permitted'
+		message = f'Attempted duplication of {asset.name} {asset.type}. Multiple instances of this asset are not permitted'
 		super().__init__(message)
 
 
