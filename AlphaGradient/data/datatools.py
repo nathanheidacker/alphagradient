@@ -297,14 +297,14 @@ class AssetData(pd.DataFrame):
 	def __getattr__(self, attr):
 		try:
 			return self.COLUMNS[attr]
-		except:
+		except KeyError:
 			return super().__getattr__(attr)
 
 	# Allows the user to use strings to dynamically access the enum column names
 	def __getitem__(self, item):
 		try:
 			item = self.COLUMNS[item]
-		except:
+		except KeyError:
 			pass
 		return super().__getitem__(item)
 

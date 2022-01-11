@@ -10,9 +10,10 @@ import pandas as pd
 
 @unique
 class TYPES(Enum):
-	'''Enum of Asset types that have been delcared, containing references to all instances of assets belonging to that type'''
+	'''Enum of Asset types that have been declared, containing references to all instances of assets belonging to that type'''
 
 	def _generate_next_value_(name, *args):
+	'''Used to determine how enum values are automatically created when new enum members are added'''
 
 		class Instances(weakref.WeakValueDictionary):
 			'''A weakly referential dictionary that keeps track of all in-memory instances of a given asset type'''
@@ -71,8 +72,8 @@ class AssetDuplicationError(Exception):
 class Asset(ABC):
 	'''Base class representing a financial asset. Used as the basis for all assets within AlphaGradient.'''
 
-	# Used create new enumerations within the TYPES enum for newly created subclasses of Asset
 	def __init_subclass__(cls, **kwargs):
+		'''Creates new enumerations within the TYPES enum for newly created subclasses of Asset'''
 
 		# All TYPES should be upper, style guideline
 		TYPE = cls.__name__.upper()
@@ -135,15 +136,14 @@ class Asset(ABC):
 	def __repr__(self):
 		return self.__str__()
 
-	# (For now) asset equality is determined by identity
 	def __eq__(self, other):
 		if self.__class__ is other.__class__:
 			return self is other
 		else:
 			return NotImplemented
 
-	# Standard function called to update all asset prices when time steps take place. Should not be updated in subclasses
 	def valuate(self, date=None):
+		'''Updates asset prices when time steps take place'''
 		date = self._normalize_date_input(date)
 
 		if self.data:
@@ -151,20 +151,20 @@ class Asset(ABC):
 		else:
 			return self._valuate()
 
-	# Update asset price using asset data. Should not be updated in subclasses
 	def _data_valuate(self, date=None):
+		'''Determines how asset prices update when using data'''
 		date = self._normalize_date_input(date)
 		data = self.data.asof(date)
 		self.price = data[self.valuate_on]
 		return self.price
 
-	# Determines how asset prices update when NOT using data. Must be defined for each new subclass
 	@abstractmethod
 	def _valuate(self):
+		'''Determines how asset prices update when not using data'''
 		return self.price
 
-	# Allows asset to accepts different modalities of date input for intialization and valuation
 	def _normalize_date_input(self, date=None):
+		'''Standardizes different modalities of date input'''
 
 		if date is None:
 			return self.date
