@@ -51,7 +51,9 @@ class TYPES(Enum):
 
 class Hidden:
 	'''
-	Dummy class for hiding children of asset class from the AlphaGradient TYPES access. To use, add this class as a parent in the class declaration:
+	Dummy class for hiding children of asset class from the AlphaGradient TYPES access. 
+
+	To use, add this class as a parent in the class declaration:
 
 	class MyAsset(AlphaGradient.Asset, AlphaGradient.Hidden):
 		pass
