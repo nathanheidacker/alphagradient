@@ -180,3 +180,12 @@ class Asset(ABC):
 
 		else:
 			raise TypeError(f'date input of type {type(date)} could not be normalized')
+
+
+class AssetData:
+	'''Strictly formatted datasets for alphagradient assets
+
+	Given a table, should return a properly formatted (time-indexed) dataset for use in ag assets if possible.'''
+	def __init__(self, data):
+		self.data = data
+		# Read table, read pickle, read array-like
