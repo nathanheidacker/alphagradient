@@ -13,7 +13,7 @@ class TYPES(Enum):
 	'''Enum of Asset types that have been declared, containing references to all instances of assets belonging to that type'''
 
 	def _generate_next_value_(name, *args):
-	'''Used to determine how enum values are automatically created when new enum members are added'''
+		'''Used to determine how enum values are automatically created when new enum members are added'''
 
 		class Instances(weakref.WeakValueDictionary):
 			'''A weakly referential dictionary that keeps track of all in-memory instances of a given asset type'''
