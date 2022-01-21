@@ -13,12 +13,14 @@ def is_numeric(obj):
         try:
             obj[0]
             return False
-        except:
+        except BaseException:
             return True
-    except:
+    except BaseException:
         return False
 
 # System for console logging when performing algorithms
+
+
 class LoggingSystem:
     class Switch:
         def __init__(self, name, b=False):
@@ -53,7 +55,11 @@ class LoggingSystem:
         self.ADVANCED = self.Switch('ADVANCED')
         self.DEBUG = self.Switch('DEBUG')
         self.EXCEPTIONS = self.Switch('EXCEPTIONS')
-        self._SWITCHES = [self.BASIC, self.ADVANCED, self.DEBUG, self.EXCEPTIONS]
+        self._SWITCHES = [
+            self.BASIC,
+            self.ADVANCED,
+            self.DEBUG,
+            self.EXCEPTIONS]
 
     @property
     def SWITCHES(self):
@@ -64,13 +70,18 @@ class LoggingSystem:
         return [switch for switch in self._SWITCHES if switch.bool is True]
 
     def ANY(self, content, *args):
-        conditions = [arg for arg in args] if args else [switch.name for switch in self._SWITCHES]
-        if any([condition == switch.name for switch in self.ACTIVE for condition in conditions]):
+        conditions = [
+            arg for arg in args] if args else [
+            switch.name for switch in self._SWITCHES]
+        if any(
+                [condition == switch.name for switch in self.ACTIVE for condition in conditions]):
             print(content)
 
     def ALL(self, content, *args):
-        condition = [arg for arg in args] if args else [switch.name for switch in self._SWITCHES]
-        if all([condition == switch.name for switch in self.ACTIVE for condition in conditions]):
+        condition = [arg for arg in args] if args else [
+            switch.name for switch in self._SWITCHES]
+        if all(
+                [condition == switch.name for switch in self.ACTIVE for condition in conditions]):
             print(content)
 
     def PRINT(self, content, *args, mode="ANY"):
@@ -114,6 +125,7 @@ class LoggingSystem:
     def __repr__(self):
         return "<AlphaGradient Logging System>"
 
+
 # Logging System
 VERBOSE = LoggingSystem()
 
@@ -133,5 +145,3 @@ class CONSTANTS(Enum):
     # Numerical Constants
     INDEX_ANNUAL_RETURN = 0.1
     TBILL_YIELD_1YR = 0.0007
-
-

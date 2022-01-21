@@ -9,16 +9,16 @@ from . import finance
 
 class Algorithm(ABC):
 
-	def __init__(self, verbose=False):
-		self.verbose = bool(verbose)
-		self.verboseprint = print if self.verbose else lambda *args, **kwargs: None
+    def __init__(self, verbose=False):
+        self.verbose = bool(verbose)
+        self.verboseprint = print if self.verbose else lambda *args, **kwargs: None
 
-	def __call__(self, *args, **kwargs):
-		self.run(*args, **kwargs)
+    def __call__(self, *args, **kwargs):
+        self.run(*args, **kwargs)
 
-	@abstractmethod
-	def run(*args, **kwargs):
-		pass
+    @abstractmethod
+    def run(*args, **kwargs):
+        pass
 
-	def intitialize_inputs(portfolio, start_date, end_date):
-		pass
+    def intitialize_inputs(portfolio, start_date, end_date):
+        pass
