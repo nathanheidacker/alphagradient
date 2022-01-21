@@ -1,7 +1,9 @@
 '''
-This file contains the class for the base Algorithm, from which all AlphaGradient algorithms should inherit.
+This file contains the class for the base Algorithm, 
+from which all AlphaGradient algorithms should inherit.
 
-All Algorithms must define a run method, which specifies the algorithm's operation to be performed on the portfolio that is passed in.
+All Algorithms must define a run method, which specifies the 
+algorithm's operation to be performed on the portfolio that is passed in.
 '''
 from abc import ABC, abstractmethod
 from . import finance

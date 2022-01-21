@@ -24,7 +24,8 @@ class Currency(Asset):
 
         if not isinstance(identifier, str):
             raise TypeError(
-                f'{identifier.__class__.__name__} {identifier} is not a valid currency identifier. Please use a currency code or symbol as a string')
+                f'''{identifier.__class__.__name__} {identifier} is not a valid currency identifier. 
+                Please use a currency code or symbol as a string''')
 
         code = None
         symbol = None
@@ -39,7 +40,8 @@ class Currency(Asset):
 
         else:
             raise ValueError(
-                f'{identifier} is not a valid currency identifier. Please use a currency symbol or three digit currency code')
+                f'''{identifier} is not a valid currency identifier. 
+                Please use a currency symbol or three digit currency code''')
 
         super().__init__(code, date=datetime.today(), require_data=False)
 
@@ -92,9 +94,11 @@ class Option(Asset, ABC):
             try:
                 strike = float(strike)
             except TypeError:
-                raise f'Invalid input type {strike=} for initialization of {underlying.name} {self.__class__.__name__}'
+                raise f'''Invalid input type {strike=} 
+                for initialization of {underlying.name} {self.__class__.__name__}'''
             except ValueError:
-                raise f'Unsuccessful conversion of {strike=} to numeric type during initialization of {underlying.name} {self.type}'
+                raise f'''Unsuccessful conversion of {strike=} 
+                to numeric type during initialization of {underlying.name} {self.type}'''
         self.strike = strike
 
         if isinstance(expiry, str):
@@ -106,7 +110,8 @@ class Option(Asset, ABC):
 
         if not isinstance(expiry, datetime):
             raise TypeError(
-                f'Invalid input {expiry=} for initialization of {underlying.name} {self.__class__.__name__}')
+                f'''Invalid input {expiry=} 
+                for initialization of {underlying.name} {self.__class__.__name__}''')
 
         self.expiry = expiry
 

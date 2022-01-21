@@ -11,13 +11,16 @@ import pandas as pd
 
 @unique
 class TYPES(Enum):
-    '''Enum of Asset types that have been declared, containing references to all instances of assets belonging to that type'''
+    '''Enum of Asset types that have been declared, 
+    containing references to all instances of assets belonging to that type'''
 
     def _generate_next_value_(name, *args):
-        '''Used to determine how enum values are automatically created when new enum members are added'''
+        '''Used to determine how enum values are 
+        automatically created when new enum members are added'''
 
         class Instances(weakref.WeakValueDictionary):
-            '''A weakly referential dictionary that keeps track of all in-memory instances of a given asset type'''
+            '''A weakly referential dictionary that keeps track of 
+            all in-memory instances of a given asset type'''
 
             # Treat attribute access like item access, also adding a more
             # descriptive error message
@@ -67,16 +70,19 @@ class Hidden:
 
 class AssetDuplicationError(Exception):
     '''
-    An error that occurs when more than a single instance of an asset is being instantiated. All assets are singletons.
+    An error that occurs when more than a single instance of an asset is being instantiated. 
+    All assets are singletons.
     '''
 
     def __init__(self, asset):
-        message = f'Attempted duplication of {asset.name} {asset.type}. Multiple instances of this asset are not permitted'
+        message = f'''Attempted duplication of {asset.name} {asset.type}. Multiple instances 
+        of this asset are not permitted'''
         super().__init__(message)
 
 
 class Asset(ABC):
-    '''Base class representing a financial asset. Used as the basis for all assets within AlphaGradient.'''
+    '''Base class representing a financial asset. 
+    Used as the basis for all assets within AlphaGradient.'''
 
     def __init_subclass__(cls, **kwargs):
         '''Creates new enumerations within the TYPES enum for newly created subclasses of Asset'''
@@ -148,7 +154,8 @@ class Asset(ABC):
         # Data verification when required
         if not self.data and require_data:
             raise ValueError(
-                f'{self.type} {self.name} requires data for initialization, but was not provided with a viable dataset')
+                f'''{self.type} {self.name} requires data for initialization, 
+                but was not provided with a viable dataset''')
 
         self.valuate()
 
@@ -207,7 +214,8 @@ class Asset(ABC):
 class AssetData:
     '''Strictly formatted datasets for alphagradient assets
 
-    Given a table, should return a properly formatted (time-indexed) dataset for use in ag assets if possible.'''
+    Given a table, should return a properly formatted (time-indexed) 
+    dataset for use in ag assets if possible.'''
 
     def __init__(self, data):
         self.data = data
