@@ -1,22 +1,23 @@
 image: python:3
 
 stages:
+  - build
   - linting
   - unit
   - functional
 
-before_script:
-  - python --version
-  - pip install --upgrade pip
-  - pip install pylint
-  - pip install -r requirements.txt
+build-code-job:
+  stage: build
+  script:
+    - pip install -r requirements.txt
+    - pip install flake8
 
 lint-testing:
   stage: linting
   script:
-    - pylint --fail-under=3 AlphaGradient/*
+    - flake8 AlphaGradient/
 
 unit-test-standard.py:
   stage: unit
   script:
-    - python3 tests/unit_test.py
+    - python3 tests.unit_test.py
