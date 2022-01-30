@@ -11,212 +11,228 @@ import pandas as pd
 
 @unique
 class TYPES(Enum):
-    '''Enum of Asset types that have been declared, 
-    containing references to all instances of assets belonging to that type'''
+	'''Enum of Asset types that have been declared, 
+	containing references to all instances of assets belonging to that type'''
 
-    def _generate_next_value_(name, *args):
-        '''Used to determine how enum values are 
-        automatically created when new enum members are added'''
+	def _generate_next_value_(name, *args):
+		'''Used to determine how enum values are 
+		automatically created when new enum members are added'''
 
-        class Instances(weakref.WeakValueDictionary):
-            '''A weakly referential dictionary that keeps track of 
-            all in-memory instances of a given asset type'''
+		class Instances(weakref.WeakValueDictionary):
+			'''A weakly referential dictionary that keeps track of 
+			all in-memory instances of a given asset type'''
 
-            # Treat attribute access like item access, also adding a more
-            # descriptive error message
-            def __getattr__(self, item):
-                try:
-                    return self[item]
-                except KeyError:
-                    raise AttributeError(
-                        f'Asset type \'{name}\' has no instance \'{item}\'')
+			# Treat attribute access like item access, also adding a more
+			# descriptive error message
+			def __getattr__(self, item):
+				try:
+					return self[item]
+				except KeyError:
+					raise AttributeError(
+						f'Asset type \'{name}\' has no instance \'{item}\'')
 
-            def __str__(self):
-                return str([x for x in self.items()])[1:-1]
+			def __str__(self):
+				return str([x for x in self.items()])[1:-1]
 
-        return (name, Instances())
+		return (name, Instances())
 
-    # Used when the asset type is not specified
-    UNDEFINED = auto()
+	# Used when the asset type is not specified
+	UNDEFINED = auto()
 
-    def __str__(self):
-        return self.name
+	def __str__(self):
+		return self.name
 
-    def __repr__(self):
-        return self.__str__()
+	def __repr__(self):
+		return self.__str__()
 
-    # Item access is directed to the enum's associated weakly referential
-    # dictionary
-    def __getitem__(self, item):
-        return self.value[1][item]
+	# Item access is directed to the enum's associated weakly referential
+	# dictionary
+	def __getitem__(self, item):
+		return self.value[1][item]
 
-    # User access to the weakly referential dictionary
-    @property
-    def instances(self):
-        return self.value[1]
+	# User access to the weakly referential dictionary
+	@property
+	def instances(self):
+		return self.value[1]
 
 
 class Hidden:
-    '''
-    Dummy class for hiding children of asset class from the AlphaGradient TYPES access.
+	'''
+	Dummy class for hiding children of asset class from the AlphaGradient TYPES access.
 
-    To use, add this class as a parent in the class declaration:
+	To use, add this class as a parent in the class declaration:
 
-    class MyAsset(AlphaGradient.Asset, AlphaGradient.Hidden):
-            pass
-    '''
-    pass
+	class MyAsset(AlphaGradient.Asset, AlphaGradient.Hidden):
+			pass
+	'''
+	pass
 
 
 class AssetDuplicationError(Exception):
-    '''
-    An error that occurs when more than a single instance of an asset is being instantiated. 
-    All assets are singletons.
-    '''
+	'''
+	An error that occurs when more than a single instance of an asset is being instantiated. 
+	All assets are singletons.
+	'''
 
-    def __init__(self, asset):
-        message = f'''Attempted duplication of {asset.name} {asset.type}. Multiple instances 
-        of this asset are not permitted'''
-        super().__init__(message)
+	def __init__(self, asset):
+		message = f'''Attempted duplication of {asset.name} {asset.type}. Multiple instances 
+		of this asset are not permitted'''
+		super().__init__(message)
 
 
 class Asset(ABC):
-    '''Base class representing a financial asset. 
-    Used as the basis for all assets within AlphaGradient.'''
+	'''Base class representing a financial asset. 
+	Used as the basis for all assets within AlphaGradient.'''
 
-    def __init_subclass__(cls, **kwargs):
-        '''Creates new enumerations within the TYPES enum for newly created subclasses of Asset'''
+	def __init_subclass__(cls, **kwargs):
+		'''Creates new enumerations within the TYPES enum for newly created subclasses of Asset'''
 
-        # All TYPES should be upper, style guideline
-        TYPE = cls.__name__.upper()
+		# All TYPES should be upper, style guideline
+		TYPE = cls.__name__.upper()
 
-        # Extending the enum to accomodate new type, assigning it to the class
-        if all(base not in cls.__bases__ for base in [ABC, Hidden]):
-            if TYPE not in [t.name for t in TYPES]:
-                extend_enum(TYPES, TYPE)
-            cls.type = TYPES[TYPE]
+		# Extending the enum to accomodate new type, assigning it to the class
+		if all(base not in cls.__bases__ for base in [ABC, Hidden]):
+			if TYPE not in [t.name for t in TYPES]:
+				extend_enum(TYPES, TYPE)
+			cls.type = TYPES[TYPE]
 
-        # Used when a new asset subclass is hidden from the AG api using the
-        # 'Hidden' class
-        if not getattr(cls, 'type', None):
-            cls.type = TYPES.UNDEFINED
+		# Used when a new asset subclass is hidden from the AG api using the
+		# 'Hidden' class
+		if not getattr(cls, 'type', None):
+			cls.type = TYPES.UNDEFINED
 
-    # All assets must have their initialization behavior defined. All
-    # subclasses should call super().__init__() in their init
-    @abstractmethod
-    def __init__(
-            self,
-            name,
-            date=None,
-            data=None,
-            require_data=False,
-            required=None,
-            optional=None,
-            allow_duplicates=False):
+	def __new__(cls, *args, **kwargs):
+		name = kwargs["name"] if kwargs.get("name") else args[0]
+		if name in cls.type.instances:
+			return cls.type.instances[name]
+		return super().__new__(cls)
 
-        # Attribute Initialization
-        self.name = str(name)
-        self.price = data if is_numeric(data) else 0
-        self.valuate_on = datatools.AssetData.COLUMNS.CLOSE
+	# All assets must have their initialization behavior defined. All
+	# subclasses should call super().__init__() in their init
+	@abstractmethod
+	def __init__(
+			self,
+			name,
+			date=None,
+			data=None,
+			require_data=False,
+			allow_duplicates=False,
+			columns=None,
+			required=None,
+			optional=None,
+			open_value=None,
+			close_value=None,):
 
-        # Check if an instance of this asset already exists
-        if name not in self.type.instances:
-            if allow_duplicates:
-                self.type.instances[name] = [self]
-            else:
-                self.type.instances[name] = self
-        elif allow_duplicates:
-            self.type.instances[name] += self
-        else:
-            raise AssetDuplicationError(self)
+		# Implement checks here for changes in passed arguments
+		# IF ARGUMENTS CHANGE MATERIALLY DURING INSTANTIATION, REINITIALIZE (eg. CHANGE IN PASSED DATA)
+		if name in self.type.instances:
+			return
+		else:
+			self.type.instances[name] = self
 
-        # Accept isoformat datestrings as well as datetimes
-        self.date = date if isinstance(
-            date, datetime) else datetime.fromisoformat(date)
+		# Attribute Initialization
+		self.name = str(name)
+		self.price = data if is_numeric(data) else 0
+		self.close = True
 
-        # Initialize a dataset based on the input, then search for
-        if data is None:
-            data = datatools.get_data(self.type, self.name)
-            if getattr(self, '_online_data', None):
-                data = self._online_data()
-            self.data = data if data else datatools.AssetData(
-                None, required, optional)
-        else:
-            self.data = datatools.AssetData(data, required, optional)
-            # Pickling / updating the ledger should probably be done outside of
-            # the initialization of the class instance
-            if data:
-                ledger_id = datatools.Ledger.id(self.type, self.name)
-                pd.to_pickle(
-                    self.data,
-                    f'Alphagradient/data/pickles/{ledger_id}')
+		# Check if an instance of this asset already exists
+		'''
+		if name not in self.type.instances:
+			if allow_duplicates:
+				self.type.instances[name] = [self]
+			else:
+				self.type.instances[name] = self
+		elif allow_duplicates:
+			self.type.instances[name] += self
+		else:
+			raise AssetDuplicationError(self)
+		'''
 
-        # Data verification when required
-        if not self.data and require_data:
-            raise ValueError(
-                f'''{self.type} {self.name} requires data for initialization, 
-                but was not provided with a viable dataset''')
+		# Accept isoformat datestrings as well as datetimes
+		date = date if date else datetime.today()
+		self.date = date if isinstance(
+			date, datetime) else datetime.fromisoformat(date)
 
-        self.valuate()
+		# Initialize a dataset based on the input, then search for
+		if data is None:
+			data = datatools.get_data(self.type, self.name)
+			if getattr(self, '_online_data', False):
+				data = self._online_data()
+			self.data = data if data else datatools.AssetData(
+				None, required, optional)
+		else:
+			self.data = datatools.AssetData(data, columns, close_value, open_value, required, optional)
+			# Pickling / updating the ledger should probably be done outside of
+			# the initialization of the class instance
+			if data:
+				ledger_id = datatools.Ledger.id(self.type, self.name)
+				pd.to_pickle(
+					self.data,
+					f'Alphagradient/data/pickles/{ledger_id}')
 
-    def __str__(self):
-        return f'({self.name} {self.type}: ${self.price})'
+		# Data verification when required
+		if not self.data and require_data:
+			raise ValueError(
+				f"{self.type} {self.name} requires data for initialization, but was not provided with a viable dataset")
 
-    def __repr__(self):
-        return self.__str__()
+		self.valuate()
 
-    def __eq__(self, other):
-        if self.__class__ is other.__class__:
-            return self is other
-        else:
-            return NotImplemented
+	def __str__(self):
+		return f'({self.name} {self.type}: ${self.price})'
 
-    def valuate(self, date=None):
-        '''Updates asset prices when time steps take place'''
-        date = self._normalize_date_input(date)
+	def __repr__(self):
+		return self.__str__()
 
-        if self.data:
-            return self._data_valuate(date)
-        else:
-            return self._valuate()
+	def __eq__(self, other):
+		if self.__class__ is other.__class__:
+			return self is other
+		else:
+			return NotImplemented
 
-    def _data_valuate(self, date=None):
-        '''Determines how asset prices update when using data'''
-        date = self._normalize_date_input(date)
-        data = self.data.asof(date)
-        self.price = data[self.valuate_on]
-        return self.price
+	def valuate(self, date=None):
+		'''Updates asset prices when time steps take place'''
+		date = self._normalize_date_input(date)
 
-    @abstractmethod
-    def _valuate(self):
-        '''Determines how asset prices update when not using data'''
-        return self.price
+		if self.data:
+			return self._data_valuate(date)
+		else:
+			return self._valuate()
 
-    def _normalize_date_input(self, date=None):
-        '''Standardizes different modalities of date input'''
+	def _data_valuate(self, date=None):
+		'''Determines how asset prices update when using data'''
+		date = self._normalize_date_input(date)
+		data = self.data.asof(date)
 
-        if date is None:
-            return self.date
+		if self.close:
+			self.price = data[self.data.open_value]
+		else:
+			self.price = data[self.data.close_value]
 
-        # Only accepts isoformatted datestrings for the time being, but may be
-        # updated to accept other types of datestring inputs
-        elif isinstance(date, str):
-            return datetime.fromisoformat(date)
+		self.close = not self.close
 
-        elif isinstance(date, datetime):
-            return date
+		return self.price
 
-        else:
-            raise TypeError(
-                f'date input of type {type(date)} could not be normalized')
+	@abstractmethod
+	def _valuate(self, **kwargs):
+		'''Determines how asset prices update when not using data'''
+		return self.price
 
+	def _normalize_date_input(self, date=None):
+		'''Standardizes different modalities of date input'''
 
-class AssetData:
-    '''Strictly formatted datasets for alphagradient assets
+		if date is None:
+			return self.date
 
-    Given a table, should return a properly formatted (time-indexed) 
-    dataset for use in ag assets if possible.'''
+		# Only accepts isoformatted datestrings for the time being, but may be
+		# updated to accept other types of datestring inputs
+		elif isinstance(date, str):
+			return datetime.fromisoformat(date)
 
-    def __init__(self, data):
-        self.data = data
-        # Read table, read pickle, read array-like
+		elif isinstance(date, datetime):
+			return date
+
+		else:
+			raise TypeError(
+				f'date input of type {type(date)} could not be normalized')
+
+	
