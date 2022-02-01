@@ -1,7 +1,6 @@
 from .algorithm import Algorithm
 from . import finance
 from .finance.asset import TYPES as TYPES_ENUM
-from .finance.asset import Hidden
 from .constants import VERBOSE, CONSTANTS
 from . import algolib
 from .data import datatools

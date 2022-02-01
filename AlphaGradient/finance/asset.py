@@ -1,42 +1,62 @@
-from ..constants import VERBOSE, CONSTANTS, is_numeric
-from ..data import datatools
-from aenum import Enum, unique, auto, extend_enum
+# -*- coding: utf-8 -*-
+"""AG module containing base Asset class and associated enums
+
+This module contains all of the necessary components for the proper function of standard asset classes within AlphaGradient, as well as the API.
+
+Todo:
+	* Complete google style docstrings for all module components
+	* Complete function/class header typing
+	* Replace is_numeric with Number instance checks
+	* Interpret more than just isoformat for normalizing datestrings
+"""
+
+# Standard imports
 from abc import ABC, abstractmethod
-from typing import List, Optional, Any
-from datetime import datetime, timedelta
-import dataclasses
+from datetime import datetime
+#from numbers import Number
 import weakref
+#import typing
+
+# Third Party imports
+from aenum import Enum, unique, auto, extend_enum
 import pandas as pd
+
+# Local imports
+from ..constants import is_numeric # will be replaced by Number
+from ..data import datatools
 
 
 @unique
 class TYPES(Enum):
-	'''Enum of Asset types that have been declared, 
-	containing references to all instances of assets belonging to that type'''
+	"""A enumeration with members for all asset subclasses
+
+	The types enum is a special enumeration which dynamically creates new members for all subclasses of ag.Asset. Enum members store a weakly referential dictionary to all instances of that asset subclass, which can be accessed as attributes or dynamically through indexing.
+
+	Examples:
+		* TYPES.STOCK.instances returns all instances of Stock
+		* TYPES.STOCK.SPY returns Spy Stock (if instantiated)
+		* TYPES.STOCK["SPY"] does the same
+
+	"""
 
 	def _generate_next_value_(name, *args):
-		'''Used to determine how enum values are 
-		automatically created when new enum members are added'''
+		"""Determines how new enum members are generated when new asset subclasses are created"""
 
 		class Instances(weakref.WeakValueDictionary):
-			'''A weakly referential dictionary that keeps track of 
-			all in-memory instances of a given asset type'''
-
-			# Treat attribute access like item access, also adding a more
-			# descriptive error message
+			"""A weakly referential dictionary of all instances of the subclass to which the enum member corresponds"""
 			def __getattr__(self, item):
 				try:
 					return self[item]
 				except KeyError:
 					raise AttributeError(
-						f'Asset type \'{name}\' has no instance \'{item}\'')
+						f"Asset type \'{name}\' has no instance \'{item}\'")
 
 			def __str__(self):
-				return str([x for x in self.items()])[1:-1]
+				return str(list(self.items()))[1:-1]
 
 		return (name, Instances())
 
-	# Used when the asset type is not specified
+	# Used when the asset subclass is hidden from the types enum
 	UNDEFINED = auto()
 
 	def __str__(self):
@@ -45,59 +65,100 @@ class TYPES(Enum):
 	def __repr__(self):
 		return self.__str__()
 
-	# Item access is directed to the enum's associated weakly referential
-	# dictionary
 	def __getitem__(self, item):
 		return self.value[1][item]
 
-	# User access to the weakly referential dictionary
 	@property
 	def instances(self):
+		"""A list of all instances of a certain asset type"""
 		return self.value[1]
 
 
-class Hidden:
-	'''
-	Dummy class for hiding children of asset class from the AlphaGradient TYPES access.
-
-	To use, add this class as a parent in the class declaration:
-
-	class MyAsset(AlphaGradient.Asset, AlphaGradient.Hidden):
-			pass
-	'''
-	pass
-
-
 class AssetDuplicationError(Exception):
-	'''
-	An error that occurs when more than a single instance of an asset is being instantiated. 
-	All assets are singletons.
-	'''
+	"""Raised when asset duplication is forced via copy methods"""
 
 	def __init__(self, asset):
-		message = f'''Attempted duplication of {asset.name} {asset.type}. Multiple instances 
-		of this asset are not permitted'''
+		message = f"""Attempted duplication of {asset.name} {asset.type}. Multiple instances of this asset are not permitted"""
 		super().__init__(message)
 
 
 class Asset(ABC):
-	'''Base class representing a financial asset. 
-	Used as the basis for all assets within AlphaGradient.'''
+	"""Abstract base class representing a financial asset
 
-	def __init_subclass__(cls, **kwargs):
-		'''Creates new enumerations within the TYPES enum for newly created subclasses of Asset'''
+	The ABC underlying all standard and custom asset classes within AlphaGradient, designed to be used in conjunction with other standard ag objects such as portfolios and algorithms. All Assets are singletons.
+
+	When defining a new Asset subclass, the valuate method
+
+	Attributes:
+		_args (dict): Arguments used in most recent initialization.
+			Referenced to determine whether 
+		name (str): Name of the asset
+		price (Number): Price of the asset in USD
+		close (bool): Whether most recent valuation represents the 
+			close (end) of an interval.
+	"""
+
+	def __init_subclass__(
+	                      cls, 
+	                      hidden=False, 
+	                      require_data=False, 
+	                      required=None, 
+	                      optional=None, 
+	                      open_value=None, 
+	                      close_value=None, 
+	                      settings=None, 
+	                      **kwargs):
+		"""Controls behavior for instantiation of Asset subclasses.
+
+		Creates new enumerations within the TYPES enum for newly created subclassses of Asset. Also sets some class level attributes that control behavior during instantiation. The following are all CLASS-level attributes for Asset and all Asset subclasses.
+
+		Attributes:
+			require_data (bool): boolean value indicating whether or
+				not instantiation of this subclass will require data.
+			required (list of str): the columns that MUST be present
+				in the data input for asset initialization to occur.
+			optional (list of str): the columns that will also be
+				accepted/kept in the input, but are not required.
+			open_value (str): the string corresponding to the name of
+				the column that holds price data for the beginning of
+				a time interval
+			close_value (str): the string corresponding to the name of
+				the column that holds price data for the end of a time
+				interval
+			settings (dict): a dictionary of all of the class
+				attributes above
+			**kwargs: list of other arbitrary args in class header
+		"""
+
+		# Asset subclass (class-level) attribute initialization
+		cls.require_data = require_data
+		cls.required = required
+		cls.optional = optional
+		cls.open_value = open_value
+		cls.close_value = close_value
+
+		settings = {} if settings is None else settings
+		hidden = hidden or settings.get("hidden", False)
+
+		if settings:
+			for attr in ["require_data", "required", "optional", "open_value", "close_value"]:
+				if not getattr(cls, attr, False):
+					try:
+						setattr(cls, attr, settings[attr])
+					except KeyError as e:
+						pass
+
 
 		# All TYPES should be upper, style guideline
 		TYPE = cls.__name__.upper()
 
-		# Extending the enum to accomodate new type, assigning it to the class
-		if all(base not in cls.__bases__ for base in [ABC, Hidden]):
+		# Extending the enum to accomodate new type
+		if ABC not in cls.__bases__ and not hidden:
 			if TYPE not in [t.name for t in TYPES]:
 				extend_enum(TYPES, TYPE)
 			cls.type = TYPES[TYPE]
 
-		# Used when a new asset subclass is hidden from the AG api using the
-		# 'Hidden' class
+		# Used when a new asset subclass is hidden from the AG api
 		if not getattr(cls, 'type', None):
 			cls.type = TYPES.UNDEFINED
 
@@ -107,46 +168,35 @@ class Asset(ABC):
 			return cls.type.instances[name]
 		return super().__new__(cls)
 
-	# All assets must have their initialization behavior defined. All
-	# subclasses should call super().__init__() in their init
-	@abstractmethod
 	def __init__(
 			self,
 			name,
 			date=None,
 			data=None,
-			require_data=False,
-			allow_duplicates=False,
-			columns=None,
-			required=None,
-			optional=None,
-			open_value=None,
-			close_value=None,):
+			columns=None):
 
-		# Implement checks here for changes in passed arguments
-		# IF ARGUMENTS CHANGE MATERIALLY DURING INSTANTIATION, REINITIALIZE (eg. CHANGE IN PASSED DATA)
+		# Checks if arguments have changed materiall from previous initialization
 		if name in self.type.instances:
-			return
-		else:
-			self.type.instances[name] = self
+
+			skip = True
+
+			if data != self._args["data"] and data is not None:
+				skip = False
+
+			if date != self._args["date"] and date is not None:
+				self.valuate(date)
+
+			if skip:
+				return
+		
+		# Saving new args, storing new instance
+		self._args = locals()
+		self.type.instances[name] = self
 
 		# Attribute Initialization
 		self.name = str(name)
 		self.price = data if is_numeric(data) else 0
 		self.close = True
-
-		# Check if an instance of this asset already exists
-		'''
-		if name not in self.type.instances:
-			if allow_duplicates:
-				self.type.instances[name] = [self]
-			else:
-				self.type.instances[name] = self
-		elif allow_duplicates:
-			self.type.instances[name] += self
-		else:
-			raise AssetDuplicationError(self)
-		'''
 
 		# Accept isoformat datestrings as well as datetimes
 		date = date if date else datetime.today()
@@ -154,16 +204,15 @@ class Asset(ABC):
 			date, datetime) else datetime.fromisoformat(date)
 
 		# Initialize a dataset based on the input, then search for
+		# TODO: REDO THIS WHOLE SECTION
 		if data is None:
 			data = datatools.get_data(self.type, self.name)
 			if getattr(self, '_online_data', False):
 				data = self._online_data()
-			self.data = data if data else datatools.AssetData(
-				None, required, optional)
+			self.data = data if data else datatools.AssetData(self.__class__, data, columns)
 		else:
-			self.data = datatools.AssetData(data, columns, close_value, open_value, required, optional)
-			# Pickling / updating the ledger should probably be done outside of
-			# the initialization of the class instance
+			self.data = datatools.AssetData(self.__class__, data, columns)
+			# Pickling / updating the ledger should probably be done outside of the initialization of the class instance
 			if data:
 				ledger_id = datatools.Ledger.id(self.type, self.name)
 				pd.to_pickle(
@@ -171,11 +220,11 @@ class Asset(ABC):
 					f'Alphagradient/data/pickles/{ledger_id}')
 
 		# Data verification when required
-		if not self.data and require_data:
+		if not self.data and self.require_data:
 			raise ValueError(
 				f"{self.type} {self.name} requires data for initialization, but was not provided with a viable dataset")
 
-		self.valuate()
+		self._valuate()
 
 	def __str__(self):
 		return f'({self.name} {self.type}: ${self.price})'
@@ -189,20 +238,53 @@ class Asset(ABC):
 		else:
 			return NotImplemented
 
-	def valuate(self, date=None):
-		'''Updates asset prices when time steps take place'''
-		date = self._normalize_date_input(date)
+	def __copy__(self):
+		raise AssetDuplicationError(self)
+
+	def __deepcopy__(self):
+		raise AssetDuplicationError(self)
+
+	def _valuate(self, date=None):
+		"""Updates asset prices when time steps take place
+
+		This is the method that is actually called under the hood when time steps take place, which properly directs valuation behavior to either valuate or _data_valuate depending on the asset type.
+
+		Args:
+			date: date-like object that will become a datetime.
+				Determines at what point in time the valuation will be
+
+		Returns:
+			price (float): Updates the instance's price inplace, and
+				also returns it
+		"""
+		date = self.normalize_date(date)
 
 		if self.data:
 			return self._data_valuate(date)
 		else:
-			return self._valuate()
+			return self.valuate()
 
 	def _data_valuate(self, date=None):
-		'''Determines how asset prices update when using data'''
-		date = self._normalize_date_input(date)
+		"""Determines how asset prices update when using data
+
+		Determines how assets are valuated when data is available. Keep track of/updates when the asset is at the beginning or the end of a time interval, and valuates accordingly.
+
+		Args:
+			date: date-like object that will become a datetime.
+				Determines at what point in time the valuation will be
+
+		Returns:
+			price (float): Updates the instance's price inplace, and
+				also returns it
+		"""
+		date = self.normalize_date(date)
 		data = self.data.asof(date)
 
+		# Switching between beginning and the end of a period
+		"""TODO: Im actually not sure this makes a lot of sense. We would need to valuate twice for the same period or something in order for this to work properly. There are a few better solutions to consider:
+			* If we can assume time intervals are consistent, we can
+				separate the open and close of a period by exactly that interval
+		"""
 		if self.close:
 			self.price = data[self.data.open_value]
 		else:
@@ -213,18 +295,34 @@ class Asset(ABC):
 		return self.price
 
 	@abstractmethod
-	def _valuate(self, **kwargs):
-		'''Determines how asset prices update when not using data'''
+	def valuate(self, *args, **kwargs):
+		"""Determines how asset prices update when not using data
+
+		This is the method that defines non-data-based valuation behavior for an asset subclass. The standard implementation essentially does nothing--prices stay constant. New asset subclasses are required to replace this method in order to be instantiable.
+
+		Args:
+			*args: see below
+			**kwargs: Valuate methods for different assets will likely
+				require different arguments to be passed. Accepting all of them allows 
+		"""
 		return self.price
 
-	def _normalize_date_input(self, date=None):
-		'''Standardizes different modalities of date input'''
+	def normalize_date(self, date=None):
+		"""Standardizes different date input dtypes
 
+		Args:
+			date: The date to be transformed
+
+		Returns:
+			date: a datetime.datetime object equivalent to the input
+
+		Raises:
+			TypeError: When the type can not be coerced to datetime
+		"""
 		if date is None:
 			return self.date
 
-		# Only accepts isoformatted datestrings for the time being, but may be
-		# updated to accept other types of datestring inputs
+		# TODO: Interpret datestring format, accept more templates
 		elif isinstance(date, str):
 			return datetime.fromisoformat(date)
 
@@ -233,6 +331,31 @@ class Asset(ABC):
 
 		else:
 			raise TypeError(
-				f'date input of type {type(date)} could not be normalized')
+				f"Date input of type {type(date)} could not be normalized")
+
+	@classmethod
+	def get_settings(cls, unpack=False):
+		"""Returns a dictionary of class attributes
+
+		This settings object is the same one used in the class header for defining class attributes.
+
+		Args:
+			unpack (bool): When true, provides the values unpacked into
+				a list, for easy unpacking
+
+		Returns:
+			settings (dict): class-level settings for this asset type
+		"""
+
+		settings = {
+			"hidden": cls.type is TYPES.UNDEFINED,
+			"require_data": cls.require_data,
+			"required": cls.required,
+			"optional": cls.optional,
+			"close_value": cls.close_value,
+			"open_value": cls.open_value
+		}
+
+		return settings.values() if unpack else settings
 
 	

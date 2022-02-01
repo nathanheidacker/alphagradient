@@ -4,9 +4,12 @@ from abc import ABC, abstractmethod
 import numpy as np
 import math
 from datetime import datetime, timedelta
+import json
 
+with open("AlphaGradient/finance/standard_asset_settings.json") as f:
+	settings = json.load(f)
 
-class Currency(Asset):
+class Currency(Asset, settings=settings["CURRENCY"]):
 
 	to_code = {
 		'$': 'USD',
@@ -41,41 +44,26 @@ class Currency(Asset):
 
 		super().__init__(code, date=datetime.today(), require_data=False)
 
-	def _valuate(self):
+	def valuate(self):
 		return NotImplemented
 
 
-class Stock(Asset):
-	def __init__(self, ticker, date=None, data=None, columns=None):
-		required = {
-			"OPEN": "float",
-			"CLOSE": "float"
-		}
-		optional = {
-			"HIGH": "float",
-			"LOW": "float",
-			"VOLUME": "int",
-			"ADJ_CLOSE": "int"
-		}
-		super().__init__(
-			ticker,
-			date=date,
-			data=data,
-			require_data=True,
-			columns=columns,
-			required=required,
-			optional=optional,
-			close_value="CLOSE",
-			open_value="OPEN")
+class Stock(Asset, settings=settings["STOCK"]):
+	"""A financial asset representing stock in a publicly traded company
 
-	def _valuate(self):
+	More description here
+
+	Attributes:
+		attrs
+	"""
+	def valuate(self):
 		return self.price
 
 	def online_data(self):
 		return datatools.from_yf(self.name)
 
 
-class BrownianStock(Asset):
+class BrownianStock(Asset, settings=settings["BROWNIANSTOCK"]):
 	def __init__(self, ticker=None, date=None):
 		if ticker is None:
 			ticker = 'AAAA'
@@ -85,13 +73,12 @@ class BrownianStock(Asset):
 
 		super().__init__(ticker, date, require_data=False)
 
-	def _valuate(self):
+	def valuate(self):
 		return NotImplemented
 
 
-class Option(Asset, ABC):
+class Option(Asset, settings=settings["OPTION"]):
 
-	@abstractmethod
 	def __init__(self, underlying, strike, expiry):
 		super().__init__(underlying.name)
 
@@ -135,19 +122,19 @@ class Option(Asset, ABC):
 		return d1, d2
 
 
-class Call(Option):
+class Call(Option, settings=settings["CALL"]):
 	def __init__(self, underlying, strike, expiry):
 		super().__init__(underlying, strike, expiry)
 
-	def _valuate(self):
+	def valuate(self):
 		return NotImplemented
 
 
-class Put(Option):
+class Put(Option, settings=settings["OPTION"]):
 	def __init__(self):
 		raise NotImplementedError
 
-	def _valuate(self):
+	def valuate(self):
 		return NotImplemented
 
 

@@ -1,14 +1,29 @@
-import pandas as pd
-import numpy as np
-from ..constants import VERBOSE, is_numeric
-from typing import List
-from aenum import Enum, NoAlias, auto, extend_enum, skip, unique
+# -*- coding: utf-8 -*-
+"""AG module containing tools for creation/manipulation of asset data
+
+This module contains tools for accessing, creating, and modifying data and datasets for use in AlphaGradient objects.
+
+Todo:
+	* Implement dtype coercion on column validation
+	* Typing
+"""
+
+# Standard imports
+from collections import namedtuple
 from datetime import datetime
+from copy import deepcopy
+# from typing import List
+from os import scandir
 import pickle
 import weakref
-from collections import namedtuple
-from os import scandir
-from copy import deepcopy
+
+# Third party imports
+from aenum import Enum, NoAlias, auto, extend_enum, skip, unique
+import pandas as pd
+import numpy as np
+
+# Local imports
+from ..constants import VERBOSE, is_numeric
 
 
 class Ledger(pd.DataFrame):
@@ -188,19 +203,25 @@ def get_data(asset_type, asset_name, ledger=None):
 	return data
 
 
-# NOTE: THIS IS ONLY RELEVANT FOR COLUMN ENUM DATASETS.
-# THE NEW IMPLEMENTATION DOES NOT REQUIRE THIS.
-
-'''
-This is a little bit hacky, but this this needs to be defined outside of the scope of AssetData even though it is only intended to be used in that class. This is because the COLUMNS enum defined within will not allow the use of subclasses as values for enum members. By defining it outside, we can use Value within the COLUMNS enum scope, allowing us to bypass the requirement that all values be the same. Ordinarily, we could just use 'settings=NoAlias', but it imposes too many restrictions when loading saved asset datasets from pickles.
-'''
-Value = namedtuple('Value', 'type name')
-
-
 class AssetData:
+	"""Datetime-indexed datesets that store financial data for assets.
 
-	def __init__(self, data, columns=None, close_value=None, open_value=None, required=None, optional=None):
+	All AlphaGradient assets seeking to use tabular data must use AssetData datasets. AssetData accepts any of the following inputs:
+		* numbers (for assets with constant prices, or unit prices)
+		* os.path-like objects
+		* file-object-like objects
+		* array-like objects (lists, ndarray, etc.)
+		* pathstrings
+		* pandas DataFrames
 
+	AssetDatasets take tabular data and clean/validate it to make it usable for ag assets. They check for the presence of required data, remove unnecessary data, ensure that dataframes are datetime-indexed, coerce data dtypes (TODO), and ensure that formatting is consistent between all assets.
+	"""
+
+	def __init__(self, asset_type, data, columns=None):
+		# Unpacking necessary values from the asset type
+		_, _, required, optional, close_value, open_value = asset_type.get_settings(unpack=True)
+
+		# Formatting required columns
 		required = required if required else []
 		required = [self.column_format(column) for column in required]
 
@@ -227,15 +248,14 @@ class AssetData:
 		if not isinstance(data, pd.DataFrame):
 			raise ValueError(f"Unable to create valid asset dataset from {data}")
 
+		# Formatting columns
 		data.columns = [self.column_format(column) for column in data.columns]
 
-		self.open_value = bool(open_value)
-		self.close_value = bool(close_value)
-
+		# Grabbing "OPEN" and "CLOSE" by defauly if not specified
 		open_value = "OPEN" if ("OPEN" in data.columns and not open_value) else open_value
-
 		close_value = "CLOSE" if ("CLOSE" in data.columns and not close_value) else close_value
 
+		# Broadcasting open to close or close to open in case only one is provided
 		if close_value and not open_value:
 			close_value = self.column_format(close_value)
 			open_value = close_value
@@ -246,6 +266,7 @@ class AssetData:
 			close_value = open_value
 			self.single_valued = True
 
+		# By this point both should be present if even one was provided
 		elif not all([close_value, open_value]):
 			raise ValueError(f"Must specify at least one opening or closing value name present in the data")
 
@@ -255,6 +276,11 @@ class AssetData:
 			close_value = self.column_format(close_value)
 			self.single_valued = False
 
+		# Attribute initialization
+		self.open_value = open_value
+		self.close_value = close_value
+
+		# Adding default required columns (open, close, date)
 		if close_value:
 			required = [close_value] + required
 
@@ -262,11 +288,11 @@ class AssetData:
 			required = [open_value] + required
 
 		required = ["DATE"] + required
+
+		# Removing duplicates
 		required = list(set(required))
 
-		self.open_value = open_value
-		self.close_value = close_value
-
+		# Both of the values (open and close) must be in required
 		if not all([value in required for value in [open_value, close_value]]):
 			raise ValueError(f"Must specify at least one opening or closing value name present in the data")
 
@@ -284,12 +310,12 @@ class AssetData:
 			return self.data.__getattr__(attr)
 		except AttributeError:
 			try:
-				return self.data[self.column_format(attr)]
+				return self.data[attr]
 			except KeyError as e:
 				raise AttributeError(f"\'AssetData\' object has no attribute {e}")
 
 	def __getitem__(self, item):
-		return self.data[self.column_format(item)]
+		return self.data[item]
 
 	def __str__(self):
 		return self.data.__str__()
@@ -299,10 +325,42 @@ class AssetData:
 
 	@staticmethod
 	def column_format(column):
+		"""The standard string format for columns
+
+		Takes a column name string and returns it in uppercase, with spaces replaced with underscores
+
+		Args:
+			column (str): The column name to be altered
+
+		Returns:
+			column (str): The altered column name
+		"""
 		return column.replace(' ', '_').upper()
 
 	def validate_columns(self, data, required, optional):
+		"""Ensures that the input data meets the formatting requirements to be a valid asset dataset
 
+		To be a valid asset dataset, input tabular data must have every column listed in 'required'. This method ensures that all of the required columns are present, as well as removes columns that don't show up in either the required or optional lists.
+
+		TODO: 
+			* allow dictionaries to be passed in to enforce specific column dtypes.
+			* Implement more checks to ensure that data is error-free, and lacks missing elements (or implement measures to be safe in the presence of missing data)
+
+		Args:
+			data (tabular data): the data being validated
+			required (list of str): a list of strings representing
+				column names. All of the columns in this list must be present to produce a viable dataset.
+			optional (list of str): a list of strings representing
+				column names. Columns in the data that are not required will still be kept in the data if they are present in this list. Otherwise, they will not be included.
+
+		Returns:
+			data (tabular data): a verified (and slightly modified)
+				asset dataset
+
+		Raises:
+			ValueError: raised when the input dataset does not satisfy
+				the requirements
+		"""
 		# Check for column requirements
 		required = required if required else {}
 		optional = optional if optional else {}
@@ -342,6 +400,17 @@ class AssetData:
 				data.drop(column, axis=1, inplace=True)
 
 		return data
+
+
+
+# NOTE: THIS IS ONLY RELEVANT FOR COLUMN ENUM DATASETS.
+# THE NEW IMPLEMENTATION DOES NOT REQUIRE THIS.
+
+'''
+This is a little bit hacky, but this this needs to be defined outside of the scope of AssetData even though it is only intended to be used in that class. This is because the COLUMNS enum defined within will not allow the use of subclasses as values for enum members. By defining it outside, we can use Value within the COLUMNS enum scope, allowing us to bypass the requirement that all values be the same. Ordinarily, we could just use 'settings=NoAlias', but it imposes too many restrictions when loading saved asset datasets from pickles.
+'''
+
+#Value = namedtuple('Value', 'type name')
 
 
 
