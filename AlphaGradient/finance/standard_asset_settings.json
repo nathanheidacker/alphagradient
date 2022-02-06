@@ -2,6 +2,7 @@
    "CURRENCY":{
       "hidden":false,
       "require_data":true,
+      "prohibit_data":false,
       "required":[
          "OPEN",
          "CLOSE"
@@ -18,6 +19,26 @@
    "STOCK":{
       "hidden":false,
       "require_data":true,
+      "prohibit_data":false,
+      "required":[
+         "OPEN",
+         "CLOSE"
+      ],
+      "optional":[
+         "HIGH",
+         "LOW",
+         "VOLUME",
+         "ADJ_CLOSE",
+         "DIVIDENDS",
+         "SPLITS"
+      ],
+      "open_value":"OPEN",
+      "close_value":"CLOSE"
+   },
+   "BROWNIANSTOCK":{
+      "hidden":false,
+      "require_data":false,
+      "prohibit_data":true,
       "required":[
          "OPEN",
          "CLOSE"
@@ -31,10 +52,10 @@
       "open_value":"OPEN",
       "close_value":"CLOSE"
    },
-   "BROWNIANSTOCK":{},
    "OPTION":{
       "hidden":false,
-      "require_data":true,
+      "require_data":false,
+      "prohibit_data":true,
       "required":[
          "OPEN",
          "CLOSE"
@@ -51,6 +72,7 @@
    "CALL":{
       "hidden":false,
       "require_data":true,
+      "prohibit_data":false,
       "required":[
          "OPEN",
          "CLOSE"
@@ -67,6 +89,7 @@
    "PUT":{
       "hidden":false,
       "require_data":true,
+      "prohibit_data":false,
       "required":[
          "OPEN",
          "CLOSE"

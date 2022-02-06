@@ -5,7 +5,7 @@ This module contains tools for accessing, creating, and modifying data and datas
 
 Todo:
     * Implement dtype coercion on column validation
-    * Typing
+    * Type Hints
 """
 
 # Standard imports
@@ -23,184 +23,35 @@ import pandas as pd
 import numpy as np
 
 # Local imports
-from ..constants import VERBOSE, is_numeric
+from ..constants import is_numeric
 
+def get_data(asset):
+    """Accesses locally stored data relevant to this asset
 
-class Ledger(pd.DataFrame):
+    Args:
+        asset (Asset): The asset to retrieve data for
 
-    def instance(): return None
+    Returns:
+        data (AssetData): Stored dataset relevant to the asset
+    """
 
-    def __new__(cls, *args):
-        if cls.instance() is not None:
-            return cls.instance()
-        return super().__new__(cls)
-
-    def __init__(self, data=None):
-        # Try to access a ledger if one already exists
-        try:
-            data = data if data is not None else pd.read_pickle(
-                'AlphaGradient/data/ledger')
-
-            if not isinstance(data, (Ledger, pd.DataFrame)):
-                raise TypeError('Invalid input for Ledger')
-
-            super().__init__(data)
-
-        # Otherwise, create a new one
-        except FileNotFoundError:
-            data = pd.DataFrame(
-                columns=[
-                    'ID',
-                    'TYPE',
-                    'NAME',
-                    'STATUS',
-                    'DATE'])
-            super().__init__(data)
-            self.auto_update()
-
-        Ledger.instance = lambda: self
-
-    def append(self, *args):
-        data = super().append(*args)
-        return Ledger(data)
-
-    def to_pickle(self):
-        pd.to_pickle(self, 'AlphaGradient/data/ledger')
-
-    def auto_update(self):
-
-        for raw_file in scandir('AlphaGradient/data/raw'):
-            name = raw_file.name.split('.')[0]
-            data = self.loc[self['ID'] == name]
-            if data.empty:
-                asset_type, asset_name = self.id_info(name)
-                entry = pd.DataFrame([[name, asset_type, asset_name, 1, datetime.today()]], columns=[
-                                     'ID', 'TYPE', 'NAME', 'STATUS', 'DATE'])
-                self = self.append(entry)
-            else:
-                index = data.index.item()
-                self.at[index, 'STATUS'] = 1
-                self.at[index, 'DATE'] = datetime.today()
-
-        for pickle in scandir('AlphaGradient/data/pickles'):
-            data = self.loc[self['ID'] == pickle.name]
-            if data.empty:
-                asset_type, asset_name = self.id_info(pickle.name)
-                entry = pd.DataFrame([[pickle.name, asset_type, asset_name, 2, datetime.today(
-                )]], columns=['ID', 'TYPE', 'NAME', 'STATUS', 'DATE'])
-                self = self.append(entry)
-            else:
-                index = data.index.item()
-                self.at[index, 'STATUS'] = 2
-                self.at[index, 'DATE'] = datetime.today()
-
-        self.to_pickle()
-
-    def update(self, data):
-        pass
-
-    def update_entry(self):
-        pass
-
-    def add_entry(self):
-        pass
-
-    @staticmethod
-    def id(asset_type, asset_name):
-        return f'{asset_type}_{asset_name}'.strip().upper()
-
-    @staticmethod
-    def id_info(ledger_id):
-        # Decompose the ID
-        info = ledger_id.split('_', 1)
-
-        # Split into relevant information
-        asset_type = info[0]
-        asset_name = info[1]
-
-        return asset_type, asset_name
-
-    def get_status(self, ledger_id, asset_name=None):
-        if asset_name is not None:
-            ledger_id = self.id(ledger_id, asset_name)
-
-        entry = self.loc[self['ID'] == ledger_id]
-
-        if not entry.empty:
-            return entry['STATUS'].item()
-
-        return 0
-
-
-def from_pickle(asset_type, asset_name, ledger=None):
-    # Check if an acceptable ledger is passed in
-    if not isinstance(ledger, Ledger):
-        ledger = Ledger()
-
-    # Accessing the entry for this asset
-    ledger_id = ledger.id(asset_type, asset_name)
-    status = ledger.get_status(ledger_id)
-
-    if status > 1:
-        try:
-            return pd.read_pickle(f'AlphaGradient/data/pickles/{ledger_id}')
-
-        except FileNotFoundError:
-            if status == 2:
-                print('update ledger!')
-            return None
-
-    return None
-
-
-def from_raw(asset_type, asset_name, ledger=None):
-    # Check if an acceptable ledger is passed in
-    if not isinstance(ledger, Ledger):
-        ledger = Ledger()
-
-    # Accessing the entry for this asset
-    ledger_id = ledger.id(asset_type, asset_name)
-    status = ledger.get_status(ledger_id)
-
-    if status > 0:
-        try:
-            return AssetData(
-                pd.read_csv(f'AlphaGradient/data/raw/{ledger_id}'))
-
-        except FileNotFoundError:
-            if status == 1:
-                print('update ledger!')
-            return None
-
-    return None
-
-
-def from_yf(tickers):
-    if not isinstance(tickers, list):
-        tickers = [tickers]
-    for ticker in tickers:
-        pass
-
-    return None
-
-
-def get_data(asset_type, asset_name, ledger=None):
-    if not isinstance(ledger, Ledger):
-        ledger = Ledger()
-
-    ledger_id = ledger.id(asset_type, asset_name)
-    status = ledger.get_status(ledger_id)
-
+    key = asset._key()
     data = None
 
-    if status > 1:
-        data = from_pickle(asset_type, asset_name)
-        status = status - 1 if data is None else status
+    # Getting the data from pickles
+    path = f"AlphaGradient/data/pickles/{key}.p"
+    try:
+        data = pd.read_pickle(path)
+        return AssetData(asset.__class__, data)
+    except FileNotFoundError:
+        pass
 
-    if status <= 1:
-        data = from_raw(asset_type, asset_name)
-
-    return data
+    # Getting the data from raw files
+    path = f"AlphaGradient/data/raw/{key}.csv"
+    try:
+        return AssetData(asset.__class__, path)
+    except FileNotFoundError:
+        return None
 
 
 class AssetData:
@@ -215,15 +66,25 @@ class AssetData:
         * pandas DataFrames
 
     AssetDatasets take tabular data and clean/validate it to make it usable for ag assets. They check for the presence of required data, remove unnecessary data, ensure that dataframes are datetime-indexed, coerce data dtypes (TODO), and ensure that formatting is consistent between all assets.
+
+    Attributes:
+        data (pd.DataFrame): The dataset for the asset
+        open_value (str): The column to associate with open
+        close_value (str): The column to associate with close
+        last (datetime): The last available date for this dataset
     """
 
     def __init__(self, asset_type, data, columns=None):
         # Unpacking necessary values from the asset type
-        _, _, required, optional, close_value, open_value = asset_type.get_settings(unpack=True)
+        _, _, _, required, optional, close_value, open_value = asset_type.get_settings(unpack=True)
 
         # Formatting required columns
         required = required if required else []
         required = [self.column_format(column) for column in required]
+
+        # null case
+        if data is None:
+            return None
 
         # Handle numeric inputs that default to static dataframes
         if is_numeric(data):
@@ -245,7 +106,11 @@ class AssetData:
             pass
 
         # Final check that we have valid data prior to formatting
-        if not isinstance(data, pd.DataFrame):
+        if isinstance(data, pd.DataFrame):
+            if isinstance(data.index, pd.core.indexes.datetimes.DatetimeIndex):
+                data.index.name = "DATE"
+                data["DATE"] = data.index
+        else:
             raise ValueError(f"Unable to create valid asset dataset from {data}")
 
         # Formatting columns
@@ -566,6 +431,177 @@ class AssetData(pd.DataFrame):
             return self.COLUMNS[column.replace(' ', '_').upper()]
         except KeyError:
             return None
+'''
+
+# OLD LEDGER SYSTEM
+
+'''
+
+class Ledger(pd.DataFrame):
+
+    def instance(): return None
+
+    def __new__(cls, *args):
+        if cls.instance() is not None:
+            return cls.instance()
+        return super().__new__(cls)
+
+    def __init__(self, data=None):
+        # Try to access a ledger if one already exists
+        try:
+            data = data if data is not None else pd.read_pickle(
+                'AlphaGradient/data/ledger')
+
+            if not isinstance(data, (Ledger, pd.DataFrame)):
+                raise TypeError('Invalid input for Ledger')
+
+            super().__init__(data)
+
+        # Otherwise, create a new one
+        except FileNotFoundError:
+            data = pd.DataFrame(
+                columns=[
+                    'ID',
+                    'TYPE',
+                    'NAME',
+                    'STATUS',
+                    'DATE'])
+            super().__init__(data)
+            self.auto_update()
+
+        Ledger.instance = lambda: self
+
+    def append(self, *args):
+        data = super().append(*args)
+        return Ledger(data)
+
+    def to_pickle(self):
+        pd.to_pickle(self, 'AlphaGradient/data/ledger')
+
+    def auto_update(self):
+
+        for raw_file in scandir('AlphaGradient/data/raw'):
+            name = raw_file.name.split('.')[0]
+            data = self.loc[self['ID'] == name]
+            if data.empty:
+                asset_type, asset_name = self.id_info(name)
+                entry = pd.DataFrame([[name, asset_type, asset_name, 1, datetime.today()]], columns=[
+                                     'ID', 'TYPE', 'NAME', 'STATUS', 'DATE'])
+                self = self.append(entry)
+            else:
+                index = data.index.item()
+                self.at[index, 'STATUS'] = 1
+                self.at[index, 'DATE'] = datetime.today()
+
+        for pickle in scandir('AlphaGradient/data/pickles'):
+            data = self.loc[self['ID'] == pickle.name]
+            if data.empty:
+                asset_type, asset_name = self.id_info(pickle.name)
+                entry = pd.DataFrame([[pickle.name, asset_type, asset_name, 2, datetime.today(
+                )]], columns=['ID', 'TYPE', 'NAME', 'STATUS', 'DATE'])
+                self = self.append(entry)
+            else:
+                index = data.index.item()
+                self.at[index, 'STATUS'] = 2
+                self.at[index, 'DATE'] = datetime.today()
+
+        self.to_pickle()
+
+    def update(self, data):
+        pass
+
+    def update_entry(self):
+        pass
+
+    def add_entry(self):
+        pass
+
+    @staticmethod
+    def id(asset_type, asset_name):
+        return f'{asset_type}_{asset_name}'.strip().upper()
+
+    @staticmethod
+    def id_info(ledger_id):
+        # Decompose the ID
+        info = ledger_id.split('_', 1)
+
+        # Split into relevant information
+        asset_type = info[0]
+        asset_name = info[1]
+
+        return asset_type, asset_name
+
+    def get_status(self, ledger_id, asset_name=None):
+        if asset_name is not None:
+            ledger_id = self.id(ledger_id, asset_name)
+
+        entry = self.loc[self['ID'] == ledger_id]
+
+        if not entry.empty:
+            return entry['STATUS'].item()
+
+        return 0
+
+
+def get_data_ledger(asset_type, asset_name, ledger=None):
+    if not isinstance(ledger, Ledger):
+        ledger = Ledger()
+
+    ledger_id = ledger.id(asset_type, asset_name)
+    status = ledger.get_status(ledger_id)
+
+    data = None
+
+    if status > 1:
+        data = from_pickle(asset_type, asset_name)
+        status = status - 1 if data is None else status
+
+    if status <= 1:
+        data = from_raw(asset_type, asset_name)
+
+    return data
+
+def from_pickle_ledger(asset_type, asset_name, ledger=None):
+    # Check if an acceptable ledger is passed in
+    if not isinstance(ledger, Ledger):
+        ledger = Ledger()
+
+    # Accessing the entry for this asset
+    ledger_id = ledger.id(asset_type, asset_name)
+    status = ledger.get_status(ledger_id)
+
+    if status > 1:
+        try:
+            return pd.read_pickle(f'AlphaGradient/data/pickles/{ledger_id}')
+
+        except FileNotFoundError:
+            if status == 2:
+                print('update ledger!')
+            return None
+
+    return None
+
+
+def from_raw_ledger(asset_type, asset_name, ledger=None):
+    # Check if an acceptable ledger is passed in
+    if not isinstance(ledger, Ledger):
+        ledger = Ledger()
+
+    # Accessing the entry for this asset
+    ledger_id = ledger.id(asset_type, asset_name)
+    status = ledger.get_status(ledger_id)
+
+    if status > 0:
+        try:
+            return AssetData(
+                pd.read_csv(f'AlphaGradient/data/raw/{ledger_id}'))
+
+        except FileNotFoundError:
+            if status == 1:
+                print('update ledger!')
+            return None
+
+    return None
 '''
                 
 
