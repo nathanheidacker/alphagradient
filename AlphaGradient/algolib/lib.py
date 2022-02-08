@@ -1,9 +1,8 @@
 from ..__init__ import *
 
-
 class CoveredCalls(Algorithm):
-    def __init__(self):
-        print('hi')
+	def __init__(self):
+		print('hi')
 
-    def run(self):
-        print('running')
+	def run(self):
+		print('running')

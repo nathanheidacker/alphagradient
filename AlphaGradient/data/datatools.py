@@ -35,7 +35,7 @@ def get_data(asset):
         data (AssetData): Stored dataset relevant to the asset
     """
 
-    key = asset._key()
+    key = asset.key
     data = None
 
     # Getting the data from pickles

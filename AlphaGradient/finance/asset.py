@@ -283,10 +283,7 @@ class Asset(ABC):
         return self.__str__()
 
     def __eq__(self, other):
-        if self.__class__ is other.__class__:
-            return self is other
-        else:
-            return NotImplemented
+        return self is other
 
     def __copy__(self):
         raise AssetDuplicationError(self)
@@ -294,7 +291,8 @@ class Asset(ABC):
     def __deepcopy__(self):
         raise AssetDuplicationError(self)
 
-    def _key(self):
+    @property
+    def key(self):
         """Returns a key used for accessing stored files relevant to this asset
 
         Creates a key from information unique to this asset. These keys are used to access locally stored data relevant to this asset
