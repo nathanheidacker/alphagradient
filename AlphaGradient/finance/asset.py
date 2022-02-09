@@ -13,7 +13,7 @@ Todo:
 # Standard imports
 from abc import ABC, abstractmethod
 from datetime import datetime
-#from numbers import Number
+from numbers import Number
 import weakref
 #import typing
 
@@ -22,12 +22,11 @@ from aenum import Enum, unique, auto, extend_enum
 import pandas as pd
 
 # Local imports
-from ..constants import is_numeric # will be replaced by Number
 from ..data import datatools
 
 
 @unique
-class TYPES(Enum):
+class types(Enum):
     """A enumeration with members for all asset subclasses
 
     The types enum is a special enumeration which dynamically creates new members for all subclasses of ag.Asset. Enum members store a weakly referential dictionary to all instances of that asset subclass, which can be accessed as attributes or dynamically through indexing.
@@ -56,11 +55,17 @@ class TYPES(Enum):
 
         return (name, Instances())
 
-    # Used when the asset subclass is hidden from the types enum
-    UNDEFINED = auto()
+    # Non-asset types that need to be instantiated manually
+    undefined = auto() # Used when the subclass is hidden
+    portfolio = auto()
+    algorithm = auto()
+
+    def __init__(self, *args, **kwargs):
+        self.c = object
+        super().__init__(*args, **kwargs)
 
     def __str__(self):
-        return self.name
+        return self.name.upper()
 
     def __repr__(self):
         return self.__str__()
@@ -72,6 +77,29 @@ class TYPES(Enum):
     def instances(self):
         """A list of all instances of a certain asset type"""
         return self.value[1]
+
+    @classmethod
+    def list(cls):
+        class TypeList(list):
+            def __init__(self, types_enum):
+                self += [t for t in types_enum][1:]
+                self.enum = types_enum
+
+            def __getitem__(self, item):
+                if item.__class__ is str:
+                    try:
+                        return self.enum[item]
+                    except KeyError:
+                        raise KeyError(f'Asset type \'{item}\' does not exist')
+                return super().__getitem__(item)
+
+            def __getattr__(self, item):
+                try:
+                    return self.enum[item]
+                except KeyError:
+                    raise AttributeError(f'Asset type \'{item}\' does not exist')
+
+        return TypeList(cls)
 
 
 class AssetDuplicationError(Exception):
@@ -185,18 +213,18 @@ class Asset(ABC):
 
         cls.data_protocol = DataProtocol._get(require_data, prohibit_data)
 
-        # All TYPES should be upper, style guideline
-        TYPE = cls.__name__.upper()
+        TYPE = cls.__name__.lower()
 
         # Extending the enum to accomodate new type
         if ABC not in cls.__bases__ and not hidden:
-            if TYPE not in [t.name for t in TYPES]:
-                extend_enum(TYPES, TYPE)
-            cls.type = TYPES[TYPE]
+            if TYPE not in [t.name for t in types]:
+                extend_enum(types, TYPE)
+            cls.type = types[TYPE]
+            cls.type.c = cls
 
         # Used when a new asset subclass is hidden from the AG api
         if not getattr(cls, 'type', None):
-            cls.type = TYPES.UNDEFINED
+            cls.type = types.undefined
 
     def __new__(cls, *args, **kwargs):
         if args or kwargs.get("name", False):
@@ -233,7 +261,7 @@ class Asset(ABC):
 
         # Attribute Initialization
         self.name = str(name)
-        self.price = data if is_numeric(data) else 0
+        self._price = data if isinstance(data, Number) else 0
         self.close = True
 
         # Accept isoformat datestrings as well as datetimes
@@ -292,6 +320,17 @@ class Asset(ABC):
         raise AssetDuplicationError(self)
 
     @property
+    def price(self):
+        return round(self._price, 2)
+
+    @price.setter
+    def price(self, price):
+        if isinstance(price, Number):
+            self._price = price
+        else:
+            raise TypeError(f"Can not update price of {self.name} {self.type} to {price.__class__.__name__} {price}. Price must be a numnber")
+
+    @property
     def key(self):
         """Returns a key used for accessing stored files relevant to this asset
 
@@ -316,12 +355,12 @@ class Asset(ABC):
             price (float): Updates the instance's price inplace, and
                 also returns it
         """
-        date = self.normalize_date(date)
+        self.date = self.normalize_date(date)
 
         if self.data:
-            return self._data_valuate(date)
+            self.price = self._data_valuate(self.date)
         else:
-            return self.valuate()
+            self.price =  self.valuate(self.date)
 
     def _data_valuate(self, date=None):
         """Determines how asset prices update when using data
@@ -408,7 +447,7 @@ class Asset(ABC):
         require, prohibit = DataProtocol._decompose(cls.data_protocol)
 
         settings = {
-            "hidden": cls.type is TYPES.UNDEFINED,
+            "hidden": cls.type is types.undefined,
             "require_data": require,
             "prohibit_data": prohibit,
             "required": cls.required,

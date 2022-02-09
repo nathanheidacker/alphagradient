@@ -21,7 +21,7 @@ import yfinance as yf
 import numpy as np
 
 # Local imports
-from .asset import Asset, TYPES
+from .asset import Asset, types
 from ..data import datatools
 
 with open("AlphaGradient/finance/standard_asset_settings.json") as f:
@@ -79,7 +79,7 @@ class Stock(Asset, settings=settings["STOCK"]):
         return self.price
 
     def online_data(self):
-        data = yf.Ticker(self.name).history()
+        data = yf.Ticker(self.name).history(period="max")
         return datatools.AssetData(Stock, data)
 
     @property
@@ -92,15 +92,19 @@ class BrownianStock(Asset, settings=settings["BROWNIANSTOCK"]):
     def __init__(self, ticker=None, date=None, resolution=timedelta(days=1)):
         self.resolution = resolution
         if ticker is None:
-            ticker = 'AAAA'
+            ticker = self._generate_ticker()
             while ticker in TYPES.BROWNIANSTOCK.instances:
-                ticker = ''.join([chr(np.random.randint(65, 91))
-                                 for _ in range(4)])
+                ticker = self._generate_ticker()
 
         super().__init__(ticker, date=date)
 
         self.rng = np.random.default_rng()
         self.price = self.rng.gamma(1.5, 100)
+
+
+    def _generate_ticker(self):
+        return ''.join([chr(np.random.randint(65, 91))
+                                 for _ in range(4)])
         
 
     def valuate(self, date=None):

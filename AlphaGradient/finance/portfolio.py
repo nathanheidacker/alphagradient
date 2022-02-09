@@ -13,6 +13,9 @@ from numbers import Number
 import pandas as pd
 import numpy as np
 
+# Local imports
+from .asset import types
+
 class Position:
     """Object representing a position in a financial asset
 
@@ -159,17 +162,34 @@ class Portfolio:
         shorts (dict): A dictionary of all short positions
 
     """
-    def __init__(self, initial, date=None):
-        self.cash = initial
+
+    def __init__(self, initial, name=None, date=None):
+        self.name = self._generate_name() if name is None else name
+        self._cash = initial
         self.date = date if isinstance(date, datetime) else datetime.today()
-        self.positions = {}
+        self._positions = {}
         self.history = self._history()
+        self.type.instances[self.name] = self
 
     def __str__(self):
          return f"<AlphaGradient Portfolio at {hex(id(self))}>"
 
     def __repr__(self):
         return self.__str__()
+
+    def _generate_name(self):
+        return ''.join([chr(np.random.randint(65, 91))
+                                 for _ in range(4)])
+
+    @property
+    def positions(self):
+        # Removes empty positions
+        self._positions = {k:v for k, v in self._positions.items() if v.quantity > 0}
+        return self._positions
+
+    @property
+    def cash(self):
+        return self._cash
 
     @property
     def longs(self):
@@ -198,6 +218,8 @@ class Portfolio:
         Returns:
             Modifies this portfolio's positions inplace. No return value
         """
+        if quantity <= 0:
+            raise ValueError(f"Purchase quantity must exceed 0, received {quantity}")
 
         # Creating the position to be entered into
         position = Position(asset, quantity)
@@ -212,7 +234,7 @@ class Portfolio:
             self.positions[position.key] = position
 
         # Updating the potfolio's cash reserves
-        self.cash -= position.value
+        self._cash -= position.value
 
         # Updating the portfolio's history to reflect purchase
         self.update_history()
@@ -230,6 +252,8 @@ class Portfolio:
         Returns:
             Modifies this portfolio's positions inplace. No return value
         """
+        if quantity <= 0:
+            raise ValueError(f"Sale quantity must exceed 0, received {quantity}")
 
         # Creating the position to be sold
         position = Position(asset, quantity)
@@ -238,7 +262,7 @@ class Portfolio:
         try:
             current = self.positions[position.key]
             if current.quantity >= quantity:
-                self.cash += position.value
+                self._cash += position.value
                 self.positions[position.key] -= position
             else:
                 raise ValueError(f"Portfolio has insufficient long position in asset {asset.name} {asset.type} to sell {quantity} units. Only {current} units available")
@@ -262,6 +286,8 @@ class Portfolio:
         Returns:
             Modifies this portfolio's positions inplace. No return value
         """
+        if quantity <= 0:
+            raise ValueError(f"Short sale quantity must exceed 0, received {quantity}")
 
         # Creating the position to be shorted
         position = Position(asset, quantity, short=True)
@@ -273,7 +299,7 @@ class Portfolio:
             self.positions[position.key] = position
 
         # Updating the potfolio's cash reserves
-        self.cash -= position.value
+        self._cash -= position.value
 
         # Updating the portfolio's history to reflect short sale
         self.update_history()
@@ -290,12 +316,14 @@ class Portfolio:
         Returns:
             Modifies this portfolio's positions inplace. No return value
         """
+        if quantity <= 0:
+            raise ValueError(f"Cover quantity must exceed 0, received {quantity}")
 
         # Creating the short position to be covered
         position = Position(asset, quantity, short=True)
 
         required = -1 * position.value
-        if required > self.cash:
+        if required > self._cash:
             raise ValueError(f"Covering {quantity} short sold units of {asset.name} {asset.type} requires ${required}, but this portfolio only has ${self.cash} in reserve")
 
         # Covering the position if the current short position is large enough to satisfy the quantity to cover
@@ -337,4 +365,8 @@ class Portfolio:
         """
         positions = [position.view() for position in self.positions.values()]
         self.history.loc[self.date] = np.array([positions, self.value], dtype="object")
-        
+
+
+# Uses a protected keyword, so must be used set outside of the class
+setattr(Portfolio, "type", types.portfolio)
+setattr(types.portfolio, "c", Portfolio)

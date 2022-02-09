@@ -11,6 +11,7 @@ Todo:
 # Standard imports
 from collections import namedtuple
 from datetime import datetime
+from numbers import Number
 from copy import deepcopy
 # from typing import List
 from os import scandir
@@ -23,7 +24,6 @@ import pandas as pd
 import numpy as np
 
 # Local imports
-from ..constants import is_numeric
 
 def get_data(asset):
     """Accesses locally stored data relevant to this asset
@@ -87,7 +87,7 @@ class AssetData:
             return None
 
         # Handle numeric inputs that default to static dataframes
-        if is_numeric(data):
+        if isinstance(data, Number):
             frame = [[datetime.today()] + ([data] * (len(required) + 1))]
             close_value = close_value if close_value else "CLOSE"
             required = ["DATE", close_value] + required
@@ -169,6 +169,7 @@ class AssetData:
         data.drop("DATE", axis=1, inplace=True)
 
         self.data = data
+        self.resolution = self._get_resolution()
 
     def __getattr__(self, attr):
         try:
@@ -265,6 +266,9 @@ class AssetData:
                 data.drop(column, axis=1, inplace=True)
 
         return data
+
+    def _get_resolution(self):
+        return 1
 
 
 
