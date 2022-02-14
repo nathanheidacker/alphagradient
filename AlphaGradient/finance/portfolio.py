@@ -124,6 +124,10 @@ class Position:
     def average_cost(self):
         return round(self.cost / self.quantity, 2)
 
+    @property
+    def expired(self):
+        return self.quantity <= 0 or self.asset.expired
+
     def view(self):
         """A memory efficient copy of the position
 
@@ -306,7 +310,7 @@ class Portfolio:
     @property
     def positions(self):
         # Removes empty positions
-        self._positions = {k:v for k, v in self._positions.items() if v.quantity > 0}
+        self._positions = {k:pos for k, pos in self._positions.items() if not pos.expired}
         self._positions["CASH"] = self.cash
         return self._positions
 

@@ -8,6 +8,7 @@ Todo:
     * Complete function/class header typing
     * Replace is_numeric with Number instance checks
     * Interpret more than just isoformat for normalizing datestrings
+    * asset.price -> asset.value and asset.roundprice -> asset.price
 """
 
 # Standard imports
@@ -251,6 +252,7 @@ class Asset(ABC):
             base=None):
 
         # Checks if arguments have changed materiall from previous initialization
+        name = str(name).upper().replace(' ', '_')
         if self.type.instances.get(name) is self:
 
             skip = True
@@ -269,13 +271,13 @@ class Asset(ABC):
         self.type.instances[name] = self
 
         # Attribute Initialization
-        self.name = str(name)
+        self.name = name
         self.base = base if base in list(_currency_info["CODE"]) else types.currency.instances.base.base
         self._price = data if isinstance(data, Number) else 0
         self.close = True
 
         # Accept isoformat datestrings as well as datetimes
-        date = date if date else datetime.today()
+        date = date if date else self._global_start
         self.date = date if isinstance(
             date, datetime) else datetime.fromisoformat(date)
 
@@ -361,6 +363,13 @@ class Asset(ABC):
         """
 
         return f"{self.type}_{self.name}"
+
+    @property
+    def expired(self):
+        """Whether or not this asset is expired
+
+        Most assets will never expire, so the default behavior is to always return false. Some assets like options can expire, however. Overwrite this property to determine when an asset expires"""
+        return False
 
     def _valuate(self, date=None):
         """Updates asset prices when time steps take place

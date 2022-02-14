@@ -24,6 +24,7 @@ class Globals:
 
     def __init__(self):
         self._start = self.default_start()
+        setattr(Asset, "_global_start", self.start)
         self._end = self.default_end()
         self._resolution = self.default_resolution()
         self._base = Currency(Currency.base)
@@ -65,6 +66,7 @@ class Globals:
     def start(self, date=None):
         date = default_start() if not isinstance(date, datetime) else date
         self._start = date
+        setattr(Asset, "_global_start", self.start)
 
     def default_start(self):
         """The default start if nothing else is provided
