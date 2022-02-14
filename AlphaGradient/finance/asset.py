@@ -24,6 +24,7 @@ import pandas as pd
 # Local imports
 from ..data import datatools
 
+_currency_info = pd.read_pickle("AlphaGradient/finance/currency_info.p")
 
 @unique
 class types(Enum):
@@ -51,7 +52,14 @@ class types(Enum):
                         f"Asset type \'{name}\' has no instance \'{item}\'")
 
             def __str__(self):
-                return str(list(self.items()))[1:-1]
+                return str(dict(self))
+
+            @property
+            def base(self):
+                if self and getattr(list(self.values())[0], "base", False):
+                    return [c for c in self.values() if c.is_base][0]
+                else:
+                    raise AttributeError(f"Asset type \'{self}\' has no instance \'base\'")
 
         return (name, Instances())
 
@@ -71,7 +79,7 @@ class types(Enum):
         return self.__str__()
 
     def __getitem__(self, item):
-        return self.value[1][item]
+        return self.instances[item]
 
     @property
     def instances(self):
@@ -239,10 +247,11 @@ class Asset(ABC):
             date=None,
             data=None,
             columns=None,
-            force=False):
+            force=False,
+            base=None):
 
         # Checks if arguments have changed materiall from previous initialization
-        if name in self.type.instances:
+        if self.type.instances.get(name) is self:
 
             skip = True
 
@@ -250,7 +259,7 @@ class Asset(ABC):
                 skip = False
 
             if date != self._args["date"] and date is not None:
-                self.valuate(date)
+                self._valuate(date)
 
             if skip:
                 return
@@ -261,6 +270,7 @@ class Asset(ABC):
 
         # Attribute Initialization
         self.name = str(name)
+        self.base = base if base in list(_currency_info["CODE"]) else types.currency.instances.base.base
         self._price = data if isinstance(data, Number) else 0
         self.close = True
 
@@ -288,7 +298,7 @@ class Asset(ABC):
                 if data is None and self.data_protocol is DataProtocol.REQUIRED:
 
                     if force:
-                        data = datatools.AssetData(self.__class__, 1, columns)
+                        data = datatools.AssetData(self.__class__, 1)
                     else:
                         raise ValueError(f"{self.name} {self.type} could not be initialized without data. If this is the first time this asset is being instantiated, please provide a valid dataset or instantiate with force=True.")
 
@@ -302,10 +312,10 @@ class Asset(ABC):
             if self.data_protocol is DataProtocol.REQUIRED and not self.data:
                 raise ValueError(f"{self.name} {self.type} could not be initialized without data. If this is the first time this asset is being instantiated, please provide a valid dataset or instantiate with force=True.")
 
-        self._valuate()
+        self._valuate(date)
 
     def __str__(self):
-        return f'<{self.type} {self.name}: ${self.price}>'
+        return f'<{self.type} {self.name}: {types.currency.instances[self.base].symbol}{self.roundprice}>'
 
     def __repr__(self):
         return self.__str__()
@@ -321,7 +331,7 @@ class Asset(ABC):
 
     @property
     def price(self):
-        return round(self._price, 2)
+        return self._price
 
     @price.setter
     def price(self, price):
@@ -329,6 +339,16 @@ class Asset(ABC):
             self._price = price
         else:
             raise TypeError(f"Can not update price of {self.name} {self.type} to {price.__class__.__name__} {price}. Price must be a numnber")
+
+    @property
+    def roundprice(self):
+        price = self._price
+        r = 2
+        while price < 1:
+            r += 1
+            price *= 10
+
+        return round(self._price, r)
 
     @property
     def key(self):

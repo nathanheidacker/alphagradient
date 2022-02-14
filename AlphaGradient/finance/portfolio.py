@@ -8,6 +8,7 @@ Todo:
 # Standard imports
 from datetime import datetime
 from numbers import Number
+from copy import copy
 
 # Third party imports
 import pandas as pd
@@ -15,6 +16,7 @@ import numpy as np
 
 # Local imports
 from .asset import types
+from .standard import Currency
 
 class Position:
     """Object representing a position in a financial asset
@@ -34,53 +36,71 @@ class Position:
 
     def __init__(self, asset, quantity, short=False):
         self.asset = asset
-        self.quantity = quantity
+        self._quantity = round(quantity, 2)
         self.short = short
         self.cost = self.value
         self.history = self._history()
 
     def __add__(self, other):
         # Positions can only be added to other positions
-        if not isinstance(other, Position):
+        if not self == other: 
             return NotImplemented
 
+        new = copy(self)
+
         # Updating quantity
-        self.quantity += other.quantity
+        new.quantity += other.quantity
 
         # Updating position cost
-        short = -1 if self.short else 1
-        self.cost += self.asset.price * other.quantity * short
+        short = -1 if new.short else 1
+        new.cost += new.asset.price * other.quantity * short
 
         # Updating the position history
-        self.update_history()
+        new.update_history()
 
-        return self
+        return new
 
     def __sub__(self, other):
         # Positions can only be subtracted from other positions
-        if not isinstance(other, Position):
+        if not self == other:
             return NotImplemented
 
+        new = copy(self)
+
         # Updating quantity
-        self.quantity -= other.quantity
+        new.quantity -= other.quantity
 
         # Updating position cost
-        short = -1 if self.short else 1
-        self.cost -= self.asset.price * other.quantity * short
+        short = -1 if new.short else 1
+        new.cost -= new.asset.price * other.quantity * short
 
         # Updating position history
-        self.update_history()
+        new.update_history()
 
-        return self
+        return new
 
     def __eq__(self, other):
         return self.asset is other.asset and self.short is other.short
 
     def __str__(self):
-        return f"{self.quantity} units @ ${self.average_cost} | MV: ${self.value}"
+        symbol = types.currency.instances[self.asset.base].symbol
+        return f"{self.quantity} units @ {symbol}{self.average_cost} | MV: {symbol}{self.roundvalue}"
 
     def __repr__(self):
         return self.__str__()
+
+    def __copy__(self):
+        new = Position(self.asset, self.quantity, self.short)
+        new.history = self.history
+        return new
+
+    @property
+    def quantity(self):
+        return self._quantity
+
+    @quantity.setter
+    def quantity(self, value):
+        self._quantity = round(value, 2)
 
     @property
     def key(self):
@@ -89,7 +109,16 @@ class Position:
 
     @property
     def value(self):
-        return round(self.asset.price * self.quantity * (-1 if self.short else 1), 2)
+        return self.asset.price * self.quantity * (-1 if self.short else 1)
+
+    @property
+    def roundvalue(self):
+        value = self.value
+        r = 2
+        while value < 1:
+            r += 1
+            value *= 10
+        return round(value, r)
 
     @property
     def average_cost(self):
@@ -112,7 +141,7 @@ class Position:
                 self.value = position.value
             def __str__(self):
                 short = "SHORT" if self.short else "LONG"
-                return f"{self.asset}_{short}: {self.quantity} @ ${self.value / self.quantity}"
+                return f"{self.asset}_{short}: {self.quantity} @ ${round(self.value / self.quantity, 2)}"
             def __repr__(self):
                 return self.__str__()
 
@@ -143,7 +172,90 @@ class Position:
             updates the history inplace, no return value
         """
         self.history.loc[self.asset.date] = [self.value, self.cost]
-    
+
+
+
+class Cash(Position):
+
+    def __init__(self, quantity, code=None):
+        code = Currency.base if code is None else code
+        super().__init__(Currency(code), quantity)
+
+    def __str__(self):
+        return f"<{self.asset.code} {self.asset.symbol}{self.quantity}>"
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __add__(self, other):
+        other = self.from_number(other)
+
+        if not isinstance(other, Cash):
+            return NotImplemented
+
+        new = copy(self)
+
+        if new.asset is other.asset:
+            new.quantity += other.quantity
+        else:
+            value = new.asset.convert(other.asset.code) * other.quantity
+            new.quantity += value
+
+        return new
+
+    def __sub__(self, other):
+        other = self.from_number(other)
+
+        if not isinstance(other, Cash):
+            return NotImplemented
+
+        new = copy(self)
+
+        if new.asset is other.asset:
+            new.quantity -= other.quantity
+        else:
+            value = new.asset.convert(other.asset.code) * other.quantity
+            new.quantity -= value
+
+        return new
+
+    def __lt__(self, other):
+        other = self.from_number(other)
+        return self.value < other.value
+
+    def __gt__(self, other):
+        other = self.from_number(other)
+        return self.value > other.value
+
+    def __eq__(self, other):
+        other = self.from_number(other)
+        return self.value == other.value
+
+    def __copy__(self):
+        new = Cash(self.quantity, self.asset.code)
+        new.history = self.history
+        return new
+
+    def from_number(self, other):
+        if isinstance(other, Number):
+            other = Cash(other, self.asset.code)
+        return other
+
+    def convert(self, code, inplace=False):
+        """converts this cash asset to another currency"""
+        quantity = self.asset.rate(code) * self.quantity
+        new = Cash(quantity, code)
+
+        if not inplace:
+            return new
+
+        self = new
+
+    @classmethod
+    def from_position(cls, position):
+        """Returns a cash object representing the value of the asset passed"""
+        return Cash(position.value, position.asset.base)
+
 
 
 
@@ -163,11 +275,12 @@ class Portfolio:
 
     """
 
-    def __init__(self, initial, name=None, date=None):
+    def __init__(self, initial, name=None, date=None, base=None):
         self.name = self._generate_name() if name is None else name
-        self._cash = initial
-        self.date = date if isinstance(date, datetime) else datetime.today()
-        self._positions = {}
+        self.date = datetime.today() if date is None else date
+        self._base = Currency.base if base is None else base
+        self._cash = Cash(initial, self.base)
+        self._positions = {"CASH": self.cash}
         self.history = self._history()
         self.type.instances[self.name] = self
 
@@ -182,9 +295,19 @@ class Portfolio:
                                  for _ in range(4)])
 
     @property
+    def base(self):
+        return self._base
+
+    @base.setter
+    def base(self, base):
+        if Currency.validate_code(base, error=True):
+            self._base = base
+
+    @property
     def positions(self):
         # Removes empty positions
         self._positions = {k:v for k, v in self._positions.items() if v.quantity > 0}
+        self._positions["CASH"] = self.cash
         return self._positions
 
     @property
@@ -204,7 +327,7 @@ class Portfolio:
     @property
     def value(self):
         """This portfolio's net market value"""
-        return self.cash + sum([position.value for position in self.positions.values()])
+        return sum([position.value for position in self.positions.values()])
 
     def buy(self, asset, quantity):
         """Buys an asset using this portfolio
@@ -234,7 +357,7 @@ class Portfolio:
             self.positions[position.key] = position
 
         # Updating the potfolio's cash reserves
-        self._cash -= position.value
+        self._cash -= Cash.from_position(position)
 
         # Updating the portfolio's history to reflect purchase
         self.update_history()
@@ -262,7 +385,7 @@ class Portfolio:
         try:
             current = self.positions[position.key]
             if current.quantity >= quantity:
-                self._cash += position.value
+                self._cash += Cash.from_position(position)
                 self.positions[position.key] -= position
             else:
                 raise ValueError(f"Portfolio has insufficient long position in asset {asset.name} {asset.type} to sell {quantity} units. Only {current} units available")
@@ -299,7 +422,7 @@ class Portfolio:
             self.positions[position.key] = position
 
         # Updating the potfolio's cash reserves
-        self._cash -= position.value
+        self._cash -= Cash.from_position(position)
 
         # Updating the portfolio's history to reflect short sale
         self.update_history()
@@ -330,7 +453,7 @@ class Portfolio:
         try:
             current = self.positions[position.key]
             if current.quantity >= quantity:
-                self.cash += position.value
+                self.cash += Cash.from_position(position)
                 self.positions[position.key] -= position
             else:
                 raise ValueError(f"Portfolio has insufficient short position in asset {asset.name} {asset.type} to cover {quantity} units. Only {current.quantity} units have been sold short")

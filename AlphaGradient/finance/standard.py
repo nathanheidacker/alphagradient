@@ -18,6 +18,7 @@ import json
 
 # Third party imports
 import yfinance as yf
+import pandas as pd
 import numpy as np
 
 # Local imports
@@ -28,43 +29,108 @@ with open("AlphaGradient/finance/standard_asset_settings.json") as f:
     settings = json.load(f)
 """settings (dict): dictionary of settings for initializing standard asset subclasses"""
 
+
+def _getinfo(base="USD"):
+
+    def mapper(code):
+        try:
+            return yf.Ticker(f"{code}{base}=X").history(period="1d", interval="1d")["Close"].item()
+        except:
+            return -1
+
+    info = pd.read_pickle("AlphaGradient/finance/currency_info_old.p")
+    info["VALUE"] = info["CODE"].map(mapper)
+    info = info[info["VALUE"] > 0]
+
+    with open("AlphaGradient/finance/currency_info2.p", "wb") as p:
+        info.to_pickle(p)
+
+    return info
+
+
 class Currency(Asset, settings=settings["CURRENCY"]):
 
-    to_code = {
-        '$': 'USD',
-        'GBP': 'GBP',
-        'YEN': 'YEN',
-    }
+    base = "USD"
+    info = pd.read_pickle("AlphaGradient/finance/currency_info.p")
 
-    to_symbol = {v:k for k, v in to_code.items()}
+    @classmethod
+    def update_info(cls):
+        pass
 
-    def __init__(self, identifier='USD'):
+    def __new__(cls, *args, **kwargs):
+        if not args:
+            args = (None,)
+        if args[0] is None:
+            args = list(args)
+            args[0] = cls.base
+            args = tuple(args)
+        return super().__new__(cls, *args, **kwargs)
 
-        if not isinstance(identifier, str):
-            raise TypeError(
-                f'''{identifier.__class__.__name__} {identifier} is not a valid currency identifier. 
-                Please use a currency code or symbol as a string''')
+    def __init__(self, code):
+        self.validate_code(code, error=True)
+        self.code = code
+        self.symbol = self.info[self.info["CODE"] == self.code]["SYMBOL"].item()
+        super().__init__(code)
 
-        code = None
-        symbol = None
+    def __str__(self):
+        return f"<{self.type} {self.symbol}{self.code}: {self.get_symbol()}{self.roundprice}>"
 
-        if len(identifier) == 1:
-            code = self.to_code[identifier]
-            symbol = identifier
+    def valuate(self, *args, **kwargs):
+        return self.convert(self.code, self.base)
 
-        elif len(identifier) == 3:
-            code = identifier
-            symbol = self.to_symbol[identifier]
+    @classmethod
+    def get_symbol(cls, base=None):
+        base = cls.base if base is None else base
+        return cls.info[cls.info["CODE"] == base]["SYMBOL"].item()
 
-        else:
-            raise ValueError(
-                f'''{identifier} is not a valid currency identifier. 
-                Please use a currency symbol or three digit currency code''')
+    @classmethod
+    def validate_code(cls, code, error=False):
+        if code in list(cls.info["CODE"]):
+            return True
+        if error:
+            raise ValueError(f"{code} is not a recognized as a valid currency code")
+        return False
 
-        super().__init__(code, date=datetime.today(), require_data=False)
+    @classmethod
+    def code_value(cls, code):
+        return cls.info[cls.info["CODE"] == code]["VALUE"].item()
 
-    def valuate(self):
-        return NotImplemented
+    def convert(self, target, base=None):
+        """Converts target currency to base currency
+
+        Returns the value of the target currency in units of the base currrency
+
+        Returns:
+            value (Number): target currency value in base currency"""
+        base = self.code if base is None else base
+        return self.code_value(target) / self.code_value(base)
+
+    def rate(self, target, base=None):
+        """Converts this currency to the target
+
+        Returns the value of the base currency in units of the target currency
+
+        Returns:
+            value (Number): base currency value in target currency"""
+        return 1 / self.convert(target, base)
+
+    @property
+    def is_base(self):
+        return self.code == self.base
+
+
+class Currency2:
+
+    _instance = []
+    base = "USD"
+    info = pd.read_pickle("AlphaGradient/finance/currency_info.p")
+
+    def __init__(self):
+
+        Currency2._instance.append(self)
+
+
+
 
 
 class Stock(Asset, settings=settings["STOCK"]):

@@ -1,7 +1,7 @@
 {
    "CURRENCY":{
       "hidden":false,
-      "require_data":true,
+      "require_data":false,
       "prohibit_data":false,
       "required":[
          "OPEN",

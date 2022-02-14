@@ -25,6 +25,26 @@ import numpy as np
 
 # Local imports
 
+
+def currency_info(base=None, save=False):
+
+    base = "USD" if base is None else base
+
+    def mapper(code):
+        try:
+            return yf.Ticker(f"{code}{base}=X").history(period="1d", interval="1d")["Close"].item()
+        except:
+            return -1
+
+    info = pd.read_pickle("AlphaGradient/finance/currency_info_raw.p")
+    info["VALUE"] = info["CODE"].map(mapper)
+    info = info[info["VALUE"] > 0]
+
+    with open("AlphaGradient/finance/currency_info.p", "wb") as p:
+        info.to_pickle(p)
+
+    return info
+
 def get_data(asset):
     """Accesses locally stored data relevant to this asset
 

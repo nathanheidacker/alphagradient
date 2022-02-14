@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 # Third party imports
 
 # Local imports
-from .finance import types, Asset
+from .finance import types, Asset, Currency
 
 class Globals:
     """A set of global conditions and functions that act on all alphagradient objects
@@ -26,6 +26,7 @@ class Globals:
         self._start = self.default_start()
         self._end = self.default_end()
         self._resolution = self.default_resolution()
+        self._base = Currency(Currency.base)
 
     def __str__(self):
         return str({k[1:]:v for k, v in self.__dict__.items()})
@@ -36,7 +37,12 @@ class Globals:
     @staticmethod
     def all_assets():
         """Returns all assets currently in memory"""
-        return [asset for t in types if Asset in t.c.__bases__ for _, asset in t.instances.items()]
+        return [asset for t in types if Asset in t.c.__bases__ for asset in t.instances.values()]
+
+    @staticmethod
+    def all_data():
+        """Returns all asset datasets"""
+        return [asset.data for t in types if Asset in t.c.__bases__ for asset in t.instances.values() if asset.data]
 
     @staticmethod
     def normalize_date(date):
@@ -68,7 +74,7 @@ class Globals:
         Returns:
             date (datetime): the default start date to be used
         """
-        data = [asset.data.index[0] for asset in self.all_assets()]
+        data = [data.index[0] for data in self.all_data()]
         default = datetime.today() - timedelta(days=3650)
         return min(data) if data else default
 
@@ -89,7 +95,7 @@ class Globals:
         Returns:
             date (datetime): the default end date to be used
         """
-        data = [asset.data.index[-1] for asset in self.all_assets()]
+        data = [data.index[-1] for data in self.all_data()]
         default = datetime.today()
         return min(data) if data else default
 
@@ -110,9 +116,23 @@ class Globals:
         Returns:
             delta (timedelta): The default time resolution
         """
-        data = [asset.data.resolution for asset in self.all_assets()]
+        data = [data.resolution for data in self.all_data()]
+        data = None
         default = timedelta(days=1)
         return min(data) if data else default
+
+    @property
+    def base(self):
+        return self._base
+
+    @base.setter
+    def base(self, code):
+        if Currency.validate_code(code, error=True):
+            Currency.base = code
+            self._base = Currency(code)
+            for currency in types.currency.instances.values():
+                currency.base = code
+                currency._valuate()
 
     def auto(self):
         """Automatically sets global start, end, and resolution to their defaults based on what assets are instantiated
@@ -137,6 +157,11 @@ class Globals:
 
         for asset in self.all_assets():
             asset._valuate(date)
+
+    def autosync(self):
+        """automatically determines best global variables for instantiated assets, and syncs them all to that date"""
+        self.auto()
+        self.sync()
 
     def step(self, delta=None):
         """Takes a single time step for all assets
