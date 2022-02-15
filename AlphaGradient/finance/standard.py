@@ -119,20 +119,6 @@ class Currency(Asset, settings=settings["CURRENCY"]):
         return self.code == self.base
 
 
-class Currency2:
-
-    _instance = []
-    base = "USD"
-    info = pd.read_pickle("AlphaGradient/finance/currency_info.p")
-
-    def __init__(self):
-
-        Currency2._instance.append(self)
-
-
-
-
-
 class Stock(Asset, settings=settings["STOCK"]):
     """A financial asset representing stock in a publicly traded company
 
@@ -155,22 +141,43 @@ class Stock(Asset, settings=settings["STOCK"]):
 
 
 class BrownianStock(Asset, settings=settings["BROWNIANSTOCK"]):
-    def __init__(self, ticker=None, date=None, resolution=timedelta(days=1)):
+    def __init__(self, ticker=None, date=None, resolution=timedelta(days=1), base=None):
         self.resolution = resolution
         if ticker is None:
             ticker = self._generate_ticker()
             while ticker in TYPES.BROWNIANSTOCK.instances:
                 ticker = self._generate_ticker()
 
-        super().__init__(ticker, date=date)
+        super().__init__(ticker, date=date, base=base)
 
         self.rng = np.random.default_rng()
         self.price = self.rng.gamma(1.5, 100)
 
 
-    def _generate_ticker(self):
-        return ''.join([chr(np.random.randint(65, 91))
+    def _generate_ticker(self, random=False, last=[None]):
+        if random:
+            return ''.join([chr(np.random.randint(65, 91))
                                  for _ in range(4)])
+        else:
+            name = None
+
+            if last[0] is None:
+                name = [65, 65, 65]
+
+            else:
+                name = [ord(char) for char in last[0]]
+                for i, char in enumerate(name):
+                    if char < 91:
+                        name[i] += 1
+                        break
+                    else:
+                        name[i] = 65
+                else:
+                    name =  [65 for _ in range((len(name) + 1))]
+                    
+            name = ''.join([chr(char) for char in name])
+            last[0] = name
+            return name
         
 
     def valuate(self, date=None):
@@ -182,7 +189,7 @@ class BrownianStock(Asset, settings=settings["BROWNIANSTOCK"]):
         return self.price
 
 
-class Option(Asset, settings=settings["OPTION"]):
+class Option(Asset, ABC, settings=settings["OPTION"]):
 
     def __init__(self, underlying, strike, expiry):
         super().__init__(underlying.name)

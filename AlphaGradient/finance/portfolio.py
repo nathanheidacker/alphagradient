@@ -294,9 +294,14 @@ class Portfolio:
     def __repr__(self):
         return self.__str__()
 
-    def _generate_name(self):
-        return ''.join([chr(np.random.randint(65, 91))
-                                 for _ in range(4)])
+    def _generate_name(self, last=[0]):
+        """generates a name for this portfolio"""
+        if last[0] == 0 and not self.type.instances:
+            return "MAIN"
+        else:
+            name = f"P{last[0]}"
+            last[0] += 1
+            return name
 
     @property
     def base(self):
@@ -348,6 +353,9 @@ class Portfolio:
         if quantity <= 0:
             raise ValueError(f"Purchase quantity must exceed 0, received {quantity}")
 
+        elif asset.date != self.date:
+            asset._valuate(self.date)
+
         # Creating the position to be entered into
         position = Position(asset, quantity)
 
@@ -381,6 +389,9 @@ class Portfolio:
         """
         if quantity <= 0:
             raise ValueError(f"Sale quantity must exceed 0, received {quantity}")
+
+        elif asset.date != self.date:
+            asset._valuate(self.date)
 
         # Creating the position to be sold
         position = Position(asset, quantity)
@@ -416,6 +427,9 @@ class Portfolio:
         if quantity <= 0:
             raise ValueError(f"Short sale quantity must exceed 0, received {quantity}")
 
+        elif asset.date != self.date:
+            asset._valuate(self.date)
+
         # Creating the position to be shorted
         position = Position(asset, quantity, short=True)
 
@@ -445,6 +459,9 @@ class Portfolio:
         """
         if quantity <= 0:
             raise ValueError(f"Cover quantity must exceed 0, received {quantity}")
+
+        elif asset.date != self.date:
+            asset._valuate(self.date)
 
         # Creating the short position to be covered
         position = Position(asset, quantity, short=True)
