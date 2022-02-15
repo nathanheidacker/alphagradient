@@ -12,11 +12,11 @@ import AlphaGradient as ag
 
 class Standard(unittest.TestCase):
 
-    def test_stock(self):
-        spy = ag.finance.Stock('SPY', date=datetime.today())
-        print(spy.price)
+	def test_stock(self):
+		spy = ag.finance.Stock('SPY', date=datetime.today())
+		print(spy.price)
 
-        self.assertEquals(spy.price, 430.429993)
+		self.assertEquals(spy.price, 430.429993)
 
 if __name__ == '__main__':
-    unittest.main()
+	unittest.main()
