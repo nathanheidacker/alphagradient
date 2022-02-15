@@ -15,7 +15,7 @@ Todo:
 from abc import ABC, abstractmethod
 from datetime import datetime
 from numbers import Number
-import weakref
+from weakref import WeakValueDictionary as WeakDict
 #import typing
 
 # Third Party imports
@@ -43,7 +43,7 @@ class types(Enum):
     def _generate_next_value_(name, *args):
         """Determines how new enum members are generated when new asset subclasses are created"""
 
-        class Instances(weakref.WeakValueDictionary):
+        class Instances(WeakDict):
             """A weakly referential dictionary of all instances of the subclass to which the enum member corresponds"""
             def __getattr__(self, item):
                 try:
@@ -68,6 +68,8 @@ class types(Enum):
     undefined = auto() # Used when the subclass is hidden
     portfolio = auto()
     algorithm = auto()
+    basket = auto()
+    universe = auto()
 
     def __init__(self, *args, **kwargs):
         self.c = object
@@ -109,6 +111,19 @@ class types(Enum):
                     raise AttributeError(f'Asset type \'{item}\' does not exist')
 
         return TypeList(cls)
+
+    @classmethod
+    def instantiable(cls):
+        """Returns a list of all instantiable asset subclasses"""
+        check = Asset.__subclasses__()
+        instantiable = []
+        for sub in check:
+            check += sub.__subclasses__()
+            if ABC not in sub.__bases__:
+                instantiable.append(sub)
+
+        return instantiable
+
 
 
 class AssetDuplicationError(Exception):
@@ -165,6 +180,7 @@ class Asset(ABC):
 
     def __init_subclass__(
                           cls, 
+                          *args,
                           hidden=False, 
                           require_data=None,
                           prohibit_data=None,
