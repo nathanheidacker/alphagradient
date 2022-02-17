@@ -53,7 +53,7 @@ class Position:
 
         # Updating position cost
         short = -1 if new.short else 1
-        new.cost += new.asset.price * other.quantity * short
+        new.cost += new.asset.value * other.quantity * short
 
         # Updating the position history
         new.update_history()
@@ -72,7 +72,7 @@ class Position:
 
         # Updating position cost
         short = -1 if new.short else 1
-        new.cost -= new.asset.price * other.quantity * short
+        new.cost -= new.asset.value * other.quantity * short
 
         # Updating position history
         new.update_history()
@@ -83,8 +83,7 @@ class Position:
         return self.asset is other.asset and self.short is other.short
 
     def __str__(self):
-        symbol = types.currency.instances[self.asset.base].symbol
-        return f"{self.quantity} units @ {symbol}{self.average_cost} | MV: {symbol}{self.roundvalue}"
+        return f"{self.quantity} units @ {self.symbol}{self.average_cost} | MV: {self.price} | RETURN: {round(self.percent_return, 2)}%"
 
     def __repr__(self):
         return self.__str__()
@@ -108,17 +107,26 @@ class Position:
         return f"{self.asset.key}_{short}"
 
     @property
-    def value(self):
-        return self.asset.price * self.quantity * (-1 if self.short else 1)
+    def symbol(self):
+        return types.currency.instances[self.asset.base].symbol
 
     @property
-    def roundvalue(self):
-        value = self.value
-        r = 2
-        while value < 1:
-            r += 1
-            value *= 10
-        return round(value, r)
+    def value(self):
+        return self.asset.value * self.quantity * (-1 if self.short else 1)
+
+    @property
+    def price(self):
+        price = abs(self.value)
+
+        if price != 0:
+            r = 2
+            while price < 1:
+                r += 1
+                price *= 10
+
+            price = round(self.value, r)
+
+        return f"{self.symbol}{price}"
 
     @property
     def average_cost(self):
@@ -127,6 +135,17 @@ class Position:
     @property
     def expired(self):
         return self.quantity <= 0 or self.asset.expired
+
+    @property
+    def total_return(self):
+        return self.value - self.cost
+
+    @property
+    def percent_return(self):
+        return (self.total_return / self.cost) * 100 * (-1 if self.short else 1)
+
+    def expire(self, portfolio):
+        self.asset.expire(portfolio, self)
 
     def view(self):
         """A memory efficient copy of the position
@@ -143,9 +162,13 @@ class Position:
                 self.short = position.short
                 self.cost = position.cost
                 self.value = position.value
+                self.symbol = position.symbol
+                self.cash = isinstance(position, Cash)
             def __str__(self):
+                if self.cash:
+                    return f"CASH: {self.symbol}{self.value}"
                 short = "SHORT" if self.short else "LONG"
-                return f"{self.asset}_{short}: {self.quantity} @ ${round(self.value / self.quantity, 2)}"
+                return f"{self.asset}_{short}: {self.quantity} @ {self.symbol}{round(self.value / self.quantity, 2)}"
             def __repr__(self):
                 return self.__str__()
 
@@ -260,6 +283,15 @@ class Cash(Position):
         """Returns a cash object representing the value of the asset passed"""
         return Cash(position.value, position.asset.base)
 
+    @property
+    def expired(self):
+        """Always returns false, Cash positions never expire"""
+        return False
+
+    @property
+    def code(self):
+        return self.asset.code
+
 
 
 
@@ -315,13 +347,26 @@ class Portfolio:
     @property
     def positions(self):
         # Removes empty positions
+        for expired in [pos for pos in self._positions.values() if pos.expired]:
+            expired.expire(self)
+
         self._positions = {k:pos for k, pos in self._positions.items() if not pos.expired}
+
         self._positions["CASH"] = self.cash
         return self._positions
 
     @property
     def cash(self):
         return self._cash
+
+    @cash.setter
+    def cash(self, n):
+        if isinstance(n, Number):
+            self._cash.quantity = n
+        elif isinstance(n, Cash):
+            self._cash = Cash.from_position(n)
+        else:
+            raise TypeError(f"Cash can only be assigned to a numerical value or another cash instance.")
 
     @property
     def longs(self):
@@ -354,13 +399,13 @@ class Portfolio:
             raise ValueError(f"Purchase quantity must exceed 0, received {quantity}")
 
         elif asset.date != self.date:
-            asset._valuate(self.date)
+            raise ValueError(f"Unable to complete transaction, {asset.date=} does not match {self.date=}. Please ensure portfolio and asset dates are synced")
 
         # Creating the position to be entered into
         position = Position(asset, quantity)
 
         if position.value > self.cash:
-            raise ValueError(f"Purchasing {quantity} units of {asset.name} {asset.type} requires ${position.value}, but this portfolio only has ${self.cash} in reserve")
+            raise ValueError(f"Purchasing {quantity} units of {asset.name} {asset.type} requires {Cash(position.value, position.asset.base)}, but this portfolio only has {self.cash} in reserve")
 
         # Updating the position if one already exists
         try:
@@ -391,7 +436,7 @@ class Portfolio:
             raise ValueError(f"Sale quantity must exceed 0, received {quantity}")
 
         elif asset.date != self.date:
-            asset._valuate(self.date)
+            raise ValueError(f"Unable to complete transaction, {asset.date=} does not match {self.date=}. Please ensure portfolio and asset dates are synced")
 
         # Creating the position to be sold
         position = Position(asset, quantity)
@@ -428,7 +473,7 @@ class Portfolio:
             raise ValueError(f"Short sale quantity must exceed 0, received {quantity}")
 
         elif asset.date != self.date:
-            asset._valuate(self.date)
+            raise ValueError(f"Unable to complete transaction, {asset.date=} does not match {self.date=}. Please ensure portfolio and asset dates are synced")
 
         # Creating the position to be shorted
         position = Position(asset, quantity, short=True)
@@ -461,7 +506,7 @@ class Portfolio:
             raise ValueError(f"Cover quantity must exceed 0, received {quantity}")
 
         elif asset.date != self.date:
-            asset._valuate(self.date)
+            raise ValueError(f"Unable to complete transaction, {asset.date=} does not match {self.date=}. Please ensure portfolio and asset dates are synced")
 
         # Creating the short position to be covered
         position = Position(asset, quantity, short=True)
@@ -509,6 +554,12 @@ class Portfolio:
         """
         positions = [position.view() for position in self.positions.values()]
         self.history.loc[self.date] = np.array([positions, self.value], dtype="object")
+
+    def reset(self):
+        self.history = self._history()
+
+    def invest(self, n):
+        self.cash += n
 
 
 # Uses a protected keyword, so must be used set outside of the class

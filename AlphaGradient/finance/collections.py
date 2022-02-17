@@ -18,7 +18,7 @@ import numpy as np
 from .._globals import __globals as glbs
 from .asset import Asset, types
 from .portfolio import Portfolio, Cash
-from .standard import Currency, Stock, BrownianStock, Call, Put
+from .standard import Currency, Stock, Call, Put
 
 class Basket:
 
@@ -165,10 +165,12 @@ class Basket:
             raise TypeError(f"Resolution must be a datetime.timedelta object. Received {resolution.__class__.__name__} {resolution}")
 
     def default_start(self):
-        return min([dataset.index[0] for dataset in self.data(dtype=list)])
+        data = [dataset.index[0] for dataset in self.data(dtype=list)]
+        return max(data).to_pydatetime() if data else glbs.start
 
     def default_end(self):
-        return max([dataset.index[-1] for dataset in self.data(dtype=list)])
+        data = [dataset.index[-1] for dataset in self.data(dtype=list)]
+        return min(data).to_pydatetime() if data else glbs.start
 
     def default_resolution(self):
         return timedelta(days=1)
@@ -179,8 +181,16 @@ class Basket:
         self.resolution = self.default_resolution()
 
     def sync(self, date=None):
-        date = self.start if date is None else date
+
+        date = self.start if date is None else self.validate_date(date)
+
+        for portfolio in self.portfolios:
+            portfolio.date = date
+            portfolio.reset()
+
         for asset in self.assets:
+            if isinstance(asset, (Call, Put)):
+                asset.reset()
             asset._valuate(date)
 
     def autosync(self):
@@ -188,9 +198,13 @@ class Basket:
         self.sync()
 
     def step(self, delta=None):
-        delta = self.resolution if delta is None else validate_resolution(delta)
+        delta = self.resolution if delta is None else self.validate_resolution(delta)
+        for portfolio in self.portfolios:
+            portfolio.date = portfolio.date + delta
+            portfolio.update_history()
         for asset in self.assets:
             asset._valuate(asset.date + delta)
+            asset._step(asset.date + delta)
 
     def buy(self, asset, quantity, name=None):
         if self.NONE:

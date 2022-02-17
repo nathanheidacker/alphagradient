@@ -71,8 +71,8 @@
    },
    "CALL":{
       "hidden":false,
-      "require_data":true,
-      "prohibit_data":false,
+      "require_data":false,
+      "prohibit_data":true,
       "required":[
          "OPEN",
          "CLOSE"
@@ -88,8 +88,8 @@
    },
    "PUT":{
       "hidden":false,
-      "require_data":true,
-      "prohibit_data":false,
+      "require_data":false,
+      "prohibit_data":true,
       "required":[
          "OPEN",
          "CLOSE"

@@ -289,7 +289,7 @@ class Asset(ABC):
         # Attribute Initialization
         self.name = name
         self.base = base if base in list(_currency_info["CODE"]) else types.currency.instances.base.base
-        self._price = data if isinstance(data, Number) else 0
+        self._value = data if isinstance(data, Number) else 0
         self.close = True
 
         # Accept isoformat datestrings as well as datetimes
@@ -333,7 +333,7 @@ class Asset(ABC):
         self._valuate(date)
 
     def __str__(self):
-        return f'<{self.type} {self.name}: {types.currency.instances[self.base].symbol}{self.roundprice}>'
+        return f'<{self.type} {self.name}: {self.price}>'
 
     def __repr__(self):
         return self.__str__()
@@ -348,25 +348,30 @@ class Asset(ABC):
         raise AssetDuplicationError(self)
 
     @property
-    def price(self):
-        return self._price
+    def value(self):
+        return self._value
 
-    @price.setter
-    def price(self, price):
-        if isinstance(price, Number):
-            self._price = price
+    @value.setter
+    def value(self, value):
+        if isinstance(value, Number):
+            self._value = value
         else:
-            raise TypeError(f"Can not update price of {self.name} {self.type} to {price.__class__.__name__} {price}. Price must be a numnber")
+            raise TypeError(f"Can not update value of {self.name} {self.type} to {value.__class__.__name__} {value}. Value must be a numnber")
 
     @property
-    def roundprice(self):
-        price = self._price
-        r = 2
-        while price < 1:
-            r += 1
-            price *= 10
+    def price(self):
+        symbol = types.currency.instances[self.base].symbol
+        price = abs(self._value)
 
-        return round(self._price, r)
+        if price != 0:
+            r = 2
+            while price < 1:
+                r += 1
+                price *= 10
+
+            price = round(self._value, r)
+
+        return f"{symbol}{price}"
 
     @property
     def key(self):
@@ -403,9 +408,9 @@ class Asset(ABC):
         self.date = self.normalize_date(date)
 
         if self.data:
-            self.price = self._data_valuate(self.date)
+            self.value = self._data_valuate(self.date)
         else:
-            self.price =  self.valuate(self.date)
+            self.value = self.valuate(self.date)
 
     def _data_valuate(self, date=None):
         """Determines how asset prices update when using data
@@ -429,13 +434,13 @@ class Asset(ABC):
                 separate the open and close of a period by exactly that interval
         """
         if self.close:
-            self.price = data[self.data.open_value]
+            self.value = data[self.data.open_value]
         else:
-            self.price = data[self.data.close_value]
+            self.value = data[self.data.close_value]
 
         self.close = not self.close
 
-        return self.price
+        return self.value
 
     @abstractmethod
     def valuate(self, *args, **kwargs):
@@ -448,7 +453,7 @@ class Asset(ABC):
             **kwargs: Valuate methods for different assets will likely
                 require different arguments to be passed. Accepting all of them allows 
         """
-        return self.price
+        return self.value
 
     def normalize_date(self, date=None):
         """Standardizes different date input dtypes
@@ -502,5 +507,14 @@ class Asset(ABC):
         }
 
         return settings.values() if unpack else settings
+
+
+    def _step(self, date):
+        return None
+
+
+    def expire(self, portfolio, position):
+        """Controls the behavior of this asset and positions in this asset when it expires inside of a portfolio"""
+        return None
 
     

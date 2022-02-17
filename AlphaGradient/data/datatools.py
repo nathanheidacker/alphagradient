@@ -107,23 +107,24 @@ class AssetData:
             return None
 
         # Handle numeric inputs that default to static dataframes
-        if isinstance(data, Number):
+        elif isinstance(data, Number):
             frame = [[datetime.today()] + ([data] * (len(required) + 1))]
             close_value = close_value if close_value else "CLOSE"
             required = ["DATE", close_value] + required
             data = pd.DataFrame(frame, columns=required)
 
         # Handle list inputs, np.ndarray inputs
-        if isinstance(data, (list, np.ndarray)):
+        elif isinstance(data, (list, np.ndarray)):
             if not columns:
                 raise ValueError(f"{type(data).__name__} input requires explicit column names during initialization")
             data = pd.DataFrame(data, columns=columns)
 
         # Handle inputs that can be processed by pd.read_table
-        try:
-            data = pd.read_table(data, sep=',')
-        except (TypeError, ValueError) as e:
-            pass
+        elif not isinstance(data, pd.DataFrame):
+            try:
+                data = pd.read_table(data, sep=',')
+            except (TypeError, ValueError) as e:
+                pass
 
         # Final check that we have valid data prior to formatting
         if isinstance(data, pd.DataFrame):

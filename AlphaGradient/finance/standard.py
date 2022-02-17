@@ -73,10 +73,18 @@ class Currency(Asset, settings=settings["CURRENCY"]):
         super().__init__(code)
 
     def __str__(self):
-        return f"<{self.type} {self.symbol}{self.code}: {self.get_symbol()}{self.roundprice}>"
+        return f"<{self.type} {self.symbol}{self.code}: {self.price}>"
 
     def valuate(self, *args, **kwargs):
         return self.convert(self.code, self.base)
+
+
+    def online_data(self, *args, **kwargs):
+        if self.is_base:
+            return None
+        else:
+            data = yf.Ticker(f"{self.code}{self.base}=X").history(period="max")
+            return datatools.AssetData(Currency, data)
 
     @classmethod
     def get_symbol(cls, base=None):
@@ -128,7 +136,7 @@ class Stock(Asset, settings=settings["STOCK"]):
         ticker (str): This stock's ticker
     """
     def valuate(self):
-        return self.price
+        return self.value
 
     def online_data(self):
         data = yf.Ticker(self.name).history(period="max")
@@ -139,7 +147,250 @@ class Stock(Asset, settings=settings["STOCK"]):
         """Alias for name, relevant to stocks"""
         return self.name.upper()
 
+    def call(self, strike, expiry):
+        return Call(self, strike, expiry)
 
+    def put(self, strike, expiry):
+        return Put(self, strike, expiry)
+
+
+class Option(Asset, ABC, settings=settings["OPTION"]):
+
+    def __new__(cls, *args, **kwargs):
+        underlying = args[0] if args else kwargs["underlying"]
+        strike = args[1] if args and len(args) > 1 else kwargs["strike"]
+        expiry = args[2] if args and len(args) > 2 else kwargs["expiry"]
+
+        if isinstance(expiry, str):
+            expiry = datetime.fromisoformat(expiry)
+        elif isinstance(expiry, int):
+            expiry = underlying.date + timedelta(days=expiry)
+        elif isinstance(expiry, timedelta):
+            expiry = underlying.date + expiry
+
+        if not isinstance(expiry, datetime):
+            raise TypeError(
+                f'''Invalid input {expiry=} 
+                for initialization of {underlying.name} {cls.__name__}''')
+
+        key = f"{underlying.name}{strike}{cls.__name__[0]}{expiry.date().__str__()}"
+
+        return super().__new__(cls, key)
+
+
+    def __init__(self, underlying, strike, expiry):
+
+        if not isinstance(strike, (float, int)):
+            try:
+                strike = float(strike)
+            except TypeError:
+                raise f'''Invalid input type {strike=} 
+                for initialization of {underlying.name} {self.__class__.__name__}'''
+            except ValueError:
+                raise f'''Unsuccessful conversion of {strike=} 
+                to numeric type during initialization of {underlying.name} {self.type}'''
+        self.strike = strike
+
+        if isinstance(expiry, str):
+            expiry = datetime.fromisoformat(expiry)
+        elif isinstance(expiry, int):
+            expiry = underlying.date + timedelta(days=expiry)
+        elif isinstance(expiry, timedelta):
+            expiry = underlying.date + expiry
+
+        if not isinstance(expiry, datetime):
+            raise TypeError(
+                f'''Invalid input {expiry=} 
+                for initialization of {underlying.name} {self.__class__.__name__}''')
+
+        self.expiry = expiry
+        self.underlying = underlying
+        self._mature = False
+
+        super().__init__(self.key, date=underlying.date, base=underlying.base)
+
+    @property
+    def key(self):
+        return f"{self.underlying.name}{self.strike}{self.__class__.__name__[0]}{self.expiry.date().__str__()}"
+
+    @staticmethod
+    def cdf(x):
+        return (1.0 + math.erf(x / math.sqrt(2.0))) / 2.0
+
+    @staticmethod
+    def _bsbase(spot, strike, rfr, dy, ttm, vol):
+        '''initialization of black scholes d1 and d2 for option valuation'''
+
+        # Calculation of d1, d2
+        ttm = ttm if ttm > 0 else 1
+        d1 = (math.log(spot / strike) + ((rfr - dy + ((vol * vol) / 2)) * ttm)) / (vol * math.sqrt(ttm))
+        d2 = d1 - (vol * math.sqrt(ttm))
+
+        return d1, d2
+
+    @property
+    def expired(self):
+        return self.date >= self.expiry
+
+    @staticmethod
+    def exact_days(delta):
+        spd = 86400
+        if isinstance(delta, timedelta):
+            return delta.total_seconds() / spd
+        raise TypeError(f"{self.__class__.__name__}.exact_days method only accepts timdelta objects. Received {delta.__class__.__name__} {delta=}")
+
+    @property
+    def ttm(self):
+        return max(self.expiry - self.date, timedelta())
+
+    @property
+    def spot(self):
+        return self.underlying.value
+
+    def reset(self):
+        self._mature = False
+
+
+class Call(Option, settings=settings["CALL"]):
+
+    def valuate(self, date):
+        if self._mature:
+            return self.value
+
+        elif self.expired:
+            self._mature = True
+            if self.strike < self.underlying.value:
+                return (self.underlying.value - self.strike) * 100
+            else:
+                return 0
+        else:
+            return self.black_scholes(date)
+
+    def black_scholes(self, date):
+        ttm = self.exact_days(self.ttm) / 365
+        div_yield = 0.01
+
+        d1, d2 = self._bsbase(
+                              spot = self.spot, 
+                              strike = self.strike, 
+                              rfr = self.rfr, 
+                              dy = div_yield, 
+                              ttm = ttm, 
+                              vol = 0.3
+                              )
+
+        call_premium = (self.cdf(d1) * self.spot * math.pow(math.e, -1 * (div_yield * ttm))) - (self.cdf(d2) * self.strike * math.pow(math.e, -1 * (self.rfr * ttm)))
+
+        # Each contract is for 100 shares
+        return call_premium * 100
+
+
+    def expire(self, portfolio, position):
+
+        # Expired call positions are only assigned if they are ITM
+        if not position.asset.itm:
+            return None
+
+        underlying = position.asset.underlying
+        key = f"{underlying.key}_LONG"
+        quantity = position.quantity * 100
+        cost = quantity * position.asset.strike
+        underlying_pos = portfolio._positions.get(key, None)
+        call_pos = position.__class__(underlying, quantity)
+        call_pos.cost = cost
+
+        if position.short:
+            if underlying_pos and underlying_pos.quantity >= quantity:
+                portfolio._positions[key] -= call_pos
+                portfolio.cash += cost
+            else:
+                portfolio.cash += position.value
+        else:
+            if portfolio.cash > call_pos.value:
+                if underlying_pos:
+                    portfolio._positions[key] += call_pos
+                else:
+                    portfolio._positions[key] = call_pos
+                portfolio.cash -= cost
+            else:
+                portfolio.cash += position.value
+
+    @property
+    def itm(self):
+        return self.strike < self.underlying.value
+
+
+
+
+class Put(Option, settings=settings["OPTION"]):
+
+    def valuate(self, date):
+        if self._mature:
+            return self.value
+
+        elif self.expired:
+            self._mature = True
+            if self.strike > self.underlying.value:
+                return (self.strike - self.underlying.value) * 100
+            else:
+                return 0
+        else:
+            return self.black_scholes(date)
+
+    def black_scholes(self, date):
+        ttm = self.exact_days(self.ttm) / 365
+        div_yield = 0.01
+
+        d1, d2 = self._bsbase(
+                              spot = self.spot, 
+                              strike = self.strike, 
+                              rfr = self.rfr, 
+                              dy = div_yield, 
+                              ttm = ttm, 
+                              vol = 0.3
+                              )
+
+        put_premium = (self.cdf(-1 * d2) * self.strike * math.pow(math.e, -1 * (self.rfr * ttm))) - (self.cdf(-1 * d1) * self.spot * math.pow(math.e, -1 * (div_yield * ttm)))
+
+        # Each contract is for 100 shares
+        return put_premium * 100
+
+
+    def expire(self, portfolio, position):
+
+        # Expired put positions are only assigned if they are ITM
+        if not position.asset.itm:
+            return None
+
+        underlying = position.asset.underlying
+        key = f"{underlying.key}_LONG"
+        quantity = position.quantity * 100
+        cost = quantity * position.asset.strike
+        underlying_pos = portfolio._positions.get(key, None)
+        put_pos = position.__class__(underlying, quantity)
+        put_pos.cost = cost
+
+        if position.short:
+            if underlying_pos:
+                portfolio._positions[key] += put_pos
+                portfolio.cash -= cost
+            else:
+                portfolio.cash += position.value
+        else:
+            if underlying_pos and underlying_pos.quantity >= quantity:
+                portfolio._positions[key] -= put_pos
+                portfolio.cash += cost
+            else:
+                portfolio.cash += position.value
+
+
+    @property
+    def itm(self):
+        return self.strike > self.underlying.value
+
+# BROWNIAN STOCK IMPLEMENTATION BELOW
+
+"""
 class BrownianStock(Asset, settings=settings["BROWNIANSTOCK"]):
     def __init__(self, ticker=None, date=None, resolution=timedelta(days=1), base=None):
         self.resolution = resolution
@@ -187,67 +438,7 @@ class BrownianStock(Asset, settings=settings["BROWNIANSTOCK"]):
             return self.price
 
         return self.price
-
-
-class Option(Asset, ABC, settings=settings["OPTION"]):
-
-    def __init__(self, underlying, strike, expiry):
-        super().__init__(underlying.name)
-
-        if not isinstance(strike, (float, int)):
-            try:
-                strike = float(strike)
-            except TypeError:
-                raise f'''Invalid input type {strike=} 
-                for initialization of {underlying.name} {self.__class__.__name__}'''
-            except ValueError:
-                raise f'''Unsuccessful conversion of {strike=} 
-                to numeric type during initialization of {underlying.name} {self.type}'''
-        self.strike = strike
-
-        if isinstance(expiry, str):
-            expiry = datetime.fromisoformat(expiry)
-        elif isinstance(expiry, int):
-            expiry = underlying.date + timedelta(days=expiry)
-        elif isinstance(expiry, timedelta):
-            expiry = underlying.date + expiry
-
-        if not isinstance(expiry, datetime):
-            raise TypeError(
-                f'''Invalid input {expiry=} 
-                for initialization of {underlying.name} {self.__class__.__name__}''')
-
-        self.expiry = expiry
-
-    def _black_scholes(self, spot, strike, rfr, dy, ttm, vol):
-        '''initialization of black scholes d1 and d2 for option valuation'''
-
-        # Standard cumulative distribution function
-        def cdf(x):
-            return (1.0 + math.erf(x / math.sqrt(2.0))) / 2.0
-
-        # Calculation of d1, d2
-        d1 = (math.log(spot / strike) +
-              ((rfr - dy + ((vol * vol) / 2)) * ttm)) / (vol * math.sqrt(ttm))
-        d2 = d1 - (vol * math.sqrt(ttm))
-
-        return d1, d2
-
-
-class Call(Option, settings=settings["CALL"]):
-    def __init__(self, underlying, strike, expiry):
-        super().__init__(underlying, strike, expiry)
-
-    def valuate(self):
-        return NotImplemented
-
-
-class Put(Option, settings=settings["OPTION"]):
-    def __init__(self):
-        raise NotImplementedError
-
-    def valuate(self):
-        return NotImplemented
+"""
 
 
 """
