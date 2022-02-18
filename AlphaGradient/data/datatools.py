@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 """AG module containing tools for creation/manipulation of asset data
 
-This module contains tools for accessing, creating, and modifying data and datasets for use in AlphaGradient objects.
+This module contains tools for accessing, creating, and modifying data 
+and datasets for use in AlphaGradient objects.
 
 Todo:
+    * AUTOMATICALLY DETERMINE RESOLUTION OF DATASETS
     * Implement dtype coercion on column validation
     * Type Hints
 """
 
 # Standard imports
 from collections import namedtuple
-from datetime import datetime
+from datetime import datetime, timedelta
 from numbers import Number
 from copy import deepcopy
 # from typing import List
@@ -27,12 +29,26 @@ import numpy as np
 
 
 def currency_info(base=None, save=False):
+    """Returns a DataFrame with all currency values updated relative 
+    to the base
+
+    Args:
+        base (str): Currency code on which to base all currency 
+            valuations
+        save (bool): Whether or not the dataframe should be saved as a
+            pickle to the local directory
+
+    Returns:
+        info (pd.DataFrame): The updated currency info
+    """
 
     base = "USD" if base is None else base
 
     def mapper(code):
         try:
-            return yf.Ticker(f"{code}{base}=X").history(period="1d", interval="1d")["Close"].item()
+            ticker = yf.Ticker(f"{code}{base}=X")
+            history = ticker.history(period="1d", interval="1d")
+            return history["Close"].item()
         except:
             return -1
 
@@ -77,7 +93,8 @@ def get_data(asset):
 class AssetData:
     """Datetime-indexed datesets that store financial data for assets.
 
-    All AlphaGradient assets seeking to use tabular data must use AssetData datasets. AssetData accepts any of the following inputs:
+    All AlphaGradient assets seeking to use tabular data must use 
+    AssetData datasets. AssetData accepts any of the following inputs:
         * numbers (for assets with constant prices, or unit prices)
         * os.path-like objects
         * file-object-like objects
@@ -85,7 +102,11 @@ class AssetData:
         * pathstrings
         * pandas DataFrames
 
-    AssetDatasets take tabular data and clean/validate it to make it usable for ag assets. They check for the presence of required data, remove unnecessary data, ensure that dataframes are datetime-indexed, coerce data dtypes (TODO), and ensure that formatting is consistent between all assets.
+    AssetDatasets take tabular data and clean/validate it to make it 
+    usable for ag assets. They check for the presence of required data, 
+    remove unnecessary data, ensure that dataframes are 
+    datetime-indexed, coerce data dtypes (TODO), and ensure that 
+    formatting is consistent between all assets.
 
     Attributes:
         data (pd.DataFrame): The dataset for the asset
@@ -96,7 +117,8 @@ class AssetData:
 
     def __init__(self, asset_type, data, columns=None):
         # Unpacking necessary values from the asset type
-        _, _, _, required, optional, close_value, open_value = asset_type.get_settings(unpack=True)
+        _, _, _, required, optional, close_value, open_value \
+        = asset_type.get_settings(unpack=True)
 
         # Formatting required columns
         required = required if required else []
@@ -116,7 +138,9 @@ class AssetData:
         # Handle list inputs, np.ndarray inputs
         elif isinstance(data, (list, np.ndarray)):
             if not columns:
-                raise ValueError(f"{type(data).__name__} input requires explicit column names during initialization")
+                raise ValueError(f"{type(data).__name__} input "
+                                 "requires explicit column names "
+                                 "during initialization")
             data = pd.DataFrame(data, columns=columns)
 
         # Handle inputs that can be processed by pd.read_table
@@ -154,7 +178,8 @@ class AssetData:
 
         # By this point both should be present if even one was provided
         elif not all([close_value, open_value]):
-            raise ValueError(f"Must specify at least one opening or closing value name present in the data")
+            raise ValueError("Must specify at least one opening or "
+                             "closing value name present in the data")
 
         # Both an open and close have been explicitly provided
         else:
@@ -180,7 +205,8 @@ class AssetData:
 
         # Both of the values (open and close) must be in required
         if not all([value in required for value in [open_value, close_value]]):
-            raise ValueError(f"Must specify at least one opening or closing value name present in the data")
+            raise ValueError("Must specify at least one opening or "
+                             "closing value name present in the data")
 
         # Final formatting requirements
         data = self.validate_columns(data, required, optional)
@@ -214,7 +240,8 @@ class AssetData:
     def column_format(column):
         """The standard string format for columns
 
-        Takes a column name string and returns it in uppercase, with spaces replaced with underscores
+        Takes a column name string and returns it in uppercase, with 
+        spaces replaced with underscores
 
         Args:
             column (str): The column name to be altered
@@ -225,20 +252,30 @@ class AssetData:
         return column.replace(' ', '_').upper()
 
     def validate_columns(self, data, required, optional):
-        """Ensures that the input data meets the formatting requirements to be a valid asset dataset
+        """Ensures that the input data meets the formatting 
+        requirements to be a valid asset dataset
 
-        To be a valid asset dataset, input tabular data must have every column listed in 'required'. This method ensures that all of the required columns are present, as well as removes columns that don't show up in either the required or optional lists.
+        To be a valid asset dataset, input tabular data must have every 
+        column listed in 'required'. This method ensures that all of 
+        the required columns are present, as well as removes columns 
+        that don't show up in either the required or optional lists.
 
         TODO: 
-            * allow dictionaries to be passed in to enforce specific column dtypes.
-            * Implement more checks to ensure that data is error-free, and lacks missing elements (or implement measures to be safe in the presence of missing data)
+            * allow dictionaries to be passed in to enforce specific 
+                column dtypes.
+            * Implement more checks to ensure that data is error-free, 
+                and lacks missing elements (or implement measures to 
+                be safe in the presence of missing data)
 
         Args:
             data (tabular data): the data being validated
             required (list of str): a list of strings representing
-                column names. All of the columns in this list must be present to produce a viable dataset.
+                column names. All of the columns in this list must be 
+                present to produce a viable dataset.
             optional (list of str): a list of strings representing
-                column names. Columns in the data that are not required will still be kept in the data if they are present in this list. Otherwise, they will not be included.
+                column names. Columns in the data that are not required
+                will still be kept in the data if they are present in 
+                this list. Otherwise, they will not be included.
 
         Returns:
             data (tabular data): a verified (and slightly modified)
@@ -289,7 +326,14 @@ class AssetData:
         return data
 
     def _get_resolution(self):
-        return 1
+        """Automatically determines the time resolution (granularity) 
+        of the dataset's datetime index.
+
+        Returns:
+            resolution (timedelta): The dataset's granularity with
+                respect to intervals of time
+        """
+        return timedelta(days=1)
 
 
 
@@ -297,7 +341,14 @@ class AssetData:
 # THE NEW IMPLEMENTATION DOES NOT REQUIRE THIS.
 
 '''
-This is a little bit hacky, but this this needs to be defined outside of the scope of AssetData even though it is only intended to be used in that class. This is because the COLUMNS enum defined within will not allow the use of subclasses as values for enum members. By defining it outside, we can use Value within the COLUMNS enum scope, allowing us to bypass the requirement that all values be the same. Ordinarily, we could just use 'settings=NoAlias', but it imposes too many restrictions when loading saved asset datasets from pickles.
+This is a little bit hacky, but this this needs to be defined outside 
+of the scope of AssetData even though it is only intended to be used 
+in that class. This is because the COLUMNS enum defined within will 
+not allow the use of subclasses as values for enum members. By 
+defining it outside, we can use Value within the COLUMNS enum scope, 
+allowing us to bypass the requirement that all values be the same. 
+Ordinarily, we could just use 'settings=NoAlias', but it imposes too 
+many restrictions when loading saved asset datasets from pickles.
 '''
 
 #Value = namedtuple('Value', 'type name')
@@ -305,7 +356,8 @@ This is a little bit hacky, but this this needs to be defined outside of the sco
 
 
 
-# Below is the implementation of asset datasets that use enumerations for columns names. This may be revisited in the future
+# Below is the implementation of asset datasets that use enumerations 
+# for columns names. This may be revisited in the future
 '''
 class AssetData(pd.DataFrame):
 

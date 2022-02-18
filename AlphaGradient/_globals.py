@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-"""AG module containing globally useful functions and constants used throughout the package
+"""AG module containing globally useful functions and constants used 
+throughout the package
 
 Todo:
-    * na
+	* Implement updating/refreshing asset data for locally saved assets
+		- One at a time and for entire exchanges
 """
 # Standard imports
 from datetime import datetime, timedelta
@@ -14,198 +16,225 @@ from .finance import types, Asset, Currency, Call, Put
 from .finance.standard import Option
 
 class Globals:
-    """A set of global conditions and functions that act on all alphagradient objects
+	"""A set of global conditions and functions that act on all 
+	alphagradient objects
 
-    Attributes:
-        start (datetime): the default beginning for asset initialization
-        end (datetime): the default end for algorithm backtesting
-        resolution (timedelta): the default time difference between each
-            valuation step when using globals.step()
-    """
+	Attributes:
+		start (datetime): the default beginning for asset initialization
+		end (datetime): the default end for algorithm backtesting
+		resolution (timedelta): the default time difference between each
+			valuation step when using globals.step()
+		base (Currency): The currency object that acts as the base
+			which all asset values are converted to
+		rfr (Number): The current risk free rate
+	"""
 
-    def __init__(self):
-        self._start = self.default_start()
-        setattr(Asset, "_global_start", self.start)
-        self._end = self.default_end()
-        self._resolution = self.default_resolution()
-        self._base = Currency(Currency.base)
-        self.RISK_FREE_RATE = 0.1
-        setattr(Option, "rfr", self.rfr)
+	def __init__(self):
+		self._start = self.default_start()
+		setattr(Asset, "_global_start", self.start)
+		self._end = self.default_end()
+		self._resolution = self.default_resolution()
+		self._base = Currency(Currency.base)
+		self.RISK_FREE_RATE = 0.1
+		setattr(Option, "rfr", self.rfr)
 
-    def __str__(self):
-        return str({k[1:]:v for k, v in self.__dict__.items()})
+	def __str__(self):
+		return str({k[1:]:v for k, v in self.__dict__.items()})
 
-    def __repr__(self):
-        return self.__str__()
+	def __repr__(self):
+		return self.__str__()
 
-    @staticmethod
-    def all_assets():
-        """Returns all assets currently in memory"""
-        return [asset for t in types if t.c in types.instantiable() for asset in t.instances.values()]
+	@staticmethod
+	def all_assets():
+		"""Returns all assets currently in memory"""
+		return [asset for t in types if t.c in types.instantiable() for asset in t.instances.values()]
 
-    @staticmethod
-    def all_data():
-        """Returns all asset datasets"""
-        return [asset.data for t in types if t.c in types.instantiable() for asset in t.instances.values() if asset.data]
+	@staticmethod
+	def all_data():
+		"""Returns all asset datasets"""
+		return [asset.data for t in types if t.c in types.instantiable() for asset in t.instances.values() if asset.data]
 
-    @staticmethod
-    def normalize_date(date):
-        """coerces reasonable inputs into datetimes"""
-        if isinstance(date, str):
-            return datetime.fromisoformat(date)
+	@staticmethod
+	def normalize_date(date):
+		"""coerces reasonable inputs into datetimes
 
-        elif isinstance(date, datetime):
-            return date
+		Args:
+			date (str | datetime): the date to coerce
 
-        else:
-            raise TypeError(
-                f"Date input of type {type(date)} could not be normalized")
+		Returns:
+			date (datetime): The coerced date
 
-    @property
-    def start(self):
-        return self._start
+		Raises:
+			TypeError: when the date can not be coerced into datetime
+		"""
+		if isinstance(date, str):
+			return datetime.fromisoformat(date)
 
-    @start.setter
-    def start(self, date=None):
-        date = default_start() if not isinstance(date, datetime) else date
-        self._start = date
-        setattr(Asset, "_global_start", self.start)
+		elif isinstance(date, datetime):
+			return date
 
-    def default_start(self):
-        """The default start if nothing else is provided
+		else:
+			raise TypeError(
+				f"Date input of type {type(date)} could not be normalized")
 
-        If any assets are instantiated, returns the earliest available date for which data is available in any asset dataset. If no assets are instantiated, returns todays date less 10 years
+	@property
+	def start(self):
+		return self._start
 
-        Returns:
-            date (datetime): the default start date to be used
-        """
-        data = [data.index[0] for data in self.all_data()]
-        default = datetime.today() - timedelta(days=3650)
-        return max(data).to_pydatetime() if data else default
+	@start.setter
+	def start(self, date=None):
+		date = default_start() if not isinstance(date, datetime) else date
+		self._start = date
+		setattr(Asset, "_global_start", self.start)
 
-    @property
-    def end(self):
-        return self._end
+	def default_start(self):
+		"""The default start if nothing else is provided
 
-    @end.setter
-    def end(self, date=None):
-        date = self.default_end() if not isinstance(date, datetime) else date
-        self._end = date
+		If any assets are instantiated, returns the earliest available 
+		date for which data is available in any asset dataset. If no 
+		assets are instantiated, returns todays date less 10 years
 
-    def default_end(self):
-        """The default end if nothing else is provided
+		Returns:
+			date (datetime): the default start date to be used
+		"""
+		data = [data.index[0] for data in self.all_data()]
+		default = datetime.today() - timedelta(days=3650)
+		return max(data).to_pydatetime() if data else default
 
-        If any assets are instantiated, returns the last available date for which data is available in any asset dataset. If no assets are instantiated, returns todays date
+	@property
+	def end(self):
+		return self._end
 
-        Returns:
-            date (datetime): the default end date to be used
-        """
-        data = [data.index[-1] for data in self.all_data()]
-        default = datetime.today()
-        return min(data).to_pydatetime() if data else default
+	@end.setter
+	def end(self, date=None):
+		date = self.default_end() if not isinstance(date, datetime) else date
+		self._end = date
 
-    @property
-    def resolution(self):
-        return self._resolution
+	def default_end(self):
+		"""The default end if nothing else is provided
 
-    @resolution.setter
-    def resolution(self, delta=None):
-        delta = self.default_resolution() if not isinstance(delta, timedelta) else timedelta
-        self._resolution = delta
+		If any assets are instantiated, returns the last available 
+		date for which data is available in any asset dataset. If no 
+		assets are instantiated, returns todays date
 
-    def default_resolution(self):
-        """The default universal time resolution to be used
+		Returns:
+			date (datetime): the default end date to be used
+		"""
+		data = [data.index[-1] for data in self.all_data()]
+		default = datetime.today()
+		return min(data).to_pydatetime() if data else default
 
-        If any assets are instantiated, finds the lowest time resolution (timedelta between datetime indexed data) present in any asset dataset. Otherwise, defaults to 1 day
+	@property
+	def resolution(self):
+		return self._resolution
 
-        Returns:
-            delta (timedelta): The default time resolution
-        """
-        data = [data.resolution for data in self.all_data()]
-        data = None
-        default = timedelta(days=1)
-        return min(data) if data else default
+	@resolution.setter
+	def resolution(self, delta=None):
+		delta = self.default_resolution() if not isinstance(delta, timedelta) else timedelta
+		self._resolution = delta
 
-    @property
-    def base(self):
-        return self._base
+	def default_resolution(self):
+		"""The default universal time resolution to be used
 
-    @base.setter
-    def base(self, code):
-        if Currency.validate_code(code, error=True):
-            Currency.base = code
-            self._base = Currency(code)
-            for currency in types.currency.instances.values():
-                currency.base = code
-                currency._valuate()
+		If any assets are instantiated, finds the lowest time 
+		resolution (timedelta between datetime indexed data) present 
+		in any asset dataset. Otherwise, defaults to 1 day
 
-    @property
-    def rfr(self):
-        """An alias for the global risk free rate"""
-        return self.RISK_FREE_RATE
+		Returns:
+			delta (timedelta): The default time resolution
+		"""
+		data = [data.resolution for data in self.all_data()]
+		data = None
+		default = timedelta(days=1)
+		return min(data) if data else default
 
-    @rfr.setter
-    def rfr(self, rate):
-        setattr(Option, "rfr", rate)
-        self.RISK_FREE_RATE = rate
+	@property
+	def base(self):
+		return self._base
 
-    def auto(self):
-        """Automatically sets global start, end, and resolution to their defaults based on what assets are instantiated
+	@base.setter
+	def base(self, code):
+		if Currency.validate_code(code, error=True):
+			Currency.base = code
+			self._base = Currency(code)
+			for currency in types.currency.instances.values():
+				currency.base = code
+				currency._valuate()
 
-        Returns:
-            Modifies global variables in place, returns nothing
-        """
-        self._start = self.default_start()
-        self._end = self.default_end()
-        self._resolution = self.default_resolution()
+	@property
+	def rfr(self):
+		"""An alias for the global risk free rate"""
+		return self.RISK_FREE_RATE
 
-    def sync(self, date=None):
-        """Synchronizes all alphagradient objects globally to the given datetime
+	@rfr.setter
+	def rfr(self, rate):
+		setattr(Option, "rfr", rate)
+		self.RISK_FREE_RATE = rate
 
-        Args:
-            date (datetime): The date to synchronize to
+	def auto(self):
+		"""Automatically sets global start, end, and resolution to 
+		their defaults based on what assets are instantiated
 
-        Returns:
-            modifies all currently instantiated assets and portfolios in-place
-        """
-        if date is not None:
-            date = self.normalize_date(date)
-        date = date if isinstance(date, datetime) else self.start
+		Returns:
+			Modifies global variables in place, returns nothing
+		"""
+		self._start = self.default_start()
+		self._end = self.default_end()
+		self._resolution = self.default_resolution()
 
-        for asset in self.all_assets():
-            if isinstance(asset, (Call, Put)):
-                asset.reset()
-            asset._valuate(date)
+	def sync(self, date=None):
+		"""Synchronizes all alphagradient objects globally to the 
+		given datetime
 
-        for portfolio in list(types.portfolio.instances.values()):
-            portfolio.date = date
-            portfolio.reset()
+		Args:
+			date (datetime): The date to synchronize to
 
-    def autosync(self):
-        """automatically determines best global variables for instantiated assets, and syncs them all to that date"""
-        self.auto()
-        self.sync()
+		Returns:
+			modifies all currently instantiated assets and portfolios 
+			in-place
+		"""
+		if date is not None:
+			date = self.normalize_date(date)
+		date = date if isinstance(date, datetime) else self.start
 
-    def step(self, delta=None):
-        """Takes a single time step for all assets
+		for asset in self.all_assets():
+			if isinstance(asset, (Call, Put)):
+				asset.reset()
+			asset._valuate(date)
 
-        Valuates all currently instantiated assets one time step (of magnitude delta) ahead of their previous valuation. When not provided with a delta explicitly, uses the global resolution to determine time step magnitude.
+		for portfolio in list(types.portfolio.instances.values()):
+			portfolio.date = date
+			portfolio.reset()
 
-        Args:
-            delta (timedelta): The magnitude of the time step taken
+	def autosync(self):
+		"""automatically determines best global variables for 
+		instantiated assets, and syncs them all to that date"""
+		self.auto()
+		self.sync()
 
-        Returns:
-            Modifies assets in place, returns nothing
-        """
-        delta = delta if isinstance(delta, timedelta) else self.resolution
+	def step(self, delta=None):
+		"""Takes a single time step for all assets
 
-        for portfolio in types.portfolio.instances.values():
-            portfolio.date = portfolio.date + delta
-            portfolio.update_history()
+		Valuates all currently instantiated assets one time step 
+		(of magnitude delta) ahead of their previous valuation. When 
+		not provided with a delta explicitly, uses the global 
+		resolution to determine time step magnitude.
 
-        for asset in self.all_assets():
-            asset._valuate(asset.date + delta)
-            asset._step(asset.date + delta)
+		Args:
+			delta (timedelta): The magnitude of the time step taken
+
+		Returns:
+			Modifies assets in place, returns nothing
+		"""
+		delta = delta if isinstance(delta, timedelta) else self.resolution
+
+		for portfolio in types.portfolio.instances.values():
+			portfolio.date = portfolio.date + delta
+			portfolio.update_history()
+
+		for asset in self.all_assets():
+			asset._valuate(asset.date + delta)
+			asset._step(asset.date + delta)
 
 
 __globals = Globals()

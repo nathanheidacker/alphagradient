@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 """AG module containing base Asset class and associated enums
 
-This module contains all of the necessary components for the proper function of standard asset classes within AlphaGradient, as well as the API.
+This module contains all of the necessary components for the proper 
+function of standard asset classes within AlphaGradient, as well as 
+the API.
 
 Todo:
     * Complete google style docstrings for all module components
     * Complete function/class header typing
     * Replace is_numeric with Number instance checks
     * Interpret more than just isoformat for normalizing datestrings
-    * asset.price -> asset.value and asset.roundprice -> asset.price
+    * IMPLEMENT SAVING ASSETS LOCALLY TO BE REUSED, REFRESH/ONLINE INPUT
 """
 
 # Standard imports
@@ -31,7 +33,11 @@ _currency_info = pd.read_pickle("AlphaGradient/finance/currency_info.p")
 class types(Enum):
     """A enumeration with members for all asset subclasses
 
-    The types enum is a special enumeration which dynamically creates new members for all subclasses of ag.Asset. Enum members store a weakly referential dictionary to all instances of that asset subclass, which can be accessed as attributes or dynamically through indexing.
+    The types enum is a special enumeration which dynamically creates 
+    new members for all subclasses of ag.Asset. Enum members store a 
+    weakly referential dictionary to all instances of that asset 
+    subclass, which can be accessed as attributes or dynamically 
+    through indexing.
 
     Examples:
         * TYPES.STOCK.instances returns all instances of Stock
@@ -41,10 +47,12 @@ class types(Enum):
     """
 
     def _generate_next_value_(name, *args):
-        """Determines how new enum members are generated when new asset subclasses are created"""
+        """Determines how new enum members are generated when new asset 
+        subclasses are created"""
 
         class Instances(WeakDict):
-            """A weakly referential dictionary of all instances of the subclass to which the enum member corresponds"""
+            """A weakly referential dictionary of all instances of the 
+            subclass to which the enum member corresponds"""
             def __getattr__(self, item):
                 try:
                     return self[item]
@@ -57,6 +65,9 @@ class types(Enum):
 
             @property
             def base(self):
+                """The monetary basis of this asset subclass, 
+                represented by a currency code. Only used by Currency 
+                subclass"""
                 if self and getattr(list(self.values())[0], "base", False):
                     return [c for c in self.values() if c.is_base][0]
                 else:
@@ -91,7 +102,16 @@ class types(Enum):
 
     @classmethod
     def list(cls):
+        """Returns the types enum as a list of enum members with attribute access
+
+        Args:
+            types_enum (Enum): The types enum
+
+        Returns:
+            types_list (TypeList): The list created from types
+        """
         class TypeList(list):
+            """A list of types enum members with attribute access for enum members"""
             def __init__(self, types_enum):
                 self += [t for t in types_enum][1:]
                 self.enum = types_enum
@@ -114,7 +134,12 @@ class types(Enum):
 
     @classmethod
     def instantiable(cls):
-        """Returns a list of all instantiable asset subclasses"""
+        """A list of all instantiable asset subclasses
+
+        Returns: 
+            instantiable (list): All asset subclasses which contain no
+                abstract methods.
+        """
         check = Asset.__subclasses__()
         instantiable = []
         for sub in check:
@@ -129,18 +154,47 @@ class types(Enum):
 class AssetDuplicationError(Exception):
     """Raised when asset duplication is forced via copy methods"""
     def __init__(self, asset):
-        message = f"""Attempted duplication of {asset.name} {asset.type}. Multiple instances of this asset are not permitted"""
+        message = (f"Attempted duplication of {asset.name} "
+        f"{asset.type}. Multiple instances of this asset are not "
+        "permitted")
         super().__init__(message)
 
 
 class DataProtocol(Enum):
-    """Enumeration of different data requirement protocols for assets"""
+    """Enumeration of different data requirement protocols for assets
+
+    This enumeration and its members control data requirements for the 
+    instantiation of different asset subclasses.
+        * REQUIRE: Data MUST be supplied in some form, or the asset will
+            fail to instantiate. For assets that require that the 
+            asset.data attribute is a pandas dataframe object
+        * FLEXIBLE: Asset will be instantiated whether or not data is
+            supplied, asset.data attribute can be None or pd.DataFrame
+        * PROHIBITED: Asset will fail to instantiate if any data is
+            supplied. For assets that require that the asset.data 
+            attribute is None (eg. simulated assets)
+    """
     REQUIRED = auto()
     FLEXIBLE = auto()
     PROHIBITED = auto()
 
     @classmethod
     def _get(cls, require_data, prohibit_data):
+        """Returns the appropriate data protocol based on asset 
+        subclass initialization settings
+
+        Args:
+            require_data (bool): Whether or not the asset requires data
+            prohibit_data (bool): Whether or not the asset prohibits
+                data
+
+        Returns:
+            member (DataProtocol): The member protocol corresponding to
+                the settings
+
+        Raises:
+            TypeError: raised when inputs are not booleans
+        """
         if require_data is prohibit_data:
             return cls.FLEXIBLE
         elif require_data and not prohibit_data:
@@ -152,6 +206,19 @@ class DataProtocol(Enum):
 
     @classmethod
     def _decompose(cls, member):
+        """Returns the respective subclass initialization settings that 
+        correspond to each protocol member
+
+        Args:
+            member (DataProtocol): the member protocol to be decomposed
+
+        Returns:
+            require, prohibit (Tuple(bool)): The asset subclass
+                initialization settings corresponding to the input member
+
+        Raises:
+            KeyError: When member is not a valid member of DataProtocol
+        """
         if member is cls.FLEXIBLE:
             return False, False
         elif member is cls.REQUIRED:
@@ -165,7 +232,10 @@ class DataProtocol(Enum):
 class Asset(ABC):
     """Abstract base class representing a financial asset
 
-    The ABC underlying all standard and custom asset classes within AlphaGradient, designed to be used in conjunction with other standard ag objects such as portfolios and algorithms. All Assets are singletons.
+    The ABC underlying all standard and custom asset classes within 
+    AlphaGradient, designed to be used in conjunction with other 
+    standard ag objects such as portfolios and algorithms. All Assets 
+    are singletons.
 
     When defining a new Asset subclass, the valuate method
 
@@ -173,9 +243,21 @@ class Asset(ABC):
         _args (dict): Arguments used in most recent initialization.
             Referenced to determine whether 
         name (str): Name of the asset
-        price (Number): Price of the asset in USD
+        value (Number): The value of this asset as a number,
+            representing a quantity of the global base currency.
+        price (str): A print friendly version of the asset value with
+            the asset's base currency symbol attached
         close (bool): Whether most recent valuation represents the 
             close (end) of an interval.
+        base (str): The base currency of the asset, represented as a
+            currency code.
+        data (pd.DataFrame | NoneType): The historical data for this
+            asset, which will determine its value over time when valuated.
+        date (datetime): The date of this asset's most recent
+            valuation, which to which its current value corresponds
+        key (str): A string for use in dictionaries which index this
+            asset
+        expired (bool): Whether or not this asset is currently expired.
     """
 
     def __init_subclass__(
@@ -192,9 +274,16 @@ class Asset(ABC):
                           **kwargs):
         """Controls behavior for instantiation of Asset subclasses.
 
-        Creates new enumerations within the TYPES enum for newly created subclassses of Asset. Also sets some class level attributes that control behavior during instantiation. The following are all CLASS-level attributes for Asset and all Asset subclasses.
+        Creates new enumerations within the TYPES enum for newly 
+        created subclassses of Asset. Also sets some class level 
+        attributes that control behavior during instantiation. 
+
+        The following are all **class** level attributes for Asset and 
+        all Asset subclasses.
 
         Attributes:
+            type (types): The types enum member corresponding to this
+                asset subclass, with instances attached.
             data_protocol (DataProtocol): DataProtocol enum member
                 indicating what kind of data inputs are acceptable
             required (list of str): the columns that MUST be present
@@ -218,9 +307,14 @@ class Asset(ABC):
         cls.open_value = open_value
         cls.close_value = close_value
 
+        # Ensuring safe access if nothing is passed
         settings = {} if settings is None else settings
+
+        # Hiding the asset from the types enumeration
         hidden = hidden or settings.get("hidden", False)
 
+        # Using the passed in settings object to set class attributes 
+        # in the case they are not provided by kwargs
         if settings:
             for attr in ["required", "optional", "open_value", "close_value"]:
                 if not getattr(cls, attr, False):
@@ -236,8 +330,10 @@ class Asset(ABC):
                 prohibit_data = settings.get("prohibit_data", False)
 
 
+        # Setting the data protocol
         cls.data_protocol = DataProtocol._get(require_data, prohibit_data)
 
+        # What will become the name of this subclass' type
         TYPE = cls.__name__.lower()
 
         # Extending the enum to accomodate new type
@@ -252,10 +348,15 @@ class Asset(ABC):
             cls.type = types.undefined
 
     def __new__(cls, *args, **kwargs):
+        # Seeing if this asset is already instantiated
         if args or kwargs.get("name", False):
             name = kwargs["name"] if kwargs.get("name") else args[0]
+
+            # Returning the asset if exists
             if name in cls.type.instances:
                 return cls.type.instances[name]
+
+        # Returning a new asset
         return super().__new__(cls)
 
     def __init__(
@@ -267,8 +368,12 @@ class Asset(ABC):
             force=False,
             base=None):
 
-        # Checks if arguments have changed materiall from previous initialization
+        # Standard style guideline for all asset names. Ensures that 
+        # they are accessible via attribute access.
         name = str(name).upper().replace(' ', '_')
+
+        # Checks if arguments have changed materially from previous 
+        # initialization, and skip initialization if they haven't.
         if self.type.instances.get(name) is self:
 
             skip = True
@@ -297,11 +402,11 @@ class Asset(ABC):
         self.date = date if isinstance(
             date, datetime) else datetime.fromisoformat(date)
 
-        # Data entry is prohibited
+        # Data entry is prohibited, data must always be None
         if self.data_protocol is DataProtocol.PROHIBITED:
             self.data = None
 
-        # Data entry is not prohibited
+        # Data entry is not prohibited, initialize dataset
         else:
             if data is None:
 
@@ -315,10 +420,18 @@ class Asset(ABC):
                 # Third attempt to get data from nothing...?
                 if data is None and self.data_protocol is DataProtocol.REQUIRED:
 
+                    # When we need to force the instantiation of an 
+                    # asset that requires data, but no data is available
                     if force:
                         data = datatools.AssetData(self.__class__, 1)
                     else:
-                        raise ValueError(f"{self.name} {self.type} could not be initialized without data. If this is the first time this asset is being instantiated, please provide a valid dataset or instantiate with force=True.")
+                        raise ValueError(f"{self.name} {self.type} "
+                                         "could not be initialized "
+                                         "without data. If this is "
+                                         "the first time this asset is "
+                                         "being instantiated, please "
+                                         "provide a valid dataset or "
+                                         "instantiate with force=True.")
 
                 self.data = data
 
@@ -328,8 +441,14 @@ class Asset(ABC):
 
             # Data verification when required
             if self.data_protocol is DataProtocol.REQUIRED and not self.data:
-                raise ValueError(f"{self.name} {self.type} could not be initialized without data. If this is the first time this asset is being instantiated, please provide a valid dataset or instantiate with force=True.")
+                raise ValueError(f"{self.name} {self.type} could not "
+                                 "be initialized without data. If this "
+                                 "is the first time this asset is "
+                                 "being instantiated, please provide "
+                                 "a valid dataset or instantiate with "
+                                 "force=True.")
 
+        # Ensures that the initial price is set properly
         self._valuate(date)
 
     def __str__(self):
@@ -356,7 +475,10 @@ class Asset(ABC):
         if isinstance(value, Number):
             self._value = value
         else:
-            raise TypeError(f"Can not update value of {self.name} {self.type} to {value.__class__.__name__} {value}. Value must be a numnber")
+            raise TypeError(f"Can not update value of {self.name} "
+                            f"{self.type} to "
+                            f"{value.__class__.__name__} "
+                            f"{value}. Value must be a numnber")
 
     @property
     def price(self):
@@ -377,7 +499,9 @@ class Asset(ABC):
     def key(self):
         """Returns a key used for accessing stored files relevant to this asset
 
-        Creates a key from information unique to this asset. These keys are used to access locally stored data relevant to this asset
+        Creates a key from information unique to this asset. These 
+        keys are used to access locally stored data relevant to this 
+        asset
 
         Returns:
             key (str): a key unique to this asset
@@ -389,13 +513,24 @@ class Asset(ABC):
     def expired(self):
         """Whether or not this asset is expired
 
-        Most assets will never expire, so the default behavior is to always return false. Some assets like options can expire, however. Overwrite this property to determine when an asset expires"""
+        Most assets will never expire, so the default behavior is to 
+        always return false. Some assets like options can expire, 
+        however. Overwrite this property to determine when an asset 
+        expires
+
+        Returns:
+            expired (bool): A boolean representing the expiration status
+                of this asset
+        """
         return False
 
     def _valuate(self, date=None):
         """Updates asset prices when time steps take place
 
-        This is the method that is actually called under the hood when time steps take place, which properly directs valuation behavior to either valuate or _data_valuate depending on the asset type.
+        This is the method that is actually called under the hood when 
+        time steps take place, which properly directs valuation 
+        behavior to either valuate or _data_valuate depending on the 
+        asset type.
 
         Args:
             date: date-like object that will become a datetime.
@@ -415,7 +550,9 @@ class Asset(ABC):
     def _data_valuate(self, date=None):
         """Determines how asset prices update when using data
 
-        Determines how assets are valuated when data is available. Keep track of/updates when the asset is at the beginning or the end of a time interval, and valuates accordingly.
+        Determines how assets are valuated when data is available. Keep
+        track of/updates when the asset is at the beginning or the end 
+        of a time interval, and valuates accordingly.
 
         Args:
             date: date-like object that will become a datetime.
@@ -429,9 +566,13 @@ class Asset(ABC):
         data = self.data.asof(date)
 
         # Switching between beginning and the end of a period
-        """TODO: Im actually not sure this makes a lot of sense. We would need to valuate twice for the same period or something in order for this to work properly. There are a few better solutions to consider:
+        """TODO: Im actually not sure this makes a lot of sense. We 
+        would need to valuate twice for the same period or something 
+        in order for this to work properly. There are a few better 
+        solutions to consider:
             * If we can assume time intervals are consistent, we can
-                separate the open and close of a period by exactly that interval
+                separate the open and close of a period by exactly 
+                that interval
         """
         if self.close:
             self.value = data[self.data.open_value]
@@ -446,12 +587,17 @@ class Asset(ABC):
     def valuate(self, *args, **kwargs):
         """Determines how asset prices update when not using data
 
-        This is the method that defines non-data-based valuation behavior for an asset subclass. The standard implementation essentially does nothing--prices stay constant. New asset subclasses are required to replace this method in order to be instantiable.
+        This is the method that defines non-data-based valuation 
+        behavior for an asset subclass. The standard implementation 
+        essentially does nothing--prices stay constant. New asset 
+        subclasses are required to replace this method in order to be 
+        instantiable.
 
         Args:
             *args: see below
             **kwargs: Valuate methods for different assets will likely
-                require different arguments to be passed. Accepting all of them allows 
+                require different arguments to be passed. Accepting 
+                all of them allows 
         """
         return self.value
 
@@ -510,11 +656,45 @@ class Asset(ABC):
 
 
     def _step(self, date):
+        """Automatically called before this asset is valuated during time steps
+
+        This function is a hook to perform some behavior on the asset 
+        prior to its valuation at each time step.
+
+        Args:
+            date (datetime): The date of the valuation that will occur
+                after this function is executed
+
+        Returns:
+            None (NoneType): Modifies the asset in place.
+        """
         return None
 
 
     def expire(self, portfolio, position):
-        """Controls the behavior of this asset and positions in this asset when it expires inside of a portfolio"""
+        """Controls the behavior of this asset and positions in this 
+        asset when it expires inside of a portfolio
+
+        Positions in portfolios are automatically removed from that 
+        portfolio when they expire. Their expiration is determined 
+        based on two conditions: Whether or not the position.quantity > 0, 
+        and whether or not the position's underlying asset is expired.
+
+        Changing this method in an asset subclass will change its 
+        behavior as it expires. The conditions for expiring can also 
+        be changed by overloading the asset's 'expired' property 
+        (must be a property)
+
+        Args:
+            portfolio (Portfolio): The portfolio holding a position in
+                this assets
+            position (Position): The above portfolio's current position
+                in this asset that is becoming expired after this call.
+
+        Returns:
+            None (NoneType): Modifies the asset/portfolio/position in
+                place
+        """
         return None
 
     

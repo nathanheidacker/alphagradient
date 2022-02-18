@@ -21,7 +21,10 @@ from .standard import Currency
 class Position:
     """Object representing a position in a financial asset
 
-    An object representing a financial stake in some underlying asset, to be used in portfolios to track holdings. Automatically updates value using the value of the underlying asset, and keeps track of average cost to enter the position.
+    An object representing a financial stake in some underlying asset, 
+    to be used in portfolios to track holdings. Automatically updates 
+    value using the value of the underlying asset, and keeps track of 
+    average cost to enter the position.
 
     Attributes:
         asset (Asset): the underyling asset
@@ -31,7 +34,18 @@ class Position:
         cost (Number): The total cost to enter this position
         value (Number): The current market value of this position
         average_cost (Number): The cost of this position per unit
-        key (str): A key representing this position
+        key (str): A key used for indexing this position in dicts
+        symbol (str): A symbol corresponding to the currency of the
+            asset underlying this position
+        price (str): A rounded version of value with the symbol
+            attached, used for printing purposes
+        expired (bool): Whether or not this position is expired
+        total_return (Number): The total return of this position
+            relative to its cost, represented in the base currency
+            of the underlying asset
+        percent_return (Number): The total return as a percentage
+            of the cost
+
     """
 
     def __init__(self, asset, quantity, short=False):
@@ -83,7 +97,9 @@ class Position:
         return self.asset is other.asset and self.short is other.short
 
     def __str__(self):
-        return f"{self.quantity} units @ {self.symbol}{self.average_cost} | MV: {self.price} | RETURN: {round(self.percent_return, 2)}%"
+        return (f"{self.quantity} units @ {self.symbol}{self.average_cost} "
+                f"| MV: {self.price} "
+                f"| RETURN: {round(self.percent_return, 2)}%")
 
     def __repr__(self):
         return self.__str__()
@@ -145,12 +161,21 @@ class Position:
         return (self.total_return / self.cost) * 100 * (-1 if self.short else 1)
 
     def expire(self, portfolio):
+        """Expires this position within the input portfolio
+
+        Args:
+            portfolio (Portfolio): The portfolio owning this pos
+
+        Returns:
+            None (NoneType): Modifies this position/portfolio inplace
+        """
         self.asset.expire(portfolio, self)
 
     def view(self):
         """A memory efficient copy of the position
 
-        Returns a 'view' of the position in its current state for use use in portfolio histories.
+        Returns a 'view' of the position in its current state for use 
+        in portfolio histories.
 
         Returns:
             view: memory efficient copy of the position
@@ -168,7 +193,9 @@ class Position:
                 if self.cash:
                     return f"CASH: {self.symbol}{self.value}"
                 short = "SHORT" if self.short else "LONG"
-                return f"{self.asset}_{short}: {self.quantity} @ {self.symbol}{round(self.value / self.quantity, 2)}"
+                return f"{self.asset}_{short}: {self.quantity} @ " \
+                       f"{self.symbol}" \
+                       f"{round(self.value / self.quantity, 2)}"
             def __repr__(self):
                 return self.__str__()
 
@@ -177,7 +204,9 @@ class Position:
     def _history(self):
         """A pandas DataFrame of this position's value history
 
-        Returns a datetime indexed dataframe of this positions market value history and cost, which is automatically updates when changes in the position or the underlying asset occur
+        Returns a datetime indexed dataframe of this positions market 
+        value history and cost, which is automatically updates when 
+        changes in the position or the underlying asset occur
 
         Returns:
             history (pd.DataFrame): position history
@@ -193,7 +222,9 @@ class Position:
     def update_history(self):
         """updates the positions history to reflect changes
 
-        Updates this positions history whenever changes in the position occur, either in the size of the position itself or the price of the underlying asset
+        Updates this positions history whenever changes in the position 
+        occur, either in the size of the position itself or the price 
+        of the underlying asset
 
         Returns:
             updates the history inplace, no return value
@@ -203,7 +234,8 @@ class Position:
 
 
 class Cash(Position):
-
+    """A special type of position representing some quantity of a
+    currency"""
     def __init__(self, quantity, code=None):
         code = Currency.base if code is None else code
         super().__init__(Currency(code), quantity)
@@ -293,12 +325,12 @@ class Cash(Position):
         return self.asset.code
 
 
-
-
 class Portfolio:
     """An object representing a portfolio of financial assets
 
-    AlphaGradient portfolios are designed to interact natively with AlphaGradient assets, and provide all of the functionality one would expect with a normal financial portfolio. 
+    AlphaGradient portfolios are designed to interact natively with 
+    AlphaGradient assets, and provide all of the functionality one 
+    would expect with a normal financial portfolio. 
 
     Attributes:
         cash (float): How much of the base currency the Portfolio holds
@@ -308,11 +340,18 @@ class Portfolio:
             current positions
         longs (dict): A dictionary of all long positions
         shorts (dict): A dictionary of all short positions
-
+        base (str): A currency code representing this portfolio's base
+            currency
+        value (Number): The total value of this portfolio, represented
+            in the portfolio's base currency
+        liquid (Number): The sum of all of the portfolio's liquid assets
     """
 
     def __init__(self, initial, name=None, date=None, base=None):
-        self.name = self._generate_name() if name is None else name
+        if isinstance(name, types.basket.c):
+            self.name = self._generate_name(basket=name)
+        else:
+            self.name = self._generate_name() if name is None else name
         self.date = datetime.today() if date is None else date
         self._base = Currency.base if base is None else base
         self._cash = Cash(initial, self.base)
@@ -326,14 +365,20 @@ class Portfolio:
     def __repr__(self):
         return self.__str__()
 
-    def _generate_name(self, last=[0]):
+    def _generate_name(self, last=[0], basket=None):
         """generates a name for this portfolio"""
-        if last[0] == 0 and not self.type.instances:
-            return "MAIN"
+        if basket is None:
+            if last[0] == 0 and not self.type.instances:
+                return "MAIN"
+            else:
+                name = f"P{last[0]}"
+                last[0] += 1
+                return name
         else:
-            name = f"P{last[0]}"
-            last[0] += 1
-            return name
+            if basket._portfolios:
+                return f"P{len(basket._portfolios) - 1}"
+            else:
+                return "MAIN"
 
     @property
     def base(self):
@@ -347,7 +392,7 @@ class Portfolio:
     @property
     def positions(self):
         # Removes empty positions
-        for expired in [pos for pos in self._positions.values() if pos.expired]:
+        for expired in [pos for pos in self._positions.values() if pos.asset.expired]:
             expired.expire(self)
 
         self._positions = {k:pos for k, pos in self._positions.items() if not pos.expired}
@@ -366,7 +411,8 @@ class Portfolio:
         elif isinstance(n, Cash):
             self._cash = Cash.from_position(n)
         else:
-            raise TypeError(f"Cash can only be assigned to a numerical value or another cash instance.")
+            raise TypeError("Cash can only be assigned to a numerical "
+                            "value or another cash instance.")
 
     @property
     def longs(self):
@@ -403,16 +449,24 @@ class Portfolio:
             return
 
         if quantity <= 0:
-            raise ValueError(f"Purchase quantity must exceed 0, received {quantity}")
+            raise ValueError("Purchase quantity must exceed 0, "
+                             f"received {quantity}")
 
         elif asset.date != self.date:
-            raise ValueError(f"Unable to complete transaction, {asset.date=} does not match {self.date=}. Please ensure portfolio and asset dates are synced")
+            raise ValueError("Unable to complete transaction, "
+                             f"{asset.date=} does not match "
+                             f"{self.date=}. Please ensure portfolio "
+                             "and asset dates are synced")
 
         # Creating the position to be entered into
         position = Position(asset, quantity)
 
         if position.value > self.cash:
-            raise ValueError(f"Purchasing {quantity} units of {asset.name} {asset.type} requires {Cash(position.value, position.asset.base)}, but this portfolio only has {self.cash} in reserve")
+            raise ValueError(f"Purchasing {quantity} units of "
+                             f"{asset.name} {asset.type} requires "
+                             f"{Cash(position.value, position.asset.base)}, "
+                             f"but this portfolio only has {self.cash} "
+                             "in reserve")
 
         # Updating the position if one already exists
         try:
@@ -429,7 +483,8 @@ class Portfolio:
     def sell(self, asset, quantity):
         """Sells a long position in this portfolio
 
-        Decrements a long position in the given asset by 'quantity'. Maximum sale quantity is the amount owned by the portfolio.
+        Decrements a long position in the given asset by 'quantity'. 
+        Maximum sale quantity is the amount owned by the portfolio.
 
         Args:
             asset (Asset): The asset of the corresponding decremented
@@ -443,26 +498,36 @@ class Portfolio:
             return
 
         if quantity <= 0:
-            raise ValueError(f"Sale quantity must exceed 0, received {quantity}")
+            raise ValueError("Sale quantity must exceed 0, received "
+                             f"{quantity}")
 
         elif asset.date != self.date:
-            raise ValueError(f"Unable to complete transaction, {asset.date=} does not match {self.date=}. Please ensure portfolio and asset dates are synced")
+            raise ValueError("Unable to complete transaction, "
+                             f"{asset.date=} does not match "
+                             f"{self.date=}. Please ensure portfolio "
+                             "and asset dates are synced")
 
         # Creating the position to be sold
         position = Position(asset, quantity)
 
-        # Selling the position if the current position is large enough to satisfy the sale quantity
+        # Selling the position if the current position is large enough 
+        # to satisfy the sale quantity
         try:
             current = self.positions[position.key]
             if current.quantity >= quantity:
                 self._cash += Cash.from_position(position)
                 self.positions[position.key] -= position
             else:
-                raise ValueError(f"Portfolio has insufficient long position in asset {asset.name} {asset.type} to sell {quantity} units. Only {current} units available")
+                raise ValueError(f"Portfolio has insufficient long "
+                                 f"position in asset {asset.name} "
+                                 f"{asset.type} to sell {quantity} "
+                                 f"units. Only {current} units "
+                                 "available")
 
         # We can only sell positions that we own
         except KeyError as e:
-            raise ValueError(f"Portfolio has no long position in asset {asset.name} {asset.type}")
+            raise ValueError("Portfolio has no long position in asset "
+                             f"{asset.name} {asset.type}")
 
         # Updating the portfolio's history to reflect sale
         self.update_history()
@@ -480,10 +545,14 @@ class Portfolio:
             Modifies this portfolio's positions inplace. No return value
         """
         if quantity <= 0:
-            raise ValueError(f"Short sale quantity must exceed 0, received {quantity}")
+            raise ValueError("Short sale quantity must exceed 0, "
+                             f"received {quantity}")
 
         elif asset.date != self.date:
-            raise ValueError(f"Unable to complete transaction, {asset.date=} does not match {self.date=}. Please ensure portfolio and asset dates are synced")
+            raise ValueError("Unable to complete transaction, "
+                             f"{asset.date=} does not match "
+                             f"{self.date=}. Please ensure portfolio "
+                             "and asset dates are synced")
 
         # Creating the position to be shorted
         position = Position(asset, quantity, short=True)
@@ -503,40 +572,54 @@ class Portfolio:
     def cover(self, asset, quantity):
         """Covers a short position in this portfolio
 
-        Creates a short position in the given asset with a short volume given by 'quantity'.
+        Covers a short position in the given asset with a cover 
+        (purchase) volume given by 'quantity'.
 
         Args:
-            asset (Asset): The asset in which to create a short position
-            quantity (Number): The short sale quantity
+            asset (Asset): The asset in which to cover a short position
+            quantity (Number): The cover (purchase) quantity
 
         Returns:
             Modifies this portfolio's positions inplace. No return value
         """
         if quantity <= 0:
-            raise ValueError(f"Cover quantity must exceed 0, received {quantity}")
+            raise ValueError("Cover quantity must exceed 0, received "
+                             f"{quantity}")
 
         elif asset.date != self.date:
-            raise ValueError(f"Unable to complete transaction, {asset.date=} does not match {self.date=}. Please ensure portfolio and asset dates are synced")
+            raise ValueError("Unable to complete transaction, "
+                             f"{asset.date=} does not match "
+                             f"{self.date=}. Please ensure portfolio "
+                             "and asset dates are synced")
 
         # Creating the short position to be covered
         position = Position(asset, quantity, short=True)
 
         required = -1 * position.value
         if required > self._cash:
-            raise ValueError(f"Covering {quantity} short sold units of {asset.name} {asset.type} requires ${required}, but this portfolio only has ${self.cash} in reserve")
+            raise ValueError(f"Covering {quantity} short sold units of "
+                             f"{asset.name} {asset.type} requires "
+                             f"${required}, but this portfolio only "
+                             f"has ${self.cash} in reserve")
 
-        # Covering the position if the current short position is large enough to satisfy the quantity to cover
+        # Covering the position if the current short position is large 
+        # enough to satisfy the quantity to cover
         try:
             current = self.positions[position.key]
             if current.quantity >= quantity:
                 self.cash += Cash.from_position(position)
                 self.positions[position.key] -= position
             else:
-                raise ValueError(f"Portfolio has insufficient short position in asset {asset.name} {asset.type} to cover {quantity} units. Only {current.quantity} units have been sold short")
+                raise ValueError("Portfolio has insufficient short "
+                                 f"position in asset {asset.name} "
+                                 f"{asset.type} to cover {quantity} "
+                                 f"units. Only {current.quantity} units"
+                                 " have been sold short")
 
         # We can only cover positions that we have shorts in
         except KeyError as e:
-            raise ValueError(f"Portfolio has no short position in asset {asset.name} {asset.type}")
+            raise ValueError("Portfolio has no short position in "
+                             f"asset {asset.name} {asset.type}")
 
         # Updating the portfolio's history to reflect short cover
         self.update_history()
@@ -544,7 +627,9 @@ class Portfolio:
     def _history(self):
         """A history of this portfolio's positions and value
 
-        Returns a datetime indexed pandas dataframe of this portfolio's positions and total market value. This function is only used to initialize it
+        Returns a datetime indexed pandas dataframe of this portfolio's
+        positions and total market value. This function is only used 
+        to initialize it
 
         Returns:
             history (pd.DataFrame): portfolio position/value history
@@ -566,12 +651,15 @@ class Portfolio:
         self.history.loc[self.date] = np.array([positions, self.value], dtype="object")
 
     def reset(self):
+        """Restarts the portfolio's value history"""
         self.history = self._history()
 
     def invest(self, n):
+        """Adds cash to this portfolio"""
         self.cash += n
 
     def liquidate(self):
+        """Sells all positions that are not the base currency/cash position"""
         for pos in self.longs.values():
             self.sell(pos.asset, pos.quantity)
 

@@ -14,19 +14,19 @@ from . import finance
 from . import algolib
 
 def __getattr__(name):
-    if name == 'types':
+    if name == "types":
         return _types.list()
 
     # Returning a list containing ALL assets currently in memory
-    if name == 'assets':
+    if name == "assets":
         return __globals.all_assets()
 
-    if name == 'globals':
+    if name == "globals":
         return __globals
 
     # For accessing the instances of a type, if the type exists
     try:
         return _types[name].instances
     except KeyError:
-        raise AttributeError(
-            f'AttributeError: module \'{__name__}\' has no attribute \'{name}\'')
+        raise AttributeError(f"AttributeError: module \'{__name__}\' "
+                             f"has no attribute \'{name}\''")

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""AlphaGradient's algorithm library, containing vetted and high quality financial algorithms to be used freely.
+"""AlphaGradient's algorithm library, containing vetted and high 
+quality financial algorithms to be used freely.
 
 Todo:
     * NA
@@ -30,7 +31,8 @@ class SpyCoveredCalls(ag.Algorithm):
         while self.date < end:
             
             # Buying spy if we can buy spy
-            to_buy = math.floor((self.p.liquid / self.spy.value) / 100) * 100
+            to_buy = math.floor((self.p.liquid / self.spy.value) / 100)
+            to_buy *= 100
             if to_buy > 0:
                 self.env.buy(self.spy, to_buy)
 
