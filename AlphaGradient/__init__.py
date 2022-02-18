@@ -27,6 +27,6 @@ def __getattr__(name):
     # For accessing the instances of a type, if the type exists
     try:
         return _types[name].instances
-    except KeyError:
+    except KeyError as ke:
         raise AttributeError(f"AttributeError: module \'{__name__}\' "
-                             f"has no attribute \'{name}\''")
+                             f"has no attribute \'{name}\''") from ke

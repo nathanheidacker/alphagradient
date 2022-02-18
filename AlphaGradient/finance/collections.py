@@ -22,69 +22,69 @@ from .portfolio import Portfolio, Cash
 from .standard import Currency, Stock, Call, Put
 
 class Basket:
-    """A 'basket' of assets and other AlphaGradient objects that all 
+    """A 'basket' of assets and other AlphaGradient objects that all
     share the same date and time resolution
 
-    This object essentially represents an isolated financial 
-    environment that ensures all instantiated assets/objects are 
-    compatible with eachother and are valuated at the same moment in 
+    This object essentially represents an isolated financial
+    environment that ensures all instantiated assets/objects are
+    compatible with eachother and are valuated at the same moment in
     time.
 
-    Baskets should be used in algorithms for creating isolated 
-    financial environments that keep AG objects conveniently 
+    Baskets should be used in algorithms for creating isolated
+    financial environments that keep AG objects conveniently
     accessible in one place.
 
-    Other attributes not included in the list below include all 
-    instantiable asset types (eg. basket.stock, basket.call, etc.), 
-    which will return a dictionary of assets of that type which exist 
-    in this basket, where keys are the asset.key. These attributes 
-    double as functions for instantiation of that asset type within 
-    the basket. Instantiating an asset by calling these attributes 
-    will take/accept the same arguments for instantiation as when 
-    instantiated normally through alphagradient.finance. 
+    Other attributes not included in the list below include all
+    instantiable asset types (eg. basket.stock, basket.call, etc.),
+    which will return a dictionary of assets of that type which exist
+    in this basket, where keys are the asset.key. These attributes
+    double as functions for instantiation of that asset type within
+    the basket. Instantiating an asset by calling these attributes
+    will take/accept the same arguments for instantiation as when
+    instantiated normally through alphagradient.finance.
 
-    Similarly to how the the global types enum works, baskets also 
-    permit attribute access of specific assets when accessed as the 
-    attribute of a type (eg. basket.stock.SPY will access SPY, if this 
+    Similarly to how the the global types enum works, baskets also
+    permit attribute access of specific assets when accessed as the
+    attribute of a type (eg. basket.stock.SPY will access SPY, if this
     basket is tracking it).
 
-    Baskets can also directly access the attributes of their portfolios 
-    with attribute access. When a basket keeps track of multiple 
-    portfolios, accessing the portfolio attribute will instead return 
-    a dictionary corresponding to that attribute, where keys are the 
+    Baskets can also directly access the attributes of their portfolios
+    with attribute access. When a basket keeps track of multiple
+    portfolios, accessing the portfolio attribute will instead return
+    a dictionary corresponding to that attribute, where keys are the
     portfolio names and values are the respective attribute.
 
     Attributes:
-        date (datetime): This basket's current date (the last 
-            valuation date of all currently tracked AlphaGradient 
-            objects). Any assets that are newly instantiated inside of 
+        date (datetime): This basket's current date (the last
+            valuation date of all currently tracked AlphaGradient
+            objects). Any assets that are newly instantiated inside of
             this basket will automatically be valuated on this date
         start (datetime): This basket's start date, which all tracked
-            assets will valuate to if no steps have been taken. 
+            assets will valuate to if no steps have been taken.
             basket.date returns to this date when reset is called.
         end (datetime): This basket's end date, which algorithms will
-            use as a default to determine when backtesting should end 
+            use as a default to determine when backtesting should end
             if none is provided.
         resolution (timedelta): The default period of time inbetween
             timesteps.
         base (str): The base currency used by this basket represented
-            as a currency code. All newly tracked/insantiated assets 
-            and objects will use this currency as a default base if 
+            as a currency code. All newly tracked/insantiated assets
+            and objects will use this currency as a default base if
             none are provided during intantiation
         assets (list(Asset)): A list of assets currently within or
             tracked by this basket.
         portfolios (dict(Portfolio)): A dictionary of portfolios in
-            which keys are the portfolio names, which are provided 
-            during instantiation. If no names are provided, 
+            which keys are the portfolio names, which are provided
+            during instantiation. If no names are provided,
             defaults to "MAIN", then "P0", "P1", "P2", ..., "PN"
         status (Status): A member of the Status enum which corresponds
-            to how many portfolios this basket is currently tracking. 
-            Controls behavior of basket bound methods that facilitate 
+            to how many portfolios this basket is currently tracking.
+            Controls behavior of basket bound methods that facilitate
             portfolio transactions such as buy, sell, short, and cover.
     """
 
     class Status(Enum):
-        """Denotes a basket's portfolio status, controlling basket 
+        """Denotes a basket's portfolio status, controlling basket
         bound methods for portfolio transactions"""
         NONE = auto()
         SINGLE = auto()
@@ -92,7 +92,7 @@ class Basket:
 
         @classmethod
         def get(cls, n):
-            """Returns the appropriate status member based on the 
+            """Returns the appropriate status member based on the
             quantity of portfolios passsed"""
             if n == 0:
                 return cls.NONE
@@ -102,8 +102,8 @@ class Basket:
                 return cls.MULTIPLE
 
     class AssetDict(WeakDict):
-        """A weakref dictionary of assets belonging to one asset 
-        subclass. Allows baskets attribute access to specific asset 
+        """A weakref dictionary of assets belonging to one asset
+        subclass. Allows baskets attribute access to specific asset
         classes, as well as asset instantiation"""
         def __init__(self, cls, basket):
             self._name = cls.__name__
@@ -131,13 +131,13 @@ class Basket:
             except KeyError:
                 raise AttributeError(f"AlphaGradient Basket has no \
                                      {attr.capitalize()} instance {attr}")
-    
-    def __init__(self, 
-                 start=None, 
-                 end=None, 
-                 resolution=None, 
-                 base=None, 
-                 assets=None, 
+
+    def __init__(self,
+                 start=None,
+                 end=None,
+                 resolution=None,
+                 base=None,
+                 assets=None,
                  portfolios=None):
         self._start = glbs.start if start is None else self.validate_date(start)
         self._date = self.start
@@ -247,7 +247,7 @@ class Basket:
             dtype (str | type): the dtype of the returned data object
 
         Returns:
-            data (dict | list): Returns a list or dict of asset 
+            data (dict | list): Returns a list or dict of asset
                 datasets, depending on the dtype input
 
         Raises:
@@ -265,7 +265,7 @@ class Basket:
 
     @staticmethod
     def validate_date(date):
-        """Determines whether or not the input date is valid. If it is, 
+        """Determines whether or not the input date is valid. If it is,
         returns it as a native python datetime object
 
         Args:
@@ -291,7 +291,7 @@ class Basket:
 
     @staticmethod
     def validate_resolution(resolution):
-        """Determines whether or not the input resolution is valid. 
+        """Determines whether or not the input resolution is valid.
         If is is, returns it as a native python timedelta object
 
         Args:
@@ -315,7 +315,7 @@ class Basket:
     def default_start(self):
         """Determines the default start datetime based on the tracked assets
 
-        Returns the maximum start date of all asset datasets currently 
+        Returns the maximum start date of all asset datasets currently
         inside of this basket. If there are none, returns the global start
 
         Returns:
@@ -327,7 +327,7 @@ class Basket:
     def default_end(self):
         """Determines the default end datetime based on the tracked assets
 
-        Returns the minimum end date of all asset datasets currently 
+        Returns the minimum end date of all asset datasets currently
         inside of this basket. If there are none, returns the global end
 
         Returns:
@@ -339,8 +339,8 @@ class Basket:
     def default_resolution(self):
         """Determines the default resolution based on the tracked assets
 
-        Returns the minimum time resolution of all asset datasets 
-        currently inside of this basket. If there are none, returns 
+        Returns the minimum time resolution of all asset datasets
+        currently inside of this basket. If there are none, returns
         the global resolution
 
         Returns:
@@ -350,7 +350,7 @@ class Basket:
         return timedelta(days=1)
 
     def auto(self):
-        """Automatically sets the start, end, and resolution of this 
+        """Automatically sets the start, end, and resolution of this
         basket to their defaults based on currently tracked assets"""
         self.start = self.default_start()
         self.end = self.default_end()
@@ -360,7 +360,7 @@ class Basket:
         """Syncs all alphagradient objects in this basket to the given datetime
 
         Valuates all assets to the given date, and sets the date of all
-        portfolios to the given date. This only occurs for objects 
+        portfolios to the given date. This only occurs for objects
         within this basket, rather than globally. Date defaults to
         baskets current date if none is provided
 
@@ -385,7 +385,7 @@ class Basket:
         """Combines auto and sync
 
         Automatically determines appropriate start, end, and resolution,
-        and automatically sync all objects to the newly determined 
+        and automatically sync all objects to the newly determined
         start date
 
         Returns:
@@ -395,13 +395,13 @@ class Basket:
         self.sync(self.start)
 
     def step(self, delta=None):
-        """Takes a single time step in this basket, moving all 
+        """Takes a single time step in this basket, moving all
         alphagradient objects forward by the given delta
 
-        The function that should be called in algorithms to iterate 
-        forward in time after everything has been accomplished and 
-        evaluated in the current period. Automatically moves all ag 
-        objects in this basket forward in time by the given delta, 
+        The function that should be called in algorithms to iterate
+        forward in time after everything has been accomplished and
+        evaluated in the current period. Automatically moves all ag
+        objects in this basket forward in time by the given delta,
         which defaults to the basket.resolution if none is provided.
 
         Args:
@@ -423,10 +423,10 @@ class Basket:
         self.date = self.date + delta
 
     def buy(self, asset, quantity, name=None):
-        """Buys an asset using this basket's main portfolio, unless 
+        """Buys an asset using this basket's main portfolio, unless
         specified otherwise.
 
-        Creates a long position in the given asset with a purchase 
+        Creates a long position in the given asset with a purchase
         volume given by 'quantity' within the respective portfolio
 
         Args:
@@ -439,8 +439,8 @@ class Basket:
             None (NoneType): Modifies this basket in place
 
         Raises:
-            ValueError: If basket has no active portfolios, or if name 
-            is not specified when there are multiple portfolios none 
+            ValueError: If basket has no active portfolios, or if name
+            is not specified when there are multiple portfolios none
             of which are named "MAIN"
         """
         # Transactions require a portfolio
@@ -478,10 +478,10 @@ class Basket:
                                      f"{name.__repr__()}")
 
     def sell(self, asset, quantity, name=None):
-        """Sells an asset using this basket's main portfolio, unless 
+        """Sells an asset using this basket's main portfolio, unless
         specified otherwise.
 
-        Decrements a long position in the given asset by 'quantity'. 
+        Decrements a long position in the given asset by 'quantity'.
         Maximum sale quantity is the amount owned by the portfolio.
 
         Args:
@@ -495,8 +495,8 @@ class Basket:
             None (NoneType): Modifies this basket in place
 
         Raises:
-            ValueError: If basket has no active portfolios, or if name 
-                is not specified when there are multiple portfolios none 
+            ValueError: If basket has no active portfolios, or if name
+                is not specified when there are multiple portfolios none
                 of which are named "MAIN"
         """
         # Transactions require a portfolio
@@ -534,10 +534,10 @@ class Basket:
                                      f"{name.__repr__()}")
 
     def short(self, asset, quantity, name=None):
-        """Shorts an asset using this basket's main portfolio, unless 
+        """Shorts an asset using this basket's main portfolio, unless
         specified otherwise.
 
-        Creates a short position in the given asset with a short sale 
+        Creates a short position in the given asset with a short sale
         volume given by 'quantity' within the respective portfolio
 
         Args:
@@ -550,8 +550,8 @@ class Basket:
             None (NoneType): Modifies this basket in place
 
         Raises:
-            ValueError: If basket has no active portfolios, or if name 
-                is not specified when there are multiple portfolios 
+            ValueError: If basket has no active portfolios, or if name
+                is not specified when there are multiple portfolios
                 none of which are named "MAIN"
         """
         # Transactions require a portfolio
@@ -589,10 +589,10 @@ class Basket:
                                      f"{name.__repr__()}")
 
     def cover(self, asset, quantity, name=None):
-        """Covers the short sale of an asset using this basket's main 
+        """Covers the short sale of an asset using this basket's main
         portfolio, unless specified otherwise.
 
-        Decrements a long position in the given asset by 'quantity'. 
+        Decrements a long position in the given asset by 'quantity'.
         Maximum sale quantity is the amount owned by the portfolio.
 
         Args:
@@ -606,8 +606,8 @@ class Basket:
             None (NoneType): Modifies this basket in place
 
         Raises:
-            ValueError: If basket has no active portfolios, or if name 
-                is not specified when there are multiple portfolios 
+            ValueError: If basket has no active portfolios, or if name
+                is not specified when there are multiple portfolios
                 none of which are named "MAIN"
         """
         # Transactions require a portfolio

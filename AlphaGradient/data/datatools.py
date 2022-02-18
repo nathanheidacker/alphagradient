@@ -11,29 +11,20 @@ Todo:
 """
 
 # Standard imports
-from collections import namedtuple
 from datetime import datetime, timedelta
 from numbers import Number
-from copy import deepcopy
 # from typing import List
-from os import scandir
-import pickle
-import weakref
 
 # Third party imports
-from aenum import Enum, NoAlias, auto, extend_enum, skip, unique
 import pandas as pd
 import numpy as np
 
-# Local imports
-
-
 def currency_info(base=None, save=False):
-    """Returns a DataFrame with all currency values updated relative 
+    """Returns a DataFrame with all currency values updated relative
     to the base
 
     Args:
-        base (str): Currency code on which to base all currency 
+        base (str): Currency code on which to base all currency
             valuations
         save (bool): Whether or not the dataframe should be saved as a
             pickle to the local directory
@@ -93,7 +84,7 @@ def get_data(asset):
 class AssetData:
     """Datetime-indexed datesets that store financial data for assets.
 
-    All AlphaGradient assets seeking to use tabular data must use 
+    All AlphaGradient assets seeking to use tabular data must use
     AssetData datasets. AssetData accepts any of the following inputs:
         * numbers (for assets with constant prices, or unit prices)
         * os.path-like objects
@@ -102,10 +93,10 @@ class AssetData:
         * pathstrings
         * pandas DataFrames
 
-    AssetDatasets take tabular data and clean/validate it to make it 
-    usable for ag assets. They check for the presence of required data, 
-    remove unnecessary data, ensure that dataframes are 
-    datetime-indexed, coerce data dtypes (TODO), and ensure that 
+    AssetDatasets take tabular data and clean/validate it to make it
+    usable for ag assets. They check for the presence of required data,
+    remove unnecessary data, ensure that dataframes are
+    datetime-indexed, coerce data dtypes (TODO), and ensure that
     formatting is consistent between all assets.
 
     Attributes:
@@ -240,7 +231,7 @@ class AssetData:
     def column_format(column):
         """The standard string format for columns
 
-        Takes a column name string and returns it in uppercase, with 
+        Takes a column name string and returns it in uppercase, with
         spaces replaced with underscores
 
         Args:
@@ -252,29 +243,29 @@ class AssetData:
         return column.replace(' ', '_').upper()
 
     def validate_columns(self, data, required, optional):
-        """Ensures that the input data meets the formatting 
+        """Ensures that the input data meets the formatting
         requirements to be a valid asset dataset
 
-        To be a valid asset dataset, input tabular data must have every 
-        column listed in 'required'. This method ensures that all of 
-        the required columns are present, as well as removes columns 
+        To be a valid asset dataset, input tabular data must have every
+        column listed in 'required'. This method ensures that all of
+        the required columns are present, as well as removes columns
         that don't show up in either the required or optional lists.
 
-        TODO: 
-            * allow dictionaries to be passed in to enforce specific 
+        TODO:
+            * allow dictionaries to be passed in to enforce specific
                 column dtypes.
-            * Implement more checks to ensure that data is error-free, 
-                and lacks missing elements (or implement measures to 
+            * Implement more checks to ensure that data is error-free,
+                and lacks missing elements (or implement measures to
                 be safe in the presence of missing data)
 
         Args:
             data (tabular data): the data being validated
             required (list of str): a list of strings representing
-                column names. All of the columns in this list must be 
+                column names. All of the columns in this list must be
                 present to produce a viable dataset.
             optional (list of str): a list of strings representing
                 column names. Columns in the data that are not required
-                will still be kept in the data if they are present in 
+                will still be kept in the data if they are present in
                 this list. Otherwise, they will not be included.
 
         Returns:
@@ -326,7 +317,7 @@ class AssetData:
         return data
 
     def _get_resolution(self):
-        """Automatically determines the time resolution (granularity) 
+        """Automatically determines the time resolution (granularity)
         of the dataset's datetime index.
 
         Returns:
@@ -341,13 +332,13 @@ class AssetData:
 # THE NEW IMPLEMENTATION DOES NOT REQUIRE THIS.
 
 '''
-This is a little bit hacky, but this this needs to be defined outside 
-of the scope of AssetData even though it is only intended to be used 
-in that class. This is because the COLUMNS enum defined within will 
-not allow the use of subclasses as values for enum members. By 
-defining it outside, we can use Value within the COLUMNS enum scope, 
-allowing us to bypass the requirement that all values be the same. 
-Ordinarily, we could just use 'settings=NoAlias', but it imposes too 
+This is a little bit hacky, but this this needs to be defined outside
+of the scope of AssetData even though it is only intended to be used
+in that class. This is because the COLUMNS enum defined within will
+not allow the use of subclasses as values for enum members. By
+defining it outside, we can use Value within the COLUMNS enum scope,
+allowing us to bypass the requirement that all values be the same.
+Ordinarily, we could just use 'settings=NoAlias', but it imposes too
 many restrictions when loading saved asset datasets from pickles.
 '''
 
@@ -356,7 +347,7 @@ many restrictions when loading saved asset datasets from pickles.
 
 
 
-# Below is the implementation of asset datasets that use enumerations 
+# Below is the implementation of asset datasets that use enumerations
 # for columns names. This may be revisited in the future
 '''
 class AssetData(pd.DataFrame):
@@ -680,5 +671,5 @@ def from_raw_ledger(asset_type, asset_name, ledger=None):
 
     return None
 '''
-                
+
 

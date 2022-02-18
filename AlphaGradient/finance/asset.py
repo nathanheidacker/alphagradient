@@ -33,10 +33,10 @@ _currency_info = pd.read_pickle("AlphaGradient/finance/currency_info.p")
 class types(Enum):
     """A enumeration with members for all asset subclasses
 
-    The types enum is a special enumeration which dynamically creates 
-    new members for all subclasses of ag.Asset. Enum members store a 
-    weakly referential dictionary to all instances of that asset 
-    subclass, which can be accessed as attributes or dynamically 
+    The types enum is a special enumeration which dynamically creates
+    new members for all subclasses of ag.Asset. Enum members store a
+    weakly referential dictionary to all instances of that asset
+    subclass, which can be accessed as attributes or dynamically
     through indexing.
 
     Examples:
@@ -47,11 +47,11 @@ class types(Enum):
     """
 
     def _generate_next_value_(name, *args):
-        """Determines how new enum members are generated when new asset 
+        """Determines how new enum members are generated when new asset
         subclasses are created"""
 
         class Instances(WeakDict):
-            """A weakly referential dictionary of all instances of the 
+            """A weakly referential dictionary of all instances of the
             subclass to which the enum member corresponds"""
             def __getattr__(self, item):
                 try:
@@ -65,8 +65,8 @@ class types(Enum):
 
             @property
             def base(self):
-                """The monetary basis of this asset subclass, 
-                represented by a currency code. Only used by Currency 
+                """The monetary basis of this asset subclass,
+                represented by a currency code. Only used by Currency
                 subclass"""
                 if self and getattr(list(self.values())[0], "base", False):
                     return [c for c in self.values() if c.is_base][0]
@@ -136,7 +136,7 @@ class types(Enum):
     def instantiable(cls):
         """A list of all instantiable asset subclasses
 
-        Returns: 
+        Returns:
             instantiable (list): All asset subclasses which contain no
                 abstract methods.
         """
@@ -163,15 +163,15 @@ class AssetDuplicationError(Exception):
 class DataProtocol(Enum):
     """Enumeration of different data requirement protocols for assets
 
-    This enumeration and its members control data requirements for the 
+    This enumeration and its members control data requirements for the
     instantiation of different asset subclasses.
         * REQUIRE: Data MUST be supplied in some form, or the asset will
-            fail to instantiate. For assets that require that the 
+            fail to instantiate. For assets that require that the
             asset.data attribute is a pandas dataframe object
         * FLEXIBLE: Asset will be instantiated whether or not data is
             supplied, asset.data attribute can be None or pd.DataFrame
         * PROHIBITED: Asset will fail to instantiate if any data is
-            supplied. For assets that require that the asset.data 
+            supplied. For assets that require that the asset.data
             attribute is None (eg. simulated assets)
     """
     REQUIRED = auto()
@@ -180,7 +180,7 @@ class DataProtocol(Enum):
 
     @classmethod
     def _get(cls, require_data, prohibit_data):
-        """Returns the appropriate data protocol based on asset 
+        """Returns the appropriate data protocol based on asset
         subclass initialization settings
 
         Args:
@@ -206,7 +206,7 @@ class DataProtocol(Enum):
 
     @classmethod
     def _decompose(cls, member):
-        """Returns the respective subclass initialization settings that 
+        """Returns the respective subclass initialization settings that
         correspond to each protocol member
 
         Args:
@@ -232,22 +232,22 @@ class DataProtocol(Enum):
 class Asset(ABC):
     """Abstract base class representing a financial asset
 
-    The ABC underlying all standard and custom asset classes within 
-    AlphaGradient, designed to be used in conjunction with other 
-    standard ag objects such as portfolios and algorithms. All Assets 
+    The ABC underlying all standard and custom asset classes within
+    AlphaGradient, designed to be used in conjunction with other
+    standard ag objects such as portfolios and algorithms. All Assets
     are singletons.
 
     When defining a new Asset subclass, the valuate method
 
     Attributes:
         _args (dict): Arguments used in most recent initialization.
-            Referenced to determine whether 
+            Referenced to determine whether
         name (str): Name of the asset
         value (Number): The value of this asset as a number,
             representing a quantity of the global base currency.
         price (str): A print friendly version of the asset value with
             the asset's base currency symbol attached
-        close (bool): Whether most recent valuation represents the 
+        close (bool): Whether most recent valuation represents the
             close (end) of an interval.
         base (str): The base currency of the asset, represented as a
             currency code.
@@ -261,24 +261,24 @@ class Asset(ABC):
     """
 
     def __init_subclass__(
-                          cls, 
+                          cls,
                           *args,
-                          hidden=False, 
+                          hidden=False,
                           require_data=None,
                           prohibit_data=None,
-                          required=None, 
-                          optional=None, 
-                          open_value=None, 
-                          close_value=None, 
-                          settings=None, 
+                          required=None,
+                          optional=None,
+                          open_value=None,
+                          close_value=None,
+                          settings=None,
                           **kwargs):
         """Controls behavior for instantiation of Asset subclasses.
 
-        Creates new enumerations within the TYPES enum for newly 
-        created subclassses of Asset. Also sets some class level 
-        attributes that control behavior during instantiation. 
+        Creates new enumerations within the TYPES enum for newly
+        created subclassses of Asset. Also sets some class level
+        attributes that control behavior during instantiation.
 
-        The following are all **class** level attributes for Asset and 
+        The following are all **class** level attributes for Asset and
         all Asset subclasses.
 
         Attributes:
@@ -313,7 +313,7 @@ class Asset(ABC):
         # Hiding the asset from the types enumeration
         hidden = hidden or settings.get("hidden", False)
 
-        # Using the passed in settings object to set class attributes 
+        # Using the passed in settings object to set class attributes
         # in the case they are not provided by kwargs
         if settings:
             for attr in ["required", "optional", "open_value", "close_value"]:
@@ -368,11 +368,11 @@ class Asset(ABC):
             force=False,
             base=None):
 
-        # Standard style guideline for all asset names. Ensures that 
+        # Standard style guideline for all asset names. Ensures that
         # they are accessible via attribute access.
         name = str(name).upper().replace(' ', '_')
 
-        # Checks if arguments have changed materially from previous 
+        # Checks if arguments have changed materially from previous
         # initialization, and skip initialization if they haven't.
         if self.type.instances.get(name) is self:
 
@@ -386,7 +386,7 @@ class Asset(ABC):
 
             if skip:
                 return
-        
+
         # Saving new args, storing new instance
         self._args = locals()
         self.type.instances[name] = self
@@ -420,7 +420,7 @@ class Asset(ABC):
                 # Third attempt to get data from nothing...?
                 if data is None and self.data_protocol is DataProtocol.REQUIRED:
 
-                    # When we need to force the instantiation of an 
+                    # When we need to force the instantiation of an
                     # asset that requires data, but no data is available
                     if force:
                         data = datatools.AssetData(self.__class__, 1)
@@ -499,8 +499,8 @@ class Asset(ABC):
     def key(self):
         """Returns a key used for accessing stored files relevant to this asset
 
-        Creates a key from information unique to this asset. These 
-        keys are used to access locally stored data relevant to this 
+        Creates a key from information unique to this asset. These
+        keys are used to access locally stored data relevant to this
         asset
 
         Returns:
@@ -513,9 +513,9 @@ class Asset(ABC):
     def expired(self):
         """Whether or not this asset is expired
 
-        Most assets will never expire, so the default behavior is to 
-        always return false. Some assets like options can expire, 
-        however. Overwrite this property to determine when an asset 
+        Most assets will never expire, so the default behavior is to
+        always return false. Some assets like options can expire,
+        however. Overwrite this property to determine when an asset
         expires
 
         Returns:
@@ -527,9 +527,9 @@ class Asset(ABC):
     def _valuate(self, date=None):
         """Updates asset prices when time steps take place
 
-        This is the method that is actually called under the hood when 
-        time steps take place, which properly directs valuation 
-        behavior to either valuate or _data_valuate depending on the 
+        This is the method that is actually called under the hood when
+        time steps take place, which properly directs valuation
+        behavior to either valuate or _data_valuate depending on the
         asset type.
 
         Args:
@@ -551,7 +551,7 @@ class Asset(ABC):
         """Determines how asset prices update when using data
 
         Determines how assets are valuated when data is available. Keep
-        track of/updates when the asset is at the beginning or the end 
+        track of/updates when the asset is at the beginning or the end
         of a time interval, and valuates accordingly.
 
         Args:
@@ -566,12 +566,12 @@ class Asset(ABC):
         data = self.data.asof(date)
 
         # Switching between beginning and the end of a period
-        """TODO: Im actually not sure this makes a lot of sense. We 
-        would need to valuate twice for the same period or something 
-        in order for this to work properly. There are a few better 
+        """TODO: Im actually not sure this makes a lot of sense. We
+        would need to valuate twice for the same period or something
+        in order for this to work properly. There are a few better
         solutions to consider:
             * If we can assume time intervals are consistent, we can
-                separate the open and close of a period by exactly 
+                separate the open and close of a period by exactly
                 that interval
         """
         if self.close:
@@ -587,17 +587,17 @@ class Asset(ABC):
     def valuate(self, *args, **kwargs):
         """Determines how asset prices update when not using data
 
-        This is the method that defines non-data-based valuation 
-        behavior for an asset subclass. The standard implementation 
-        essentially does nothing--prices stay constant. New asset 
-        subclasses are required to replace this method in order to be 
+        This is the method that defines non-data-based valuation
+        behavior for an asset subclass. The standard implementation
+        essentially does nothing--prices stay constant. New asset
+        subclasses are required to replace this method in order to be
         instantiable.
 
         Args:
             *args: see below
             **kwargs: Valuate methods for different assets will likely
-                require different arguments to be passed. Accepting 
-                all of them allows 
+                require different arguments to be passed. Accepting
+                all of them allows
         """
         return self.value
 
@@ -658,7 +658,7 @@ class Asset(ABC):
     def _step(self, date):
         """Automatically called before this asset is valuated during time steps
 
-        This function is a hook to perform some behavior on the asset 
+        This function is a hook to perform some behavior on the asset
         prior to its valuation at each time step.
 
         Args:
@@ -672,17 +672,17 @@ class Asset(ABC):
 
 
     def expire(self, portfolio, position):
-        """Controls the behavior of this asset and positions in this 
+        """Controls the behavior of this asset and positions in this
         asset when it expires inside of a portfolio
 
-        Positions in portfolios are automatically removed from that 
-        portfolio when they expire. Their expiration is determined 
-        based on two conditions: Whether or not the position.quantity > 0, 
+        Positions in portfolios are automatically removed from that
+        portfolio when they expire. Their expiration is determined
+        based on two conditions: Whether or not the position.quantity > 0,
         and whether or not the position's underlying asset is expired.
 
-        Changing this method in an asset subclass will change its 
-        behavior as it expires. The conditions for expiring can also 
-        be changed by overloading the asset's 'expired' property 
+        Changing this method in an asset subclass will change its
+        behavior as it expires. The conditions for expiring can also
+        be changed by overloading the asset's 'expired' property
         (must be a property)
 
         Args:
@@ -697,4 +697,3 @@ class Asset(ABC):
         """
         return None
 
-    

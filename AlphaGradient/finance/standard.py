@@ -178,7 +178,7 @@ class Currency(Asset, settings=settings["CURRENCY"]):
 class Stock(Asset, settings=settings["STOCK"]):
     """A financial asset representing stock in a publicly traded company
 
-    An asset representing a single share of a publicly traded company. 
+    An asset representing a single share of a publicly traded company.
     Supports online data from yahoo finance using yfinance.
 
     Attributes:
@@ -393,11 +393,11 @@ class Call(Option, settings=settings["CALL"]):
         div_yield = 0.01
 
         d1, d2 = self._bsbase(
-                              spot = self.spot, 
-                              strike = self.strike, 
-                              rfr = self.rfr, 
-                              dy = div_yield, 
-                              ttm = ttm, 
+                              spot = self.spot,
+                              strike = self.strike,
+                              rfr = self.rfr,
+                              dy = div_yield,
+                              ttm = ttm,
                               vol = 0.3
                               )
 
@@ -497,11 +497,11 @@ class Put(Option, settings=settings["OPTION"]):
         div_yield = 0.01
 
         d1, d2 = self._bsbase(
-                              spot = self.spot, 
-                              strike = self.strike, 
-                              rfr = self.rfr, 
-                              dy = div_yield, 
-                              ttm = ttm, 
+                              spot = self.spot,
+                              strike = self.strike,
+                              rfr = self.rfr,
+                              dy = div_yield,
+                              ttm = ttm,
                               vol = 0.3
                               )
 
@@ -596,11 +596,11 @@ class BrownianStock(Asset, settings=settings["BROWNIANSTOCK"]):
                         name[i] = 65
                 else:
                     name =  [65 for _ in range((len(name) + 1))]
-                    
+
             name = ''.join([chr(char) for char in name])
             last[0] = name
             return name
-        
+
 
     def valuate(self, date=None):
         date = self.normalize_date(date)

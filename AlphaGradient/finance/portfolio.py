@@ -21,9 +21,9 @@ from .standard import Currency
 class Position:
     """Object representing a position in a financial asset
 
-    An object representing a financial stake in some underlying asset, 
-    to be used in portfolios to track holdings. Automatically updates 
-    value using the value of the underlying asset, and keeps track of 
+    An object representing a financial stake in some underlying asset,
+    to be used in portfolios to track holdings. Automatically updates
+    value using the value of the underlying asset, and keeps track of
     average cost to enter the position.
 
     Attributes:
@@ -57,7 +57,7 @@ class Position:
 
     def __add__(self, other):
         # Positions can only be added to other positions
-        if not self == other: 
+        if not self == other:
             return NotImplemented
 
         new = copy(self)
@@ -174,7 +174,7 @@ class Position:
     def view(self):
         """A memory efficient copy of the position
 
-        Returns a 'view' of the position in its current state for use 
+        Returns a 'view' of the position in its current state for use
         in portfolio histories.
 
         Returns:
@@ -204,16 +204,16 @@ class Position:
     def _history(self):
         """A pandas DataFrame of this position's value history
 
-        Returns a datetime indexed dataframe of this positions market 
-        value history and cost, which is automatically updates when 
+        Returns a datetime indexed dataframe of this positions market
+        value history and cost, which is automatically updates when
         changes in the position or the underlying asset occur
 
         Returns:
             history (pd.DataFrame): position history
         """
         history = pd.DataFrame(
-                               [[self.value, self.cost]], 
-                               columns=["VALUE", "COST"], 
+                               [[self.value, self.cost]],
+                               columns=["VALUE", "COST"],
                                index=pd.DatetimeIndex([self.asset.date], name="DATE")
                                )
 
@@ -222,8 +222,8 @@ class Position:
     def update_history(self):
         """updates the positions history to reflect changes
 
-        Updates this positions history whenever changes in the position 
-        occur, either in the size of the position itself or the price 
+        Updates this positions history whenever changes in the position
+        occur, either in the size of the position itself or the price
         of the underlying asset
 
         Returns:
@@ -328,9 +328,9 @@ class Cash(Position):
 class Portfolio:
     """An object representing a portfolio of financial assets
 
-    AlphaGradient portfolios are designed to interact natively with 
-    AlphaGradient assets, and provide all of the functionality one 
-    would expect with a normal financial portfolio. 
+    AlphaGradient portfolios are designed to interact natively with
+    AlphaGradient assets, and provide all of the functionality one
+    would expect with a normal financial portfolio.
 
     Attributes:
         cash (float): How much of the base currency the Portfolio holds
@@ -483,7 +483,7 @@ class Portfolio:
     def sell(self, asset, quantity):
         """Sells a long position in this portfolio
 
-        Decrements a long position in the given asset by 'quantity'. 
+        Decrements a long position in the given asset by 'quantity'.
         Maximum sale quantity is the amount owned by the portfolio.
 
         Args:
@@ -510,7 +510,7 @@ class Portfolio:
         # Creating the position to be sold
         position = Position(asset, quantity)
 
-        # Selling the position if the current position is large enough 
+        # Selling the position if the current position is large enough
         # to satisfy the sale quantity
         try:
             current = self.positions[position.key]
@@ -572,7 +572,7 @@ class Portfolio:
     def cover(self, asset, quantity):
         """Covers a short position in this portfolio
 
-        Covers a short position in the given asset with a cover 
+        Covers a short position in the given asset with a cover
         (purchase) volume given by 'quantity'.
 
         Args:
@@ -602,7 +602,7 @@ class Portfolio:
                              f"${required}, but this portfolio only "
                              f"has ${self.cash} in reserve")
 
-        # Covering the position if the current short position is large 
+        # Covering the position if the current short position is large
         # enough to satisfy the quantity to cover
         try:
             current = self.positions[position.key]
@@ -628,7 +628,7 @@ class Portfolio:
         """A history of this portfolio's positions and value
 
         Returns a datetime indexed pandas dataframe of this portfolio's
-        positions and total market value. This function is only used 
+        positions and total market value. This function is only used
         to initialize it
 
         Returns:
@@ -637,7 +637,7 @@ class Portfolio:
         positions = [position.view() for position in self.positions.values()]
         return pd.DataFrame(
                             [[positions, self.value]],
-                            columns=["POSITIONS", "VALUE"], 
+                            columns=["POSITIONS", "VALUE"],
                             index=pd.DatetimeIndex([self.date], name="DATE")
                             )
 

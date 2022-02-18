@@ -15,7 +15,7 @@ from datetime import timedelta
 
 # Local Imports
 os.chdir("..")
-import AlphaGradient as ag
+import alphagradient as ag
 
 class SpyCoveredCalls(ag.Algorithm):
 
@@ -29,7 +29,7 @@ class SpyCoveredCalls(ag.Algorithm):
     def run(self, start, end):
         day = 1
         while self.date < end:
-            
+
             # Buying spy if we can buy spy
             to_buy = math.floor((self.p.liquid / self.spy.value) / 100)
             to_buy *= 100
@@ -57,4 +57,4 @@ class SpyCoveredCalls(ag.Algorithm):
 
 
 
-        
+
