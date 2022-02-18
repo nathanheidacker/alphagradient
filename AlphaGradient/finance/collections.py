@@ -46,10 +46,12 @@ class Basket:
 
         def __call__(self, *args, **kwargs):
             new = self.c(*args, **kwargs)
-            new._valuate(self._basket.start)
+            if not getattr(new, "underlying", False):
+                new._valuate(self._basket.start)
             new.base = self._basket.base.code
             self._basket.assets.append(new)
             self[new.name] = new
+            return new
 
         def __str__(self):
             return str(dict(self))
@@ -65,6 +67,7 @@ class Basket:
     
     def __init__(self, start=None, end=None, resolution=None, base=None, assets=None, portfolios=None):
         self._start = glbs.start if start is None else self.validate_date(start)
+        self._date = self.start
         self._end = glbs.end if end is None else self.validate_date(end)
         self._resolution = glbs.resolution if resolution is None else self.validate_resolution(resolution)
         self._assets = [] if not isinstance(assets, list) else assets
@@ -87,6 +90,10 @@ class Basket:
     @property
     def start(self):
         return self._start
+
+    @property
+    def date(self):
+        return self._date
 
     @property
     def end(self):
@@ -116,6 +123,13 @@ class Basket:
     def start(self, date):
         self._start = self.validate_date(date)
 
+    @date.setter
+    def date(self, date):
+        date = self.validate_date(date)
+        if not isinstance(date, datetime):
+            raise TypeError(f"date must be a datetime, received {date=}")
+        self._date = date
+
     @end.setter
     def end(self, date):
         self._end = self.validate_date(date)
@@ -131,11 +145,13 @@ class Basket:
     def portfolio(self, initial, name=None, date=None, base=None):
         if isinstance(initial, Portfolio):
             self._portfolios.append(initial)
+            return initial
         else:
             base = self.base.code if base is None else Currency.validate_code(base)
             date = self.start if date is None else self.validate_date(date)
             new = Portfolio(initial, name, date, base)
             self._portfolios.append(new)
+            return new
 
     def data(self, dtype="dict"):
         dtype = dtype.lower() if isinstance(dtype, str) else dtype
@@ -184,7 +200,7 @@ class Basket:
 
         date = self.start if date is None else self.validate_date(date)
 
-        for portfolio in self.portfolios:
+        for portfolio in self._portfolios:
             portfolio.date = date
             portfolio.reset()
 
@@ -198,13 +214,18 @@ class Basket:
         self.sync()
 
     def step(self, delta=None):
+
         delta = self.resolution if delta is None else self.validate_resolution(delta)
-        for portfolio in self.portfolios:
+
+        for portfolio in self._portfolios:
             portfolio.date = portfolio.date + delta
             portfolio.update_history()
-        for asset in self.assets:
+
+        for asset in self._assets:
             asset._valuate(asset.date + delta)
             asset._step(asset.date + delta)
+
+        self.date = self.date + delta
 
     def buy(self, asset, quantity, name=None):
         if self.NONE:
@@ -289,6 +310,10 @@ class Basket:
             return getattr(self._portfolios[0], attr)
         else:
             return {name: getattr(p, attr) for name, p in self.portfolios.items()}
+
+    def reset(self):
+        self.date = self.start
+        self.sync()
 
 
 # Using a protected keyword, attr must be set outside of the class

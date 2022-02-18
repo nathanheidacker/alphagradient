@@ -383,6 +383,10 @@ class Portfolio:
         """This portfolio's net market value"""
         return sum([position.value for position in self.positions.values()])
 
+    @property
+    def liquid(self):
+        return self.cash.quantity
+
     def buy(self, asset, quantity):
         """Buys an asset using this portfolio
 
@@ -395,6 +399,9 @@ class Portfolio:
         Returns:
             Modifies this portfolio's positions inplace. No return value
         """
+        if isinstance(asset, Currency) and asset.is_base:
+            return
+
         if quantity <= 0:
             raise ValueError(f"Purchase quantity must exceed 0, received {quantity}")
 
@@ -432,6 +439,9 @@ class Portfolio:
         Returns:
             Modifies this portfolio's positions inplace. No return value
         """
+        if isinstance(asset, Currency) and asset.is_base:
+            return
+
         if quantity <= 0:
             raise ValueError(f"Sale quantity must exceed 0, received {quantity}")
 
@@ -560,6 +570,13 @@ class Portfolio:
 
     def invest(self, n):
         self.cash += n
+
+    def liquidate(self):
+        for pos in self.longs.values():
+            self.sell(pos.asset, pos.quantity)
+
+        for pos in self.shorts.values():
+            self.cover(pos.asset, pos.quantity)
 
 
 # Uses a protected keyword, so must be used set outside of the class

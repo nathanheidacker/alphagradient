@@ -12,6 +12,7 @@ Todo:
 # Standard imports
 from datetime import datetime, timedelta
 from abc import ABC, abstractmethod
+from numbers import Number
 from random import random
 import math
 import json
@@ -180,16 +181,10 @@ class Option(Asset, ABC, settings=settings["OPTION"]):
 
     def __init__(self, underlying, strike, expiry):
 
-        if not isinstance(strike, (float, int)):
-            try:
-                strike = float(strike)
-            except TypeError:
-                raise f'''Invalid input type {strike=} 
-                for initialization of {underlying.name} {self.__class__.__name__}'''
-            except ValueError:
-                raise f'''Unsuccessful conversion of {strike=} 
-                to numeric type during initialization of {underlying.name} {self.type}'''
-        self.strike = strike
+        if isinstance(strike, Number):
+            self.strike = round(strike, 1)
+        else:
+            raise TypeError(f"Inavlid non-numerical input for {strike}")
 
         if isinstance(expiry, str):
             expiry = datetime.fromisoformat(expiry)
