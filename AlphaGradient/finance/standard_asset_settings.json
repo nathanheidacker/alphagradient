@@ -33,7 +33,9 @@
          "SPLITS"
       ],
       "open_value":"OPEN",
-      "close_value":"CLOSE"
+      "close_value":"CLOSE",
+      "market_open":"9:30 AM",
+      "market_close":"4:30 PM"
    },
    "BROWNIANSTOCK":{
       "hidden":false,

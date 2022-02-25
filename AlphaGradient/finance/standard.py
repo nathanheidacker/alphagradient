@@ -25,6 +25,7 @@ import numpy as np
 # Local imports
 from .asset import Asset, types
 from ..data import datatools
+from .. import utils
 
 with open("AlphaGradient/finance/standard_asset_settings.json") as f:
     settings = json.load(f)
@@ -87,7 +88,7 @@ class Currency(Asset, settings=settings["CURRENCY"]):
             args = tuple(args)
         return super().__new__(cls, *args, **kwargs)
 
-    def __init__(self, code):
+    def __init__(self, code, **kwargs):
         self.validate_code(code, error=True)
         self.code = code
         self.symbol = self.info[self.info["CODE"] == self.code]["SYMBOL"].item()
@@ -256,6 +257,8 @@ class Option(Asset, ABC, settings=settings["OPTION"]):
             raise TypeError(f"Invalid input {expiry=} for "
                             f"initialization of {underlying.name} "
                             f"{cls.__name__}")
+        elif expiry.weekday() > 4:
+            raise ValueError(f"Invalid expiry on {utils.get_weekday(expiry)} for {underlying.name} {cls.__name__}. Valid expiry days are Monday-Friday")
 
         # The name of the contract
         key = f"{underlying.name}{strike}{cls.__name__[0]}{expiry.date().__str__()}"
@@ -263,7 +266,7 @@ class Option(Asset, ABC, settings=settings["OPTION"]):
         return super().__new__(cls, key)
 
 
-    def __init__(self, underlying, strike, expiry):
+    def __init__(self, underlying, strike, expiry, **kwargs):
 
         # Ensuring that the strike price is always a reasonable value
         # Max of one sig fig
@@ -285,13 +288,15 @@ class Option(Asset, ABC, settings=settings["OPTION"]):
             raise TypeError(f"Invalid input {expiry=} for "
                             f"initialization of {underlying.name} "
                             f"{self.__class__.__name__}")
+        else:
+            utils.set_time(expiry, "4:29:59 PM")
 
         # Option-specific Attribute initialization
         self.expiry = expiry
         self.underlying = underlying
         self._mature = False
 
-        super().__init__(self.key, date=underlying.date, base=underlying.base)
+        super().__init__(self.key, date=underlying.date, base=underlying.base, **kwargs)
 
     @property
     def key(self):

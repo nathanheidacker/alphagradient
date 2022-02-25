@@ -18,7 +18,9 @@ from ._globals import __globals as glbs
 from .finance import types, Basket, Portfolio
 
 class Stats:
-    pass
+
+    def __init__(self, portfolio):
+        pass
 
 class Run:
 
