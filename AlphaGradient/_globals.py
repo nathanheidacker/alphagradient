@@ -235,13 +235,13 @@ class Globals:
         """
         delta = delta if isinstance(delta, timedelta) else self.resolution
 
-        for portfolio in types.portfolio.instances.values():
-            portfolio.date = portfolio.date + delta
-            portfolio.update_history()
-
         for asset in self.all_assets():
             asset._valuate(asset.date + delta)
             asset._step(asset.date + delta)
+
+        for portfolio in types.portfolio.instances.values():
+            portfolio.date = portfolio.date + delta
+            portfolio.update_history()
 
 
 __globals = Globals()

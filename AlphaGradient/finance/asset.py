@@ -15,7 +15,7 @@ Todo:
 
 # Standard imports
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime, time
 from numbers import Number
 from weakref import WeakValueDictionary as WeakDict
 import math
@@ -342,7 +342,12 @@ class Asset(ABC):
         for attr_name in ("market_open", "market_close"):
             attr = getattr(cls, attr_name, None)
             if attr is not None:
-                setattr(cls, attr_name, utils.read_timestring(attr))
+                try:
+                    setattr(cls, attr_name, utils.get_time(attr))
+                except ValueError:
+                    raise ValueError(f"Invalid input for {attr_name} during initialization of {cls.__name__} asset subclass. Unable to convert {attr} to a time object.")
+            else:
+                setattr(cls, attr_name, time(minute=0, second=0, microsecond=0))
 
         # What will become the name of this subclass' type
         TYPE = cls.__name__.lower()
@@ -547,6 +552,10 @@ class Asset(ABC):
                 of this asset
         """
         return False
+
+    @property
+    def open(self):
+        return self.date.time() >= self.market_open and self.date.time() < self.market_close if self.market_close != self.market_open else True
 
     def _valuate(self, date=None):
         """Updates asset prices when time steps take place

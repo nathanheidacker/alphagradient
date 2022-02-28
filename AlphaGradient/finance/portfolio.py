@@ -8,7 +8,8 @@ Todo:
 # Standard imports
 from datetime import datetime
 from numbers import Number
-from copy import copy
+from copy import copy, deepcopy
+from datetime import timedelta
 
 # Third party imports
 import pandas as pd
@@ -17,6 +18,7 @@ import numpy as np
 # Local imports
 from .asset import types
 from .standard import Currency
+from .. import utils
 
 class Position:
     """Object representing a position in a financial asset
@@ -189,15 +191,33 @@ class Position:
                 self.value = position.value
                 self.symbol = position.symbol
                 self.cash = isinstance(position, Cash)
+
             def __str__(self):
                 if self.cash:
-                    return f"CASH: {self.symbol}{self.value}"
+                    return f"CASH {self.symbol}{self.value}"
                 short = "SHORT" if self.short else "LONG"
                 return f"{self.asset}_{short}: {self.quantity} @ " \
                        f"{self.symbol}" \
                        f"{round(self.value / self.quantity, 2)}"
+
             def __repr__(self):
                 return self.__str__()
+
+            def __eq__(self, other):
+                if not isinstance(other, View):
+                    return NotImplemented
+
+                return self.key == other.key
+
+            @property
+            def key(self):
+                short = "SHORT" if self.short else "LONG"
+                return f"{self.asset}_{short}"
+
+            def empty(self):
+                empty = deepcopy(self)
+                empty.quantity, empty.cost = 0, 0
+                return empty
 
         return View(self)
 
@@ -467,6 +487,9 @@ class Portfolio:
                              f"{self.date=}. Please ensure portfolio "
                              "and asset dates are synced")
 
+        elif (asset.market_open != asset.market_close) and (asset.date.time() >= asset.market_close or asset.date.time() < asset.market_open):
+            raise ValueError(f"Unable to complete transaction for {asset=} because the market is closed. Market close is {utils.timestring(asset.market_close)}, time of last valuation is {utils.timestring(asset.date)}")
+
         return True
 
 
@@ -644,6 +667,68 @@ class Portfolio:
                             index=pd.DatetimeIndex([self.date], name="DATE")
                             )
 
+    def get_changes(self, date=None):
+
+        date = self.date if date is None else date
+        index = self.history.index
+        value = index.asof(date)
+        ind = index.get_loc(value)
+        current = self.history.iloc[ind]
+        previous_name = None
+        if len(self.history) < 2:
+            previous_positions = [pos.empty() for pos in current["POSITIONS"]]
+            previous = {"POSITIONS": previous_positions, "VALUE": 0}
+            previous_name = current.name
+        else:
+            previous = self.history.iloc[ind - 1]
+
+        changes = {pos.key: [pos.quantity, 0] for pos in previous["POSITIONS"]}
+
+        for pos in current["POSITIONS"]:
+            if pos.key in changes:
+                if pos.quantity == changes[pos.key][0]:
+                    changes.pop(pos.key)
+                else:
+                    changes[pos.key][1] = pos.quantity
+            else:
+                changes[pos.key] = [0, pos.quantity]
+
+        changes = {k: tuple(v) for k, v in changes.items()}
+        prev_value = round(previous["VALUE"], 2)
+        prev_value = f"{self.cash.symbol}{prev_value}"
+        curr_value = round(current["VALUE"], 2)
+        curr_value = f"{self.cash.symbol}{curr_value}"
+        changes["TOTAL VALUE"] = (prev_value, curr_value)
+
+        return changes, current.name, previous_name or previous.name
+
+    def print_changes(self, date=None):
+
+        changes, current, previous = self.get_changes(date)
+        title = ""
+        if current == previous:
+            if current == self.history.index[0]:
+                title = f"CHANGES FROM INITIALIZATION ON {current.date()} {utils.timestring(current)}, {utils.get_weekday(current)[:3]}"
+            else:
+                return
+        else:
+            title = f"CHANGES FROM {previous.date()} {utils.timestring(previous)}, {utils.get_weekday(previous)[:3]} --> {current.date()} {utils.timestring(current)}, {utils.get_weekday(current)[:3]}"
+
+        m = max([len(key) for key in changes]) + 1
+        border = "-" * len(title)
+        print(f"{title}\n{border}")
+        if m:
+            before_len = max([len(str(pos[0])) for pos in changes.values()])
+            for key, change in changes.items():
+                diff = " " * (m - len(key))
+                before = " " * (before_len - len(str(change[0])))
+                before = f"{change[0]}{before}"
+                print(f"{key}{diff}: {before} --> {change[1]}")
+        print(f"{border}")
+
+
+
+
     def update_history(self):
         """updates this portfolio's history
 
@@ -661,13 +746,27 @@ class Portfolio:
         """Adds cash to this portfolio"""
         self.cash += n
 
-    def liquidate(self):
+    def liquidate(self, force=False):
         """Sells all positions that are not the base currency/cash position"""
-        for pos in self.longs.values():
-            self.sell(pos.asset, pos.quantity)
+        if not force:
+            for pos in self.longs.values():
+                self.sell(pos.asset, pos.quantity)
 
-        for pos in self.shorts.values():
-            self.cover(pos.asset, pos.quantity)
+            for pos in self.shorts.values():
+                self.cover(pos.asset, pos.quantity)
+        else:
+            for pos in self.longs.values():
+                if isinstance(pos.asset, Currency) and pos.asset.is_base:
+                    pass
+                else:
+                    self.cash += Cash.from_position(pos)
+                    pos.quantity = 0
+
+            for pos in self.shorts.values():
+                self.cash += Cash.from_position(pos)
+                pos.quantity = 0
+
+            self.update_positions()
 
 
 # Uses a protected keyword, so must be used set outside of the class

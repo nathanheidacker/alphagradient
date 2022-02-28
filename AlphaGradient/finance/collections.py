@@ -177,7 +177,8 @@ class Basket:
 
     @property
     def end(self):
-        return self._end
+        last = max(asset.data.last for asset in self.assets)
+        return self._end if self._end < last else last
 
     @property
     def resolution(self):
@@ -198,6 +199,10 @@ class Basket:
     @property
     def status(self):
         return self.Status.get(len(self.portfolios))
+
+    @property
+    def open(self):
+        return all(asset.open for asset in self.assets) and self.date.weekday() < 5
 
     @start.setter
     def start(self, date):
@@ -388,6 +393,8 @@ class Basket:
                 asset.reset()
             asset._valuate(date)
 
+        self.date = date
+
     def autosync(self):
         """Combines auto and sync
 
@@ -434,19 +441,21 @@ class Basket:
 
         delta = self.resolution if delta is None else self.validate_resolution(delta)
 
-        for portfolio in self._portfolios:
-            portfolio.date = portfolio.date + delta
-            portfolio.update_history()
-
         for asset in self._assets:
             asset._valuate(asset.date + delta)
             asset._step(asset.date + delta)
 
+        for portfolio in self._portfolios:
+            portfolio.date = portfolio.date + delta
+            portfolio.update_history()
+
         self.date = self.date + delta
+
+        # Cleaning out expired assets
+        self._assets = [asset for asset in self.assets if not asset.expired]
 
     def next(self):
         nextt = min([asset.next for asset in self.assets])
-        print(nextt)
         self.step(nextt)
 
     def buy(self, asset, quantity, name=None):

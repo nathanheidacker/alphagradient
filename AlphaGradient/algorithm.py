@@ -32,7 +32,7 @@ class Algorithm(ABC):
 
     def __init__(self, start=None, end=None, resolution=None, verbose=False):
         self.start = glbs.start if start is None else self.validate_date(start)
-        self.end = glbs.end if end is None else self.validate_date(end)
+        self.end = glbs.end if end is None else self.validate_end(self.start, end)
         self.resolution = glbs.resolution if resolution is None else self.validate_resolution(resolution)
         self._runs = []
         self._environment = Basket()
@@ -40,8 +40,9 @@ class Algorithm(ABC):
 
     def __call__(self, *args, start=None, end=None, **kwargs):
         start = self.start if start is None else self.validate_date(start)
-        end = self.end if end is None else self.validate_end(end)
+        end = self.end if end is None else self.validate_end(start, end)
         self.env = self.setup(*args, start=start, end=end, **kwargs)
+        end = end if end < self.env.end else self.env.end
         self.run(*args, start=start, end=end, **kwargs)
         self._runs.append(Run(self.env))
 
@@ -84,20 +85,20 @@ class Algorithm(ABC):
 
         return date
 
-    def validate_end(self, date):
+    def validate_end(self, start, end):
         try:
-            return self.validate_date(date)
+            return self.validate_date(end)
         except TypeError as e:
-            if isinstance(date, Number):
-                date = self.start + timedelta(days=date)
+            if isinstance(end, Number):
+                end = start + timedelta(days=end)
 
             elif isinstance(date, timedelta):
-                date = self.start + date
+                end = start + end
 
-            if not isinstance(date, datetime):
+            if not isinstance(end, datetime):
                 raise e
 
-            return date
+            return end
 
     def validate_resolution(self, delta):
         if isinstance(delta, Number):

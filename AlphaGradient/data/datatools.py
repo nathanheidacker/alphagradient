@@ -64,7 +64,6 @@ def get_data(asset):
     Returns:
         data (AssetData): Stored dataset relevant to the asset
     """
-
     key = asset.key
     data = None
 
@@ -106,6 +105,7 @@ class AssetData:
         data (pd.DataFrame): The dataset for the asset
         open_value (str): The column to associate with open
         close_value (str): The column to associate with close
+        first (datetime): The first available date for this dataset
         last (datetime): The last available date for this dataset
     """
 
@@ -140,6 +140,9 @@ class AssetData:
                                  "during initialization")
             data = pd.DataFrame(data, columns=columns)
 
+        elif isinstance(data, AssetData):
+            data = data.data
+
         # Handle inputs that can be processed by pd.read_table
         elif not isinstance(data, pd.DataFrame):
             try:
@@ -152,7 +155,10 @@ class AssetData:
             if isinstance(data.index, pd.core.indexes.datetimes.DatetimeIndex):
                 data.index.name = "DATE"
                 data["DATE"] = data.index
+                data["DATE"] = data["DATE"].map(lambda date: date.replace(tzinfo=None))
+
         else:
+            print(type(data))
             raise ValueError(f"Unable to create valid asset dataset from {data}")
 
         # Formatting columns
@@ -215,6 +221,8 @@ class AssetData:
         self._data = data
         self.resolution = self._get_resolution()
         self._define_periods(asset_type)
+        self._first = self._data["_period_open_"][0]
+        self._last = self._data["_period_close_"][-1]
 
     def __getattr__(self, attr):
         try:
@@ -233,6 +241,14 @@ class AssetData:
 
     def __bool__(self):
         return not self.data.empty
+
+    @property
+    def first(self):
+        return self._first
+
+    @property
+    def last(self):
+        return self._last
 
     @property
     def data(self):
@@ -373,20 +389,23 @@ class AssetData:
             self._data["_period_close_"] = self._data.apply(close_map, axis=1)
 
     def valuate(self, date, asset):
+        date = date if date >= self.first else self.first
         data = self._data.asof(date)
         if date >= data["_period_close_"]:
-            print("CLOSE", date, date.weekday(), data["_period_close_"], data["_period_close_"].weekday())
+            #print("CLOSE", date, date.weekday(), "|", data["_period_close_"], data["_period_close_"].weekday())
             return data[asset.close_value]
         elif date >= data["_period_open_"]:
-            print("OPEN", date, date.weekday(), data["_period_close_"], data["_period_close_"].weekday())
+            #print("OPEN", date, date.weekday(), "|", data["_period_close_"], data["_period_close_"].weekday())
             return data[asset.open_value]
         else:
-            print("FAILED", date, date.weekday(), data["_period_close_"], data["_period_close_"].weekday())
+            #print("FAILED", date, date.weekday(), "|", data["_period_close_"], data["_period_close_"].weekday())
             return data[asset.open_value]
 
     def next(self, date):
         if isinstance(date, str):
             date = datetime.fromisoformat(date)
+
+        date = date if date >= self.first else self.first
         index = self._data.index
         value = index.asof(date)
         ind = index.get_loc(value)

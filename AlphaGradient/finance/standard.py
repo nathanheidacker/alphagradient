@@ -289,10 +289,10 @@ class Option(Asset, ABC, settings=settings["OPTION"]):
                             f"initialization of {underlying.name} "
                             f"{self.__class__.__name__}")
         else:
-            utils.set_time(expiry, "4:29:59 PM")
+            expiry = utils.set_time(expiry, underlying.market_close)
 
         # Option-specific Attribute initialization
-        self.expiry = expiry
+        self._expiry = expiry
         self.underlying = underlying
         self._mature = False
 
@@ -302,6 +302,10 @@ class Option(Asset, ABC, settings=settings["OPTION"]):
     def key(self):
         return f"{self.underlying.name}{self.strike}"\
                f"{self.__class__.__name__[0]}{self.expiry.date().__str__()}"
+
+    @property
+    def expiry(self):
+        return self._expiry
 
     @staticmethod
     def cdf(x):
@@ -419,7 +423,7 @@ class Call(Option, settings=settings["CALL"]):
 
         # Expired call positions are only assigned if they are ITM
         if not position.asset.itm:
-            return None
+            return
 
         # Creating the new positions that the portfolio will receive
         # in the case of assignment or exercise

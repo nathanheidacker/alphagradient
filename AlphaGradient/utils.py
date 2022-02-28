@@ -57,7 +57,7 @@ def read_timestring(timestring, dtype=time):
         else:
             return dtdict
 
-    except (KeyError, ValueError, TypeError) as e:
+    except (KeyError, ValueError, TypeError, AttributeError) as e:
             raise ValueError(f"Unable to convert timestring {timestring[0].__repr__()} to time object. Please follow the format: \'HH:MM:SS AM\'") from e
 
 
@@ -77,13 +77,25 @@ def set_time(dt, t):
         raise TypeError(f"dt input must be a datetime. Received {dt=}")
 
 
+def get_time(t):
+    if isinstance(t, str):
+        t = read_timestring(t)
+    elif isinstance(t, datetime, pd.Timestamp):
+        t = t.time()
+
+    if not isinstance(t, time):
+        raise ValueError(f"Unable to convert {t=} to time object")
+    return t
+
+
 def timestring(t):
     ampm = "AM"
     hour = t.hour
+    minute = t.minute if t.minute > 9 else f"0{t.minute}"
     if hour > 12:
         ampm = "PM"
         hour -= 12
-    return f"{hour}:{t.minute} {ampm}"
+    return f"{hour}:{minute} {ampm}"
 
 def get_weekday(dt):
     weekdays = {0: "Monday",
