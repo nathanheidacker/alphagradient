@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 # Third party imports
 
 # Local imports
-from .finance import types, Asset, Currency, Call, Put
+from .finance import types, Asset, Currency, Call, Put, Stock
 from .finance.standard import Option
 from .data.datatools import AssetData
 from . import utils
@@ -39,8 +39,10 @@ class Globals:
         setattr(AssetData, "_global_res", self.resolution)
         setattr(Asset, "_global_res", self.resolution)
         self._base = Currency(Currency.base)
-        self.RISK_FREE_RATE = 0.1
+        self.RISK_FREE_RATE = 0.0
         setattr(Asset, "rfr", self.rfr)
+        self._benchmark = Stock("SPY")
+        setattr(Asset, "benchmark", self._benchmark)
 
     def __str__(self):
         return str({k[1:]:v for k, v in self.__dict__.items()})
@@ -177,6 +179,24 @@ class Globals:
     def rfr(self, rate):
         setattr(Option, "rfr", rate)
         self.RISK_FREE_RATE = rate
+
+    @property
+    def benchmark(self):
+        return self._benchmark
+
+    @benchmark.setter
+    def benchmark(self, benchmark):
+        if isinstance(benchmark, Stock):
+            self._benchmark = benchmark
+            setattr(Asset, "benchmark", self._benchmark)
+        elif isinstance(benchmark, str):
+            try:
+                self._benchmark = Stock(benchmark)
+                setattr(Asset, "benchmark", self._benchmark)
+            except Exception as e:
+                raise RuntimeError(f"Unable to use {benchmark} as a benchmark because the following error occurred during initialization: {e}") from e
+        else:
+            raise TypeError(f"Benchmark must be a Stock. Received {benchmark.__class__.__name__}")
 
     def auto(self):
         """Automatically sets global start, end, and resolution to

@@ -1,6 +1,4 @@
-aenum
 numpy
 pandas
-sklearn
-matplotlib
 yfinance
+aenum

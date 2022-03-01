@@ -15,8 +15,7 @@ from datetime import datetime, date, timedelta
 import numpy as np
 
 # Local Imports
-os.chdir("..")
-import alphagradient as ag
+from .. import agproxy as ag
 
 class SpyCoveredCalls(ag.Algorithm):
 

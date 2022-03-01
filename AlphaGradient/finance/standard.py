@@ -108,7 +108,7 @@ class Currency(Asset, settings=settings["CURRENCY"]):
         if self.is_base:
             return None
         else:
-            data = yf.Ticker(f"{self.code}{self.base}=X").history(period="max")
+            data = yf.download(f"{self.code}{self.base}=X", auto_adjust=False)
             return datatools.AssetData(Currency, data)
 
     @classmethod
@@ -189,7 +189,7 @@ class Stock(Asset, settings=settings["STOCK"]):
         return self.value
 
     def online_data(self):
-        data = yf.Ticker(self.name).history(period="max")
+        data = yf.download(self.name, auto_adjust=False)
         return datatools.AssetData(Stock, data)
 
     @property
