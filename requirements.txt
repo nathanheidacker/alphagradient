@@ -1,3 +1,6 @@
+pathos
+p_tqdm
+datapackage
 numpy
 pandas
 yfinance

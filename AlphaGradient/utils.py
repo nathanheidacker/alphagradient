@@ -3,6 +3,7 @@
 
 # Standard imports
 from datetime import datetime, date, time, timedelta
+import math
 
 # Third Party imports
 import pandas as pd
@@ -107,3 +108,34 @@ def get_weekday(dt):
                 6: "Sunday",}
 
     return weekdays[dt.weekday()]
+
+def progress_print(to_print, last=[0]):
+    print("\r" + (" " * last[0]), end="\r", flush=True)
+    print(to_print, end="", flush=True)
+    last[0] = len(str(to_print))
+
+def isiter(obj):
+    try:
+        iter(obj)
+        return True
+    except TypeError:
+        return False
+
+def get_batches(iterable, size=100):
+    i = 0
+    last = len(iterable)
+    for i in range(math.ceil(len(iterable) / size)):
+        start = i * size
+        end = start + size
+        end = end if end < last else last
+        yield iterable[start:end]
+
+def auto_batch_size(iterable):
+    if len(iterable) > 10000:
+        return 100
+    else:
+        return int(((((len(iterable) - 10000) ** 2) * 70) / 100_000_000) + 100)
+
+def auto_batch(iterable):
+    return get_batches(iterable, auto_batch_size(iterable))
+

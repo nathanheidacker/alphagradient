@@ -28,7 +28,9 @@ class SpyCoveredCalls(ag.Algorithm):
         return env
 
     def run(self, start, end):
+        start = start or self.start
         step = 1
+        day = 1
         while self.date < end:
 
             if self.env.open:
@@ -50,16 +52,21 @@ class SpyCoveredCalls(ag.Algorithm):
                     self.env.short(self.spycall(), to_sell)
 
             # Go to the next trading day
-            self.verbose(f"STEP {step}: ")
+            days = ((self.date - start).days + 1)
+            if days > day:
+                day = days
+                step = 0
+            else:
+                step += 1
+            self.verbose(f"DAY {day} | STEP {step}: ")
             self.p.print_changes()
             self.verbose(self.p.positions)
             self.verbose(self.env.assets, "\n\n")
             self.env.next()
 
-            step += 1
-
         self.p.liquidate(force=True)
-        print(f"Initial: {ag.finance.Cash(self.initial)} | Current: {self.p.cash} | Profit: {self.p.cash - ag.finance.Cash(self.initial)} | Return: {round(((self.p.cash.quantity - self.initial) / self.initial)* 100, 2)}")
+        ret = round(((self.p.cash.quantity - self.initial) / self.initial) * 100, 2)
+        print(f"Initial: {ag.finance.Cash(self.initial)} | Current: {self.p.cash} | Profit: {self.p.cash - ag.finance.Cash(self.initial)} | Return: {ret}%, {(math.floor(ret / 10) + 1) / 10}x")
 
     def spycall(self, offset=1, delta=1):
         strike = self.spy.value + offset

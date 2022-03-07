@@ -12,7 +12,14 @@ from datetime import datetime, timedelta
 # Third party imports
 
 # Local imports
-from .finance import types, Asset, Currency, Call, Put, Stock
+from .finance import (
+                      types,
+                      Asset,
+                      Currency,
+                      Call,
+                      Put,
+                      Stock
+                      )
 from .finance.standard import Option
 from .data.datatools import AssetData
 from . import utils
@@ -262,6 +269,15 @@ class Globals:
         for portfolio in types.portfolio.instances.values():
             portfolio.date = portfolio.date + delta
             portfolio.update_history()
+
+    def refresh(self):
+        pass
+
+    def refresh_local(self):
+        pass
+
+    def refresh_all(self):
+        pass
 
 
 __globals = Globals()
