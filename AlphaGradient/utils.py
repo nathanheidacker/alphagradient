@@ -68,14 +68,18 @@ def set_time(dt, t):
         newtime = read_timestring(t, dtype=dict)
     elif isinstance(t, time):
         newtime = deconstruct_dt(t)
-    elif isinstance(t, datetime, pd.Timestamp):
+    elif isinstance(t, (datetime, pd.Timestamp, np.datetime64)):
         newtime = deconstruct_dt(t.time())
     else:
         raise TypeError(f"{t=} could not be parsed into a time object")
     if isinstance(dt, datetime):
         return dt.replace(**newtime)
     else:
-        raise TypeError(f"dt input must be a datetime. Received {dt=}")
+        try:
+            dt = pd.to_datetime(dt)
+            return dt.replace(**newtime)
+        except Exception:
+            raise TypeError(f"dt input must be a datetime. Received {dt=}")
 
 
 def get_time(t):
@@ -134,7 +138,7 @@ def auto_batch_size(iterable):
     if len(iterable) > 10000:
         return 100
     else:
-        return int(((((len(iterable) - 10000) ** 2) * 70) / 100_000_000) + 100)
+        return int((-1 * (len(iterable) - 10000) ** 2) * (70 / 100_000_000) + 100)
 
 def auto_batch(iterable):
     return get_batches(iterable, auto_batch_size(iterable))

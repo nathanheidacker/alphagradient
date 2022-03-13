@@ -19,7 +19,7 @@ def __getattr__(name):
 
     # Returning a list containing ALL assets currently in memory
     if name == "assets":
-        return __globals.all_assets()
+        return list(__globals.all_assets())
 
     if name == "globals":
         return __globals

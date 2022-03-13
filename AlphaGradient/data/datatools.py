@@ -113,6 +113,7 @@ class AssetData:
         first (datetime): The first available date for this dataset
         last (datetime): The last available date for this dataset
     """
+    _set_time_vectorized = np.vectorize(utils.set_time, excluded=["t"])
 
     def __init__(self, asset_type, data, columns=None, preinitialized=False):
 
@@ -170,10 +171,15 @@ class AssetData:
 
         # Final check that we have valid data prior to formatting
         if isinstance(data, pd.DataFrame):
-            if isinstance(data.index, pd.core.indexes.datetimes.DatetimeIndex) or data.index.name.lower() == "date":
+            if isinstance(data.index, pd.core.indexes.datetimes.DatetimeIndex) or isinstance(data.index.name, str) and data.index.name.lower() == "date":
                 data.index.name = "DATE"
                 data["DATE"] = data.index
-                data["DATE"] = data["DATE"].map(lambda date: date.replace(tzinfo=None))
+
+                # This converts the values to a numpy array, automatically removing tzinfo
+                data["DATE"] = data["DATE"].values
+
+                # OLD METHOD OF REMOVING TZINFO
+                #data["DATE"] = data["DATE"].map(lambda date: date.replace(tzinfo=None))
 
 
         else:
@@ -255,6 +261,7 @@ class AssetData:
             self._data.columns = self._data.columns + ["_time_resolution_", "_period_open_", "_period_close_"]
 
         self._get_firstlast()
+        self._get_stats(asset_type)
 
     def __getattr__(self, attr):
         try:
@@ -279,6 +286,9 @@ class AssetData:
 
     def __setstate__(self, state):
         self.__dict__ = state
+
+    def __len__(self):
+        return len(self._data)
 
     @property
     def first(self):
@@ -363,7 +373,6 @@ class AssetData:
         satisfied = {column : (column in data.columns) for column in required}
         unsatisfied = [column for column, present in satisfied.items() if not present]
         if unsatisfied:
-            print(data, data.index, type(data.index))
             unsatisfied = str(unsatisfied)[1:-1]
             raise ValueError(f"AssetData missing required columns: {unsatisfied}")
 
@@ -394,10 +403,9 @@ class AssetData:
         resolution = None
 
         if self._data is not None and len(self._data) > 1:
-            res_data = self._data.index.to_frame(name="init")
-            res_data["next"] = res_data.shift(-1)
-            res_data.iat[-1, 1] = res_data.iat[-2, 1]
-            res_data = res_data.apply(lambda row: row["next"] - row["init"], axis=1)
+            res_data = self._data.index.to_series()
+            res_data = res_data.shift(-1) - res_data
+            res_data[-1] = res_data[-2]
             resolution = res_data.value_counts().index[0].to_pytimedelta()
             self._data["_time_resolution_"] = res_data
 
@@ -409,23 +417,39 @@ class AssetData:
 
     def _define_periods(self, cls):
 
-        def close_map(row):
-            if row["_time_resolution_"] < timedelta(days=1):
-                return row["_period_close_"]
-
-            close = utils.set_time(row["_period_close_"], cls.market_close)
-
-            if row["_time_resolution_"] >= timedelta(days=1):
-                popen = row["_period_open_"]
-                close = close.replace(year=popen.year, month=popen.month, day=popen.day)
-
+        @np.vectorize
+        def close_map(close, time_res, open_date):
+            if time_res >= np.timedelta64(1, "D"):
+                return utils.set_time(pd.to_datetime(open_date), cls.market_close)
             return close
 
-        self._data["_period_open_"] = self._data.index.to_series()
-        self._data["_period_close_"] = self._data.apply(lambda row: row.name + row["_time_resolution_"], axis=1)
+        index = self._data.index.to_series()
+        self._data["_period_open_"] = index
+        self._data["_period_close_"] = index + self._data["_time_resolution_"]
+        #self._data["_period_close_"] = self._data.apply(lambda row: row.name + row["_time_resolution_"], axis=1)
         if self.resolution == timedelta(days=1):
-            self._data["_period_open_"] = self._data["_period_open_"].map(lambda dt: utils.set_time(dt, cls.market_open))
-            self._data["_period_close_"] = self._data.apply(close_map, axis=1)
+
+            # NEW VECTORIZATION
+            #self._data["_period_open_"] = self._data["_period_open_"].map(lambda dt: utils.set_time(dt, cls.market_open))
+            self._data["_period_open_"] = self._set_time_vectorized(self._data["_period_open_"], cls.market_open)
+
+            # NEW VECTORIZATION
+            #self._data["_period_close_"] = self._data.apply(close_map, axis=1)
+            self._data["_period_close_"] = close_map(self._data["_period_close_"], self._data["_time_resolution_"], self._data["_period_open_"])
+
+    def _get_stats(self, asset):
+        if len(self._data) > 1:
+            shifted = self._data[asset.close_value].shift(1)
+            shifted.name = "A"
+            shifted[0] = shifted[1]
+            shifted = shifted.to_frame()
+            shifted["B"] = self._data[asset.close_value]
+            shifted = (shifted["B"] / shifted["A"]) - 1
+        else:
+            shifted = self._data[asset.close_value]
+
+        self._data["CHANGE"] = shifted
+
 
     def valuate(self, date, asset):
         date = date if date >= self.first else self.first
@@ -484,17 +508,23 @@ class AssetData:
 
     def get_index(self, date):
         date = date if date >= self.first else self.first
-        return self.data.index.get_loc(self.data.index.asof(date))
+        return self._data.index.get_loc(self._data.index.asof(date))
 
     def range(self, start, end):
         start = self.get_index(start)
         end = self.get_index(end)
-        if end > len(self.data) - 1:
-            end = len(self.data)
+        if end > len(self._data) - 1:
+            end = len(self._data)
         if end - start < 1:
             end += 1
-        return self.data.iloc[start:end, :]
+        return self._data.iloc[start:end, :]
 
+    def get_times(self):
+
+        def uniquetimes(series):
+            return pd.Series(series.map(lambda t: t.time()).unique()).to_list()
+
+        return list(set(uniquetimes(self._data["_period_open_"]) + uniquetimes(self._data["_period_close_"])))
 
 
 

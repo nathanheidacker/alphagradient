@@ -407,7 +407,7 @@ class Call(Option, settings=settings["CALL"]):
                               rfr = self.rfr,
                               dy = div_yield,
                               ttm = ttm,
-                              vol = 0.3
+                              vol = self.underlying.vol()
                               )
 
         p1 = (self.cdf(d1) * self.spot * math.pow(math.e, -1 * (div_yield * ttm)))
@@ -511,7 +511,7 @@ class Put(Option, settings=settings["OPTION"]):
                               rfr = self.rfr,
                               dy = div_yield,
                               ttm = ttm,
-                              vol = 0.3
+                              vol = self.underlying.vol()
                               )
 
         p1 = (self.cdf(-1 * d2) * self.strike * math.pow(math.e, -1 * (self.rfr * ttm)))

@@ -24,6 +24,8 @@ class SpyCoveredCalls(ag.Algorithm):
         self.spy = env.stock("SPY")
         self.initial = self.spy.value * 150
         self.p = env.portfolio(self.initial)
+        env.finalize(manual=["9:30 AM", "4:00 PM"])
+        print(env.times)
 
         return env
 
@@ -59,7 +61,8 @@ class SpyCoveredCalls(ag.Algorithm):
             else:
                 step += 1
             self.verbose(f"DAY {day} | STEP {step}: ")
-            self.p.print_changes()
+            if self.verbose is print:
+                self.p.print_changes()
             self.verbose(self.p.positions)
             self.verbose(self.env.assets, "\n\n")
             self.env.next()

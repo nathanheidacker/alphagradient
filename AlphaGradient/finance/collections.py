@@ -163,6 +163,8 @@ class Basket:
         self._assets = [] if not isinstance(assets, list) else assets
         self._portfolios = [] if not isinstance(assets, list) else portfolios
         self._base = glbs.base if not isinstance(base, Currency) else base
+        self._times = []
+        self._time_index = 0
         self.force = force
 
     def __getattr__(self, attr):
@@ -177,6 +179,14 @@ class Basket:
             return self._redirect(attr)
         else:
             raise AttributeError(f"AlphaGradient Basket object has no attribute {attr}")
+
+    def __contains__(self, other):
+        if isinstance(other, Asset):
+            return other in self._assets
+        elif isinstance(other, Portfolio):
+            return other in self._portfolios
+        else:
+            return other in [asset.name for asset in self._assets]
 
     @property
     def start(self):
@@ -212,8 +222,15 @@ class Basket:
         return self.Status.get(len(self.portfolios))
 
     @property
+    def times(self):
+        return self._times
+
+    @property
     def open(self):
         return all(asset.open for asset in self.assets) and self.date.weekday() < 5
+
+        # Should be any(asset.open for asset in self.assets)?
+        # Imposing unnecessary restrictions (just for now)
 
     @start.setter
     def start(self, date):
@@ -285,6 +302,30 @@ class Basket:
             raise ValueError(f"Unsupported type {dtype=}. Basket data "
                              "can only be returned as a list or a "
                              "dictionary")
+
+    def finalize(self, include=None, exclude=None, manual=None):
+        """Vastly improves efficiency of self.next()
+
+        Improves the efficiency of self.next() by determining a set of relevant times for the currently instantiated assets, and iterating across those for time steps rather than dynamically determing the next time step after each step
+
+        Should only be called after all assets containing new relevant timestamps have been instantiated. Creating assets with novel and necessary valuation points will result in them being ignored by calls to next()
+        """
+        if manual:
+            if all(isinstance(t, time) for t in manual):
+                self._times = manual
+            elif all(isinstance(t, str) for t in manual):
+                self._times = [utils.read_timestring(t) for t in manual]
+            else:
+                raise TypeError(f"Invalid manual time input for environment finalization")
+        else:
+            self._times = sorted(list(set([t for asset in self.assets for t in asset.data.get_times()])))
+        current = self.date.time()
+        for i, t in enumerate(self._times):
+            if current < t:
+                self._time_index = i - 1
+                break
+        else:
+            self._time_index = 0
 
     @staticmethod
     def validate_date(date):
@@ -466,7 +507,15 @@ class Basket:
         self._assets = [asset for asset in self.assets if not asset.expired]
 
     def next(self):
-        nextt = min([asset.next for asset in self.assets])
+        nextt = self.date
+        if self.times:
+            self._time_index += 1
+            if self._time_index >= len(self._times):
+                nextt += timedelta(days=1)
+                self._time_index = 0
+            nextt = utils.set_time(nextt, self._times[self._time_index])
+        else:
+            nextt = min([asset.next for asset in self.assets])
         self.step(nextt)
 
     def buy(self, asset, quantity, name=None):
@@ -727,6 +776,14 @@ setattr(Basket, "type", types.basket)
 setattr(types.basket, "c", Basket)
 
 def _get_exchange_info():
+    """Returns a dataframe of exchange listings for initializing the Universe class
+
+    Called upon initialization of the Universe class, updates the stock listings that are available by default when gathering stock data from the internet
+
+    Returns:
+        exchange info (pd.DataFrame): A dataframe of all available stock
+            listings
+    """
     base = "ftp://ftp.nasdaqtrader.com/symboldirectory/"
     dfs = []
     for file in ["nasdaqlisted.txt", "otherlisted.txt"]:
@@ -756,7 +813,22 @@ def _get_exchange_info():
 
 
 class Universe(dict):
-    """A collection of stocks that can be efficiently filtered"""
+    """A collection of stocks that can be efficiently filtered
+
+    Special dictionaries that provide functionality for filtering thousands of stocks to meet a set of selection criteria
+
+    Attributes:
+        verbose (bool): Whether or not universe functions (including
+            initialization) will print their status/progress to stdout
+        refresh (bool): Whether or not the universe will prefer to
+            gather data from onlne, even if it is present locally
+        tickers (list(str)): A list of stock tickers that are currently
+            included in / tracked by this universe
+        coverage (Number): A value indicating the proportion of
+            available stocks that are present in this universe
+        supported (list(str)): A list of stock exhanges which Universes
+            currently support filtering by explicitly during instantiation
+    """
     exchange_info = None
     try:
         raise Exception
@@ -770,6 +842,7 @@ class Universe(dict):
         super().__init__()
         self.verbose = verbose
         self.refresh = refresh
+        self.print = print if self.verbose else lambda *args, **kwargs: None
         self._tickers = []
         self._errors = []
         self.update()
@@ -787,6 +860,12 @@ class Universe(dict):
             return _filterexp(attr)
         except AttributeError:
             raise AttributeError(f"Universe object has no attribute {attr}")
+
+    def __contains__(self, other):
+        if isinstance(other, Stock):
+            return other in self.values()
+        else:
+            return other in self.keys()
 
     def __copy__(self):
         return Universe(list(self.values()), refresh=self.refresh, verbose=False)
@@ -807,15 +886,22 @@ class Universe(dict):
         return 1
 
     @property
-    def print(self):
-        return print if self.verbose else lambda *args, **kwargs: None
-
-    @property
     def supported(self):
         return self.exchange_info["Exchange"].unique.to_list()
 
     def add(self, tickers, refresh=None):
-        refresh = refresh or self.refresh
+        """Adds new stocks/tickers to the universe
+
+        Args:
+            tickers (list(str) | list(Stock)): A list of tickers or
+                already instantiated stock objects to be added to the universe
+            refresh (bool): Whether or not to prefer downloading stock
+                data online even when present locally
+
+        Returns:
+            None (NoneType): Modifies the universe in place
+        """
+        refresh = self.refresh if refresh is None else refresh
         tickers, stock_input = self._ticker_input(tickers)
         tickers = [ticker.upper() for ticker in tickers if ticker not in self._tickers]
         self._tickers = sorted(self._tickers + tickers)
@@ -828,6 +914,7 @@ class Universe(dict):
 
 
     def update(self):
+        """Updates the locally available tickers"""
         if self.refresh:
             self.local_p = []
             self.local_csv = []
@@ -839,6 +926,7 @@ class Universe(dict):
 
 
     def _ticker_input(self, tickers):
+        """Normalizes ticker list inputs before _get_stocks is called"""
         stock_input = False
         if isinstance(tickers, str):
             if tickers.lower() == "all":
@@ -886,13 +974,44 @@ class Universe(dict):
 
 
     def _get_stocks(self, tickers, refresh=False):
-        all_tickers = tickers
+        """Given a list of tickers (list(str)), adds all of them as entries to self
+
+        Takes in a list of normalized tickers (list(str)) and adds them as entries to the dictionary, where keys are tickers and values are the initialized assets
+
+        Args:
+            tickers (list(str)): A list of stock tickers to be added
+            refresh (bool): Whether to prefer online instead of local
+                data
+
+        Returns:
+            None (NoneType): Modifies the universe in place
+        """
+        def get_instantiated(tickers):
+            """Gets the tickers that are already instantiated in AG"""
+            to_instantiate = []
+            for ticker in tickers:
+                if types.stock.instances.get(ticker):
+                    self[ticker] = types.stock[ticker]
+                else:
+                    to_instantiate.append(ticker)
+            return to_instantiate
+
+        # Ensures that we don't reinitialize stocks that already exist
+        all_tickers = get_instantiated(tickers)
+
+        # The number of columns for progress displays
         ncols = 100
         self.print(f"Adding {len(all_tickers)} Stocks to Universe")
-        local = [ticker for ticker in all_tickers if ticker in self.local]
-        online = [ticker for ticker in all_tickers if ticker not in local]
+
+        # Separating uninitialized tickers into online and local
+        local = []
+        online = all_tickers[:]
+        if not refresh:
+            local = [ticker for ticker in all_tickers if ticker in self.local]
+            online = [ticker for ticker in all_tickers if ticker not in local]
 
         def get_local(tickers):
+            """Gets all tickers that have data available locally"""
             self.print(f"Initializing {len(tickers)} Stocks from local data")
             stocks = p_map(lambda ticker: Stock(ticker), tickers, ncols=ncols, disable=(not self.verbose))
             for stock in stocks:
@@ -900,6 +1019,13 @@ class Universe(dict):
             self.print()
 
         def get_online(tickers, timeout=5):
+            """Gets all remaining data not otherwise handled
+
+            Args:
+                tickers (list(str)): A list of tickers to be added
+                timeout (Number): The amount of time to wait for each
+                    stock when attempting download before considering it a failure / timeout error
+            """
             self.print(f"Initializing {len(tickers)} Stocks from online data")
             for i, batch in enumerate(utils.auto_batch(tickers)):
                 self.print(f"Batch {i + 1}: downloading {len(batch)} stocks")
@@ -930,6 +1056,7 @@ class Universe(dict):
                 self.print()
 
         def get_online_mp(tickers, timeout=5):
+            """A version of get_online that utilizes multiprocessing"""
             size = utils.auto_batch_size(tickers)
             batches = math.ceil(len(tickers) / size)
             self.print(f"Initializing {len(tickers)} Stocks from online data ({batches} batches)")
@@ -953,7 +1080,7 @@ class Universe(dict):
 
                 return ([Stock(ticker, data=data[ticker].dropna(how="all")) for ticker in batch], errors)
 
-            batches = list(auto_batch(tickers))
+            batches = list(utils.auto_batch(tickers))
             stocks = p_map(get_batch, batches, ncols=ncols, disable=(not self.verbose))
             errors = {
                       "delisted": [error for value in stocks for error in value[1]["delisted"]],
@@ -965,6 +1092,8 @@ class Universe(dict):
 
             return errors
 
+        # If refreshing, all stocks are initialzed via newly downloaded
+        # online data
         if refresh:
             errors = get_online_mp(all_tickers)
 
@@ -980,10 +1109,12 @@ class Universe(dict):
         delisted = errors["delisted"][:]
         timeouts = errors["timeout"][:]
 
-
         self.print(f"Successfully added {(len(all_tickers) - num_errors)} of {len(all_tickers)} stocks ({len(delisted)} failures, {len(timeouts)} timeouts, {num_errors} total errors))")
 
         previous = []
+
+        # Attempting timeout one more time
+        # TODO: This is not a complete solution
         while timeouts:
             self.print(f"\nRetrying {len(timeouts)} timeouts")
             errors = get_online_mp(timeouts, timeout=10)
@@ -998,6 +1129,8 @@ class Universe(dict):
             delisted += errors["delisted"]
             previous = timeouts[:]
             timeouts = []
+
+            # Just retrying timeouts once before considering them failures
             for ticker in errors["timeout"]:
                 if ticker in previous:
                     delisted.append(ticker)
@@ -1005,14 +1138,21 @@ class Universe(dict):
                     timeouts.append(ticker)
 
 
+        for ticker in delisted:
+            all_tickers.remove(ticker)
+
+        for ticker in all_tickers:
+            types.stock.instances[ticker] = self[ticker]
+
         return delisted
 
-
     def _get_listings(self, exchange):
+        """Gets the listings for a particular exchange"""
         info = self.exchange_info
         return info[info["Exchange"] == exchange]["Symbol"].to_list()
 
     def _remove_errors(self):
+        """Removes errors from list of tracked tickers"""
         for symbol in self.errors:
             ei = self.exchange_info[self.exchange_info["Symbol"] == symbol].index
             self.exchange_info.drop(ei, inplace=True)
@@ -1021,10 +1161,16 @@ class Universe(dict):
 
 
 class _filter:
+    """A universe's filter object that allows stock filtering
+
+    A filter object attached to all universe objects that automatically processes filter expressions for its attached universe
+    """
     def __init__(self, universe):
         self.universe = universe
 
     def __getitem__(self, item):
+        """The standard method of operating a universe filter. Filter
+        expressions should act as 'indexing' the universe"""
         if utils.isiter(item):
             item = list(item)
         else:
@@ -1033,30 +1179,31 @@ class _filter:
         if self._validate_filters(item):
             universe = copy(self.universe)
             for filterr in item:
-                print(filterr)
                 if filterr.called:
-                    universe = self.filter_mp(universe, filterr)
+                    universe = self._filter_mp(universe, filterr)
                 else:
-                    universe = self.filter(universe, filterr)
+                    universe = self._filter(universe, filterr)
 
 
         return universe
 
     @staticmethod
-    def filter_mp(universe, filterr):
+    def _filter_mp(universe, filterr):
+        """A multiprocessing version of the filter execution"""
 
-        def dictable(stock):
+        def process_stock(stock):
             return (stock.name, filterr.exec(stock))
 
         filtered = []
 
         with Pool() as pool:
-            filtered = dict(pool.map(dictable, universe.values()))
+            filtered = dict(pool.map(process_stock, universe.values()))
         filtered = [v for k, v in universe.items() if filtered[k]]
         return UniverseView(universe, filtered, filterr)
 
     @staticmethod
-    def filter_mp_v2(universe, filterr):
+    def _filter_mp_v2(universe, filterr):
+        """A multiprocessing version of the filter execution that utilizes automatic batching of the universe's current stocks"""
 
         def process_batch(batch):
             return [(stock, filterr.exec(stock)) for stock in batch]
@@ -1072,14 +1219,25 @@ class _filter:
 
 
     @staticmethod
-    def filter(universe, filterr):
+    def _filter(universe, filterr):
+        """Executes a filter expression on a universe
+
+        Executes a single filter expression on this filter's universe, returning a universe view that is the result of the filter
+
+        Args:
+            universe (Universe | UniverseView): The universe to filter
+            filterr (_filterexp): The expression to apply
+
+        Returns:
+            UniverseView: The filtered universe object
+        """
         filtered = [v for v in universe.values() if filterr.exec(v)]
         return UniverseView(universe, filtered, filterr)
 
 
     @staticmethod
     def _validate_filters(filters):
-
+        """Validates that all objects in a filter indexing operation are valid filters or filter expressions"""
         def validate(filterr):
             if isinstance(filterr, list):
                 if all(isinstance(obj, str) for obj in filterr):
@@ -1101,6 +1259,21 @@ class _filter:
 
 
 class _filterexp:
+    """An expression compiled inside of a filter indexing operation
+
+    An object produced by performing a boolean operation on a stock attribute, when the attribute is accessed from a universe object. When compiled, filter expressions will always produce a function that takes in a single stock object as an input, and produces a boolean output. Functions passed into a filter indexing operation that operate similarly are also valid filtere expressions.
+
+    For the sake of example, let x be a Universe or UniverseView (they operate identically when being filtered). The expression "x.beta() > 1" will produce a filter expression object that, when compiled, will result in a function whose input is a stock object and output is the boolean result of "stock.beta() > 1". Any expression that takes a single stock as an input with a boolean return is a valid expression inside of a filtering operation. For example, the expression "x.value" will return a filter expression whos attached function will evaluate the boolean of conversion of a stock's value -- False if the stock is worthless else True.
+
+    Filter expression objects can only be created by accessing stock attributes on a universe object.
+
+    Args:
+        attr (str): The stock attribute to access for each stock
+        special (str): Used when creating nonstandard filter expressions
+
+    Returns:
+        filterexp: The filter expression
+    """
 
     def __init__(self, attr, special=None):
         self.attr = attr
@@ -1129,7 +1302,7 @@ class _filterexp:
         if self.is_other:
             return attr
 
-        elif not (self.operation and self.condition):
+        elif self.operation is None:
             return f"if {attr}"
 
         return f"{attr} {convert[self.operation]} {self.condition}"
@@ -1147,6 +1320,7 @@ class _filterexp:
         return self
 
     def exec(self, *args, **kwargs):
+        """Executes the function compiled by this filter"""
         if self.exp is None:
             self.exp = self.build_exp()
         result = self.exp(*args, **kwargs)
@@ -1158,7 +1332,7 @@ class _filterexp:
     def __bool__(self):
         if self.is_other:
             return True
-        return NotImplemented
+        raise NotImplementedError(f"Direct boolean conversion not currently supported for filter expressions. If checking for a false value, try '{self.attr_string()} == False'")
 
     def __lt__(self, other):
         if self.is_other:
@@ -1214,7 +1388,54 @@ class _filterexp:
         if not self.condition: self.condition = other
         return self
 
+    def __contains__(self, other):
+        if self.is_other:
+            return NotImplemented
+        if isinstance(other, _filterexp):
+            other.is_other = True
+        if not self.operation: self.operation = "__contains__"
+        if not self.condition: self.condition = other
+        return self
+
+    def _build_attr(self):
+        """Builds a function for getting the attribute being accessed on the stock"""
+        base = lambda stock: getattr(stock, self.attr)
+        called = None
+        if self.called:
+            args = self.args or tuple()
+            kwargs = self.kwargs or {}
+            called = lambda stock: base(stock)(*args, **kwargs)
+        return called or base
+
+    def _build_condition(self):
+        """Builds a function for getting the condition, and accessing the attribute of the condition if it is another stock attr"""
+        if isinstance(self.condition, _filterexp):
+            base = lambda stock: getattr(stock, self.condition.attr)
+            called = None
+            if self.condition.called:
+                args = self.condition.args or tuple()
+                kwargs = self.condition.kwargs or {}
+                called = lambda stock: base(stock)(*args, **kwargs)
+            return called or base
+        return lambda stock: self.condition
+
     def build_exp(self):
+        """Builds the entire function"""
+        attr = self._build_attr()
+
+        if self.operation is None:
+            return attr
+
+        condition = self._build_condition()
+
+        base = lambda stock: getattr(attr(stock), self.operation)(condition(stock))
+
+        checker = lambda value: False if value == NotImplemented else value
+
+        return lambda stock: checker(base(stock))
+
+
+    def build_exp_old(self):
         func = lambda stock: True
         args = tuple()
         other_args = tuple()
@@ -1228,7 +1449,7 @@ class _filterexp:
             other_args = self.condition.args or other_args
             other_kwargs = self.condition.kwargs or other_kwargs
 
-        if not (self.condition and self.operation):
+        if self.operation is None:
             if self.called:
                 func = lambda stock: getattr(stock, self.attr)(*args, **kwargs)
             else:
@@ -1258,6 +1479,7 @@ class _filterexp:
 
     @staticmethod
     def from_string(string):
+        """Takes in a string of a valid filter expressions and returns it as a filterexpression object"""
 
         def is_numeric_char(char):
             return char.isnumeric or char in [".", "-"]
@@ -1289,6 +1511,7 @@ class _filterexp:
         return exp
 
     def attr_string(self):
+        """Builds a string representation of the attribute being accessed"""
         result = f"stock.{self.attr}"
         args = ""
         kwargs = ""
@@ -1315,7 +1538,7 @@ class _filterexp:
 
 
 class UniverseView(Universe):
-
+    """A Universe with filters applied, with functionality for removing, adding, or changing filters applied"""
     def __init__(self, base, stocklist, filterr):
         super().__init__(stocklist, refresh=False, verbose=False)
         if type(base) is Universe:
@@ -1327,7 +1550,6 @@ class UniverseView(Universe):
             self.filters[filterr] = len(self)
         else:
             raise TypeError(f"Unacceptable base for a universe view {type(base)=}")
-
 
     @property
     def coverage(self):

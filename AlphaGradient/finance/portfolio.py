@@ -20,6 +20,49 @@ from .asset import types
 from .standard import Currency
 from .. import utils
 
+class View:
+    def __init__(self, position):
+        self.asset = position.asset.key
+        self.quantity = position.quantity
+        self.short = position.short
+        self.cost = position.cost
+        self.value = position.value
+        self.symbol = position.symbol
+        self.cash = isinstance(position, Cash)
+
+    def __str__(self):
+        if self.cash:
+            return f"CASH {self.symbol}{self.value}"
+        short = "SHORT" if self.short else "LONG"
+        return f"{self.asset}_{short}: {self.quantity} @ " \
+               f"{self.symbol}" \
+               f"{round(self.value / self.quantity, 2)}"
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __eq__(self, other):
+        if not isinstance(other, View):
+            return NotImplemented
+
+        return self.key == other.key
+
+    def __getstate__(self):
+        return self.__dict__
+
+    def __setstate__(self, state):
+        self.__dict__ = state
+
+    @property
+    def key(self):
+        short = "SHORT" if self.short else "LONG"
+        return f"{self.asset}_{short}"
+
+    def empty(self):
+        empty = deepcopy(self)
+        empty.quantity, empty.cost = 0, 0
+        return empty
+
 class Position:
     """Object representing a position in a financial asset
 
@@ -106,6 +149,12 @@ class Position:
     def __repr__(self):
         return self.__str__()
 
+    def __setstate__(self, state):
+        self.__dict__ = state
+
+    def __getstate__(self):
+        return self.__dict__
+
     def __copy__(self):
         new = Position(self.asset, self.quantity, self.short)
         new.history = self.history
@@ -182,43 +231,6 @@ class Position:
         Returns:
             view: memory efficient copy of the position
         """
-        class View:
-            def __init__(self, position):
-                self.asset = position.asset.key
-                self.quantity = position.quantity
-                self.short = position.short
-                self.cost = position.cost
-                self.value = position.value
-                self.symbol = position.symbol
-                self.cash = isinstance(position, Cash)
-
-            def __str__(self):
-                if self.cash:
-                    return f"CASH {self.symbol}{self.value}"
-                short = "SHORT" if self.short else "LONG"
-                return f"{self.asset}_{short}: {self.quantity} @ " \
-                       f"{self.symbol}" \
-                       f"{round(self.value / self.quantity, 2)}"
-
-            def __repr__(self):
-                return self.__str__()
-
-            def __eq__(self, other):
-                if not isinstance(other, View):
-                    return NotImplemented
-
-                return self.key == other.key
-
-            @property
-            def key(self):
-                short = "SHORT" if self.short else "LONG"
-                return f"{self.asset}_{short}"
-
-            def empty(self):
-                empty = deepcopy(self)
-                empty.quantity, empty.cost = 0, 0
-                return empty
-
         return View(self)
 
     def _history(self):

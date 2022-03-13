@@ -416,6 +416,7 @@ class Asset(ABC):
 
         # Saving new args, storing new instance
         self._args = locals()
+        del self._args["self"]
         self.type.instances[name] = self
 
         # Attribute Initialization
@@ -428,6 +429,8 @@ class Asset(ABC):
         date = date if date else self._global_start
         self.date = date if isinstance(
             date, datetime) else datetime.fromisoformat(date)
+
+        self.data = None
 
         # Data entry is prohibited, data must always be None
         if self.data_protocol is DataProtocol.PROHIBITED:
@@ -464,6 +467,18 @@ class Asset(ABC):
                                          "instantiate with force=True.")
 
                 self.data = data
+
+            # Explicit reinstancing from online data
+            elif isinstance(data, str) and data.lower() == "online":
+                try:
+                    data = self.online_data()
+                except AttributeError as e:
+                    raise ValueError(f"{self.name} unable to retrieve online data, {self.type} has not implemented an online_data method") from e
+                if data is None:
+                    raise ValueError(f"Unable to retreive online data for {self.type} \"{self.name}\", initialization failed")
+
+                self.data = data
+
 
             # Data input received, make a new asset dataset
             else:
@@ -619,7 +634,7 @@ class Asset(ABC):
         else:
             if not self.initialized:
                 data = self.data.asof(self.data.index[0])
-                return data[self.data.close_value]
+                return data[self.close_value]
             else:
                 return self.value
 
@@ -764,7 +779,7 @@ class Asset(ABC):
         data = self.data.range(start, self.date)
         return data[self.close_value].mean()
 
-    def hv(self, days=365):
+    def vol(self, days=365):
         """Returns the historical volatility of this asset's value over the period given by days, as a percentage of the current valuation
 
         Args:
@@ -775,33 +790,78 @@ class Asset(ABC):
             hv (float): A floating point number representing the average
                 deviation of this asset's price from its moving average over the same period, expressed as a percentage of the current value.
         """
+        # 252 Trading days per year
+        multiplier = (days / 365) * (252 ** 0.5)
         start = self.date - timedelta(days=days)
         data = self.data.range(start, self.date)
-        if self.value == 0:
-            return 0
-        return data[self.close_value].std() / self.value
+        return self.data._data["CHANGE"].std() * multiplier
 
     def beta(self, days=365, benchmark=None):
+        """Returns the beta for the period
+
+        Returns the beta for the period. Calculated by weighting the covariance of this asset and the benchmark asset by the ratio of their volatilities.
+
+        Args:
+            days (Number): The period across which to calculate beta
+            benchmark (Asset): The benchmark asset to compare to
+
+        Returns:
+            beta (Number): This asset's beta for the given period
+        """
         benchmark = benchmark or self.benchmark
-        self_vol = self.hv(days)
-        bench_vol = benchmark.hv(days)
+        self_vol = self.vol(days)
+        bench_vol = benchmark.vol(days)
+        r = self.data._data[self.close_value].corr(benchmark.data._data[benchmark.close_value])
         if bench_vol == 0:
             return 0
-        return self_vol / bench_vol
+        return r * (self_vol / bench_vol)
 
     def roi(self, days=365):
+        """This assets return on investment for the input period
+
+        Returns the difference between the starting value and the current value as a percentage of the starting value
+
+        Args:
+            days (Number): the period across which to calculate
+
+        Returns:
+            roi (Number): The percentage difference from start to end
+        """
         start = self.date - timedelta(days=days)
         initial = self.data.valuate(start, self)
         if initial == 0:
             return 0
-        return (self.value - initial) / initial
+        return (self.value / initial) - 1
+
+    def cagr(self, days=365):
+        """Returns this asset's compounding annualized growth rate for the given period
+
+        Args:
+            days (Number): period across which to calculate cagr
+
+        Returns:
+            cagr (Number): compounding annualized growth rate for this asset
+        """
+        return (self.roi(days) + 1) ** (365 / days) - 1
 
     def alpha(self, days=365, benchmark=None):
+        """Returns this asset's alpha for the given period
+
+        Calculates the return of this asset relative to its risk adjusted expected return, using some other asset a basis.
+
+        Args:
+            days (Number): The period across which to calculate alpha
+            benchmark (Asset): The benchmark to act as a basis fot the
+                calculation of risk adjusted expected return
+
+        Returns:
+            alpha (Number): This asset's alpha for the period
+        """
         benchmark = benchmark or self.benchmark
         start = self.date - timedelta(days=days)
         asset_roi = self.roi(days)
         bench_roi = self.benchmark.roi(days)
-        expected_roi = self.beta() * (bench_roi - self.rfr)
+        expected_roi = self.beta(days, benchmark) * (bench_roi - self.rfr)
         return asset_roi - expected_roi
 
 

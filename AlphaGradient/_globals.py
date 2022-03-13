@@ -8,8 +8,10 @@ Todo:
 """
 # Standard imports
 from datetime import datetime, timedelta
+from collections import deque
 
 # Third party imports
+from p_tqdm import p_map
 
 # Local imports
 from .finance import (
@@ -60,12 +62,12 @@ class Globals:
     @staticmethod
     def all_assets():
         """Returns all assets currently in memory"""
-        return [asset for t in types if t.c in types.instantiable() for asset in t.instances.values()]
+        return (asset for t in types if t.c in types.instantiable() for asset in t.instances.values())
 
     @staticmethod
     def all_data():
         """Returns all asset datasets"""
-        return [asset.data for t in types if t.c in types.instantiable() for asset in t.instances.values() if asset.data]
+        return (asset.data for t in types if t.c in types.instantiable() for asset in t.instances.values() if asset.data)
 
     @staticmethod
     def normalize_date(date):
@@ -109,7 +111,7 @@ class Globals:
         Returns:
             date (datetime): the default start date to be used
         """
-        data = [data.index[0] for data in self.all_data()]
+        data = [data.first for data in self.all_data()]
         default = datetime.today() - timedelta(days=3650)
         start = max(data).to_pydatetime() if data else default
         start = utils.set_time(start, "9:30 AM")
@@ -134,7 +136,7 @@ class Globals:
         Returns:
             date (datetime): the default end date to be used
         """
-        data = [data.index[-1] for data in self.all_data()]
+        data = [data.last for data in self.all_data()]
         default = datetime.today()
         end = min(data).to_pydatetime() if data else default
         end = utils.set_time(end, "4:30 PM")
@@ -231,6 +233,27 @@ class Globals:
             date = self.normalize_date(date)
         date = date if isinstance(date, datetime) else self.start
 
+        def sync_asset(asset):
+            if getattr(asset, "reset", False):
+                asset.reset()
+            asset._valuate(date)
+
+        def sync_portfolio(portfolio):
+            portfolio.date = date
+            portfolio.reset()
+
+        assets = list(self.all_assets())
+        portfolios = list(types.portfolio.instances.values())
+
+        if assets:
+            deque(map(sync_asset, assets), maxlen=0)
+            #p_map(sync_asset_batch, assets)
+
+        if portfolios:
+            deque(map(sync_portfolio, portfolios), maxlen=0)
+            #p_map(sync_portfolio, portfolios)
+
+        """
         for asset in self.all_assets():
             if isinstance(asset, (Call, Put)):
                 asset.reset()
@@ -239,6 +262,7 @@ class Globals:
         for portfolio in list(types.portfolio.instances.values()):
             portfolio.date = date
             portfolio.reset()
+        """
 
     def autosync(self):
         """automatically determines best global variables for
