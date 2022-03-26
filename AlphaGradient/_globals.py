@@ -9,12 +9,18 @@ Todo:
 # Standard imports
 from datetime import datetime, timedelta
 from collections import deque
+from pathlib import Path
+import requests
 
 # Third party imports
 from p_tqdm import p_map
+from bs4 import BeautifulSoup as bs
 
 # Local imports
 from .finance import (
+                      Portfolio,
+                      Basket,
+                      Universe,
                       types,
                       Asset,
                       Currency,
@@ -25,6 +31,13 @@ from .finance import (
 from .finance.standard import Option
 from .data.datatools import AssetData
 from . import utils
+
+# SET DEFAULTS FOR COLLECTIONS
+
+GLOBAL_DEFAULT_START = datetime.fromisoformat("2000-01-03")
+GLOBAL_DEFAULT_END = utils.set_time(datetime.today(), "0:0:0")
+GLOBAL_DEFAULT_RESOLUTION = timedelta(days=1)
+GLOBAL_DEFAULT_BASE = "USD"
 
 class Globals:
     """A set of global conditions and functions that act on all
@@ -39,25 +52,67 @@ class Globals:
             which all asset values are converted to
         rfr (Number): The current risk free rate
     """
+    def _mkprop(self, attr):
+        return property(lambda this: getattr(self, attr))
+
+    def _shareprop(self, attr, obj, name=None):
+        setattr(obj, (name or attr), self._mkprop(attr))
 
     def __init__(self):
-        self._start = self.default_start()
-        setattr(Asset, "_global_start", self.start)
-        self._end = self.default_end()
-        self._resolution = self.default_resolution()
-        setattr(AssetData, "_global_res", self.resolution)
-        setattr(Asset, "_global_res", self.resolution)
+
+        # Initializing global attrs
+        self._start = GLOBAL_DEFAULT_START
+        self._end = GLOBAL_DEFAULT_END
+        self._resolution = GLOBAL_DEFAULT_RESOLUTION
+        self._date = GLOBAL_DEFAULT_START
+
+        self._shareprop("start", Asset, name="_global_start")
+        self._shareprop("start", Basket, name="_global_start")
+        self._shareprop("end", Basket, name="_global_end")
+        self._shareprop("resolution", Asset, name="_global_res")
+        self._shareprop("resolution", AssetData, name="_global_res")
+        self._shareprop("resolution", Basket, name="_global_res")
+        for cls in [Asset, Portfolio]:
+            self._shareprop("date", cls)
+
+        date_getter = lambda this: getattr(self, "date")
+        date_setter = lambda this, dt: setattr(self, "date", dt)
+        setattr(Basket, "date", property(date_getter, date_setter))
+
+        self._base_code = GLOBAL_DEFAULT_BASE
+        #self._shareprop("_base_code", Currency, name="base")
+        self._shareprop("_base_code", Asset, name="_global_base")
+
+        self._path = Path(__file__).parent
+        self._shareprop("path", Asset, name="_basepath")
+        self._shareprop("path", Universe, name="_basepath")
+
         self._base = Currency(Currency.base)
-        self.RISK_FREE_RATE = 0.0
-        setattr(Asset, "rfr", self.rfr)
+        self._shareprop("base", Basket, name="_global_base")
+
+        self._rfr = self._get_rfr()
+        self._shareprop("rfr", Asset)
+
         self._benchmark = Stock("SPY")
-        setattr(Asset, "benchmark", self._benchmark)
+        self._shareprop("benchmark", Asset)
+        self._shareprop("benchmark", Universe)
 
     def __str__(self):
         return str({k[1:]:v for k, v in self.__dict__.items()})
 
     def __repr__(self):
         return self.__str__()
+
+    @staticmethod
+    def _get_rfr():
+        try:
+            search = "https://www.google.com/search?q=3+month+t+bill+rate"
+            data = requests.get(search)
+            data = bs(data.text, "lxml")
+            data = data.find_all("td", class_="IxZjcf sjsZvd s5aIid OE1use")
+            return round(float(data[0].text[:-1]) / 100, 5)
+        except Exception as e:
+            return 0.0
 
     @staticmethod
     def all_assets():
@@ -92,6 +147,28 @@ class Globals:
                         "normalized")
 
     @property
+    def date(self):
+        return self._date
+
+    @date.setter
+    def date(self, dt):
+        if isinstance(dt, datetime):
+            self._date = dt
+
+        elif isinstance(dt, pd.Timestamp):
+            self._date = dt.to_pydatetime()
+
+        elif isinstance(dt, str):
+            self._date = datetime.fromisoformat(dt)
+
+        else:
+            raise TypeError(f"Unable to set global date to {dt}, invalid type {type(dt).__name__}")
+
+        for portfolio in types.portfolio.instances.values():
+            portfolio.update_positions()
+            portfolio.update_history()
+
+    @property
     def start(self):
         return self._start
 
@@ -112,10 +189,12 @@ class Globals:
             date (datetime): the default start date to be used
         """
         data = [data.first for data in self.all_data()]
-        default = datetime.today() - timedelta(days=3650)
-        start = max(data).to_pydatetime() if data else default
-        start = utils.set_time(start, "9:30 AM")
-        return start
+
+        if data:
+            start = max(data).to_pydatetime()
+            return utils.set_time(start, "9:30 AM")
+
+        return GLOBAL_DEFAULT_START
 
     @property
     def end(self):
@@ -137,10 +216,12 @@ class Globals:
             date (datetime): the default end date to be used
         """
         data = [data.last for data in self.all_data()]
-        default = datetime.today()
-        end = min(data).to_pydatetime() if data else default
-        end = utils.set_time(end, "4:30 PM")
-        return end
+
+        if data:
+            end = min(data).to_pydatetime()
+            return utils.set_time(end, "4:30 PM")
+
+        return GLOBAL_DEFAULT_END
 
     @property
     def resolution(self):
@@ -162,9 +243,11 @@ class Globals:
             delta (timedelta): The default time resolution
         """
         data = [data.resolution for data in self.all_data()]
-        data = None
-        default = timedelta(days=1)
-        return min(data) if data else default
+
+        if data:
+            return min(data)
+
+        return GLOBAL_DEFAULT_RESOLUTION
 
     @property
     def base(self):
@@ -182,12 +265,12 @@ class Globals:
     @property
     def rfr(self):
         """An alias for the global risk free rate"""
-        return self.RISK_FREE_RATE
+        return self._rfr
 
     @rfr.setter
     def rfr(self, rate):
         setattr(Option, "rfr", rate)
-        self.RISK_FREE_RATE = rate
+        self._rfr = rate
 
     @property
     def benchmark(self):
@@ -197,15 +280,17 @@ class Globals:
     def benchmark(self, benchmark):
         if isinstance(benchmark, Stock):
             self._benchmark = benchmark
-            setattr(Asset, "benchmark", self._benchmark)
         elif isinstance(benchmark, str):
             try:
                 self._benchmark = Stock(benchmark)
-                setattr(Asset, "benchmark", self._benchmark)
             except Exception as e:
                 raise RuntimeError(f"Unable to use {benchmark} as a benchmark because the following error occurred during initialization: {e}") from e
         else:
             raise TypeError(f"Benchmark must be a Stock. Received {benchmark.__class__.__name__}")
+
+    @property
+    def path(self):
+        return self._path
 
     def auto(self):
         """Automatically sets global start, end, and resolution to
@@ -231,15 +316,14 @@ class Globals:
         """
         if date is not None:
             date = self.normalize_date(date)
-        date = date if isinstance(date, datetime) else self.start
+        self.date = date if isinstance(date, datetime) else self.start
 
         def sync_asset(asset):
             if getattr(asset, "reset", False):
                 asset.reset()
-            asset._valuate(date)
+            asset._valuate()
 
         def sync_portfolio(portfolio):
-            portfolio.date = date
             portfolio.reset()
 
         assets = list(self.all_assets())
@@ -284,14 +368,30 @@ class Globals:
         Returns:
             Modifies assets in place, returns nothing
         """
-        delta = delta if isinstance(delta, timedelta) else self.resolution
+        if isinstance(delta, str):
+            try:
+                delta = datetime.fromisoformat(delta)
+            except ValueError:
+                delta = time.fromisoformat(delta)
+
+        if isinstance(delta, (datetime, pd.Timestamp)):
+            delta = delta - self.date
+
+        elif isinstance(delta, time):
+            if delta >= self.date.time():
+                delta = utils.set_time(self.date, delta)
+            else:
+                delta = utils.set_time(self.date - timedelta(days=1), delta)
+
+        delta = self.resolution if delta is None else self.validate_resolution(delta)
+
+        self.date = self.date + delta
 
         for asset in self.all_assets():
-            asset._valuate(asset.date + delta)
-            asset._step(asset.date + delta)
+            asset._valuate()
+            asset._step()
 
         for portfolio in types.portfolio.instances.values():
-            portfolio.date = portfolio.date + delta
             portfolio.update_history()
 
     def refresh(self):
@@ -302,6 +402,32 @@ class Globals:
 
     def refresh_all(self):
         pass
+
+    def scan(self):
+        pass
+
+    @staticmethod
+    def validate_resolution(resolution):
+        """Determines whether or not the input resolution is valid.
+        If is is, returns it as a native python timedelta object
+
+        Args:
+            resolution (Number | str | timedelta): The resolution to be
+                validated and converted
+
+        Returns:
+            resolution (timedelta): The convered, valid resolution
+
+        Raises:
+            TypeError: When the resolution is inconvertible
+        """
+        if isinstance(resolution, timedelta):
+            return resolution
+        else:
+            raise TypeError(f"Resolution must be a datetime.timedelta "
+                            "object. Received "
+                            f"{resolution.__class__.__name__} "
+                            f"{resolution}")
 
 
 __globals = Globals()

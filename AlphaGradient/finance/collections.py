@@ -4,6 +4,7 @@
 Todo:
     * Fix basket.validate_resolution to actually validate resolutions
         that are not timedelta objects
+    * Baskets need to be called environments
 """
 # Standard imports
 from numbers import Number
@@ -15,6 +16,7 @@ from pathos.multiprocessing import ProcessingPool as Pool
 from p_tqdm import p_map
 from collections import OrderedDict
 from copy import copy
+from pathlib import Path
 import io
 import os
 import math
@@ -26,7 +28,6 @@ import pandas as pd
 import numpy as np
 
 # Local Imports
-from .._globals import __globals as glbs
 from .. import utils
 from .asset import Asset, types
 from .portfolio import Portfolio, Cash
@@ -97,7 +98,9 @@ class Basket:
 
     class Status(Enum):
         """Denotes a basket's portfolio status, controlling basket
-        bound methods for portfolio transactions"""
+        bound methods for portfolio transactions
+
+        Status indicates how many portfolios belong to this basket. Baskets without a portfolio will not be able to perform portfolio bound methods. Baskets with a single portfolio will autonatically route all portfolio methods to the bound portoflio. Baskets with multiple portfolios require calls to portfolio bound methods to specify the name of the portfolio on which the transaction is to be executed. If no name is specified, attempt to perform the transaction on a portfolio named "MAIN", if one exists."""
         NONE = auto()
         SINGLE = auto()
         MULTIPLE = auto()
@@ -129,7 +132,7 @@ class Basket:
                 force = kwargs["force"]
                 kwargs.pop("force")
             new = self.c(*args, force=force, **kwargs)
-            new._valuate(self._basket.date)
+            new._valuate()
             new.base = self._basket.base.code
             self._basket.assets.append(new)
             self[new.name] = new
@@ -156,16 +159,19 @@ class Basket:
                  assets=None,
                  portfolios=None,
                  force=False):
-        self._start = glbs.start if start is None else self.validate_date(start)
-        self._date = self.start
-        self._end = glbs.end if end is None else self.validate_date(end)
-        self._resolution = glbs.resolution if resolution is None else self.validate_resolution(resolution)
-        self._assets = [] if not isinstance(assets, list) else assets
-        self._portfolios = [] if not isinstance(assets, list) else portfolios
-        self._base = glbs.base if not isinstance(base, Currency) else base
+        self._start = self._global_start if start is None else self.validate_date(start)
+        self._end = self._global_end if end is None else self.validate_date(end)
+        self._resolution = self._global_res if resolution is None else self.validate_resolution(resolution)
+        self._assets = [] if assets is None else list(assets)
+        self._portfolios = [] if portfolios is None else list(portfolios)
+        self._base = self._global_base if not isinstance(base, Currency) else base
         self._times = []
         self._time_index = 0
         self.force = force
+        if portfolios is None:
+            self.main = self.portfolio(0)
+        else:
+            self.main = self._portfolios[0]
 
     def __getattr__(self, attr):
         instantiable = {c.__name__.lower(): c for c in types.instantiable()}
@@ -191,10 +197,6 @@ class Basket:
     @property
     def start(self):
         return self._start
-
-    @property
-    def date(self):
-        return self._date
 
     @property
     def end(self):
@@ -227,21 +229,11 @@ class Basket:
 
     @property
     def open(self):
-        return all(asset.open for asset in self.assets) and self.date.weekday() < 5
-
-        # Should be any(asset.open for asset in self.assets)?
-        # Imposing unnecessary restrictions (just for now)
+        return any(asset.open for asset in self.assets)
 
     @start.setter
     def start(self, date):
         self._start = self.validate_date(date)
-
-    @date.setter
-    def date(self, date):
-        date = self.validate_date(date)
-        if not isinstance(date, datetime):
-            raise TypeError(f"date must be a datetime, received {date=}")
-        self._date = date
 
     @end.setter
     def end(self, date):
@@ -255,7 +247,7 @@ class Basket:
     def base(self, code):
         self._base = Currency.validate_code(code, error=True)
 
-    def portfolio(self, initial, name=None, date=None, base=None):
+    def portfolio(self, initial, name=None, base=None):
         """Instantiates a portfolio within this basket
 
         Args:
@@ -274,9 +266,8 @@ class Basket:
             return initial
         else:
             base = self.base.code if base is None else Currency.validate_code(base)
-            date = self.start if date is None else self.validate_date(date)
             name = self if name is None else name
-            new = Portfolio(initial, name, date, base)
+            new = Portfolio(initial, name, base)
             self._portfolios.append(new)
             return new
 
@@ -386,7 +377,7 @@ class Basket:
             start (datetime): the default start for this basket
         """
         data = [dataset.index[0] for dataset in self.data(dtype=list)]
-        return max(data).to_pydatetime() if data else glbs.start
+        return max(data).to_pydatetime() if data else self._global_start
 
     def default_end(self):
         """Determines the default end datetime based on the tracked assets
@@ -398,7 +389,7 @@ class Basket:
             end (datetime): the default end for this basket
         """
         data = [dataset.index[-1] for dataset in self.data(dtype=list)]
-        return min(data).to_pydatetime() if data else glbs.start
+        return min(data).to_pydatetime() if data else self._global_end
 
     def default_resolution(self):
         """Determines the default resolution based on the tracked assets
@@ -411,7 +402,8 @@ class Basket:
             resolution (timedelta): the default resolution for this
                 basket
         """
-        return timedelta(days=1)
+        data = [dataset.resolution for dataset in self.data(dtype=list)]
+        return min(data) if data else self._global_res
 
     def auto(self):
         """Automatically sets the start, end, and resolution of this
@@ -434,18 +426,15 @@ class Basket:
         Returns:
             None (NoneType): Modifies this basket in place
         """
-        date = self.date if date is None else self.validate_date(date)
+        self.date = self.date if date is None else self.validate_date(date)
 
         for portfolio in self._portfolios:
-            portfolio.date = date
             portfolio.reset()
 
         for asset in self.assets:
             if isinstance(asset, (Call, Put)):
                 asset.reset()
-            asset._valuate(date)
-
-        self.date = date
+            asset._valuate()
 
     def autosync(self):
         """Combines auto and sync
@@ -493,15 +482,14 @@ class Basket:
 
         delta = self.resolution if delta is None else self.validate_resolution(delta)
 
+        self.date = self.date + delta
+
         for asset in self._assets:
-            asset._valuate(asset.date + delta)
-            asset._step(asset.date + delta)
+            asset._valuate()
+            asset._step()
 
         for portfolio in self._portfolios:
-            portfolio.date = portfolio.date + delta
             portfolio.update_history()
-
-        self.date = self.date + delta
 
         # Cleaning out expired assets
         self._assets = [asset for asset in self.assets if not asset.expired]
@@ -784,6 +772,8 @@ def _get_exchange_info():
         exchange info (pd.DataFrame): A dataframe of all available stock
             listings
     """
+
+    # Getting updated stock listings
     base = "ftp://ftp.nasdaqtrader.com/symboldirectory/"
     dfs = []
     for file in ["nasdaqlisted.txt", "otherlisted.txt"]:
@@ -791,22 +781,29 @@ def _get_exchange_info():
         data = pd.read_csv(data, sep="|")
         dfs.append(data[:-1])
 
+    # Dropping test stocks
     dfs = [df[df["Test Issue"] == "N"].drop("Test Issue", axis=1) for df in dfs]
 
+    # Unpacking the dfs
     nasdaq, other = dfs
 
+    # Adding Exchange info for nasdaq listings, dropping columns that dont match
     nasdaq["Exchange"] = "NASDAQ"
     nasdaq.drop(["Market Category", "Financial Status", "NextShares"], axis=1, inplace=True)
 
+    # Converting exchange info to human-readable format
     converter = {"A": "NYSEMKT",
                  "N": "NYSE",
                  "P": "NYSEARCA",
                  "Z": "BATS",
                  "V": "IEXG"}
     other["Exchange"] = other["Exchange"].map(lambda s: converter[s])
+
+    # Dropping unnecessary data, matching column labels
     other.drop(["CQS Symbol", "NASDAQ Symbol"], axis=1, inplace=True)
     other.rename({"ACT Symbol": "Symbol"}, axis=1, inplace=True)
 
+    # Joining frames
     data = pd.concat(dfs).sort_values("Symbol")
 
     return data.reset_index(drop=True)
@@ -830,13 +827,14 @@ class Universe(dict):
             currently support filtering by explicitly during instantiation
     """
     exchange_info = None
+    _eipath = Path(__file__).parent.joinpath("exchange_info.p")
     try:
         raise Exception
         exchange_info = _get_exchange_info()
-        with open("alphagradient/finance/exchange_info.p", "wb") as f:
+        with open(_eipath, "wb") as f:
             exchange_info.to_pickle(f)
     except Exception as e:
-        exchange_info = pd.read_pickle("alphagradient/finance/exchange_info.p")
+        exchange_info = pd.read_pickle(_eipath)
 
     def __init__(self, tickers="local", refresh=False, verbose=True):
         super().__init__()
@@ -856,7 +854,7 @@ class Universe(dict):
 
     def __getattr__(self, attr):
         try:
-            glbs.benchmark.__getattribute__(attr)
+            self.benchmark.__getattribute__(attr)
             return _filterexp(attr)
         except AttributeError:
             raise AttributeError(f"Universe object has no attribute {attr}")
@@ -920,10 +918,17 @@ class Universe(dict):
             self.local_csv = []
             self.local = []
         else:
-            self.local_p = sorted([f[6:-2] for f in os.listdir("alphagradient/data/pickles/") if f.startswith("STOCK_") and f.endswith(".p")])
-            self.local_csv = sorted([f[6:-4] for f in os.listdir("alphagradient/data/raw/") if f.startswith("STOCK_") and f.endswith(".csv")])
+            pickle_path = self._basepath.joinpath("data/pickles/")
+            raw_path = self._basepath.joinpath("data/raw/")
+            self.local_p = sorted([f[6:-2] for f in os.listdir(pickle_path) if f.startswith("STOCK_") and f.endswith(".p")])
+            self.local_csv = sorted([f[6:-4] for f in os.listdir(raw_path) if f.startswith("STOCK_") and f.endswith(".csv")])
             self.local = sorted(list(set(self.local_p + self.local_csv)))
 
+    def update_tickers(self):
+        """Updates the exchange info for this universe object by getting stock listings from the internet"""
+        self.exchange_info = _get_exchange_info()
+        with open(self._eipath, "wb") as f:
+            self.exchange_info.to_pickle(f)
 
     def _ticker_input(self, tickers):
         """Normalizes ticker list inputs before _get_stocks is called"""
@@ -1156,7 +1161,7 @@ class Universe(dict):
         for symbol in self.errors:
             ei = self.exchange_info[self.exchange_info["Symbol"] == symbol].index
             self.exchange_info.drop(ei, inplace=True)
-        with open("alphagradient/finance/exchange_info.p", "wb") as f:
+        with open(self._eipath, "wb") as f:
             self.exchange_info.to_pickle(f)
 
 

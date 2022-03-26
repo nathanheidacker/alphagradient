@@ -23,7 +23,10 @@ class SpyCoveredCalls(ag.Algorithm):
         env = ag.finance.Basket(start=start, force=True)
         self.spy = env.stock("SPY")
         self.initial = self.spy.value * 150
-        self.p = env.portfolio(self.initial)
+        self.pf = env.main
+        self.pf.invest(self.initial)
+        print(self.pf.cash)
+        print(env.portfolios)
         env.finalize(manual=["9:30 AM", "4:00 PM"])
         print(env.times)
 
@@ -38,15 +41,15 @@ class SpyCoveredCalls(ag.Algorithm):
             if self.env.open:
 
                 # Buying spy if we can buy spy
-                to_buy = math.floor((self.p.liquid / self.spy.value) / 100) * 100
+                to_buy = math.floor((self.pf.liquid / self.spy.value) / 100) * 100
                 if to_buy > 0:
                     self.env.buy(self.spy, to_buy)
 
                 # Selling calls if we can sell calls
-                position = self.p.longs.get("STOCK_SPY", False)
+                position = self.pf.longs.get("STOCK_SPY", False)
                 available = 0
                 if position:
-                    available = position.quantity - (sum([pos.quantity for pos in list(self.p.call.values())]) * 100)
+                    available = position.quantity - (sum([pos.quantity for pos in list(self.pf.call.values())]) * 100)
                 to_sell = 0
                 if available >= 100:
                     to_sell = math.floor(available / 100)
@@ -62,14 +65,14 @@ class SpyCoveredCalls(ag.Algorithm):
                 step += 1
             self.verbose(f"DAY {day} | STEP {step}: ")
             if self.verbose is print:
-                self.p.print_changes()
-            self.verbose(self.p.positions)
+                self.pf.print_changes()
+            self.verbose(self.pf.positions)
             self.verbose(self.env.assets, "\n\n")
             self.env.next()
 
-        self.p.liquidate(force=True)
-        ret = round(((self.p.cash.quantity - self.initial) / self.initial) * 100, 2)
-        print(f"Initial: {ag.finance.Cash(self.initial)} | Current: {self.p.cash} | Profit: {self.p.cash - ag.finance.Cash(self.initial)} | Return: {ret}%, {(math.floor(ret / 10) + 1) / 10}x")
+        self.pf.liquidate(force=True)
+        ret = round(((self.pf.cash.quantity - self.initial) / self.initial) * 100, 2)
+        print(f"Initial: {ag.finance.Cash(self.initial)} | Current: {self.pf.cash} | Profit: {self.pf.cash - ag.finance.Cash(self.initial)} | Return: {ret}%, {(math.floor(ret / 10) + 1) / 10}x")
 
     def spycall(self, offset=1, delta=1):
         strike = self.spy.value + offset

@@ -10,6 +10,7 @@ from datetime import datetime
 from numbers import Number
 from copy import copy, deepcopy
 from datetime import timedelta
+import math
 
 # Third party imports
 import pandas as pd
@@ -379,12 +380,11 @@ class Portfolio:
         liquid (Number): The sum of all of the portfolio's liquid assets
     """
 
-    def __init__(self, initial, name=None, date=None, base=None):
+    def __init__(self, initial, name=None, base=None):
         if isinstance(name, types.basket.c):
             self.name = self._generate_name(basket=name)
         else:
             self.name = self._generate_name() if name is None else name
-        self._date = datetime.today() if date is None else date
         self._base = Currency.base if base is None else base
         self._cash = Cash(initial, self.base)
         self._positions = {"CASH": self.cash}
@@ -418,17 +418,12 @@ class Portfolio:
                 return "MAIN"
 
     @property
-    def date(self):
-        return self._date
-
-    @date.setter
-    def date(self, dt):
-        self._date = dt
-        self.update_positions()
-
-    @property
     def base(self):
         return self._base
+
+    @property
+    def base_symbol(self):
+        return self._cash.symbol
 
     @base.setter
     def base(self, base):
@@ -437,8 +432,6 @@ class Portfolio:
 
     @property
     def positions(self):
-        # Removes empty positions
-        #self.update_positions()
         self._positions["CASH"] = self._cash
         return self._positions
 
@@ -499,7 +492,7 @@ class Portfolio:
                              f"{self.date=}. Please ensure portfolio "
                              "and asset dates are synced")
 
-        elif (asset.market_open != asset.market_close) and (asset.date.time() >= asset.market_close or asset.date.time() < asset.market_open):
+        elif (asset.market_open != asset.market_close) and (asset.date.time() > asset.market_close or asset.date.time() < asset.market_open):
             raise ValueError(f"Unable to complete transaction for {asset=} because the market is closed. Market close is {utils.timestring(asset.market_close)}, time of last valuation is {utils.timestring(asset.date)}")
 
         return True
@@ -779,6 +772,86 @@ class Portfolio:
                 pos.quantity = 0
 
             self.update_positions()
+
+    def get_position(self, asset, short=False, positions=None):
+        """Gets this portfolio's current position in the given asset
+
+        Args:
+            asset (Asset): The asset being searched
+            short (bool): Is the position short or long
+            positions (list(Asset)): The positions to be searched
+
+        Returns:
+            pos (Position): Returns a single position in the asset if
+                found, otherwise None
+        """
+        if positions is None:
+            positions = self.shorts.values() if short else self.longs.values()
+        result = [pos for pos in positions if pos.asset is asset]
+        if result:
+            return result[0]
+        return None
+
+    def get_related_positions(self, asset, short=False, positions=None):
+        """Gets this portfolio's current positions in the given asset or related to the asset
+
+        Args:
+            asset (Asset): The asset being searched
+            short (bool): Is the position short or long
+            positions (list(Asset)): The positions to be searched
+
+        Returns:
+            pos (Position): Returns a list of positions that are related to the asset
+        """
+        if positions is None:
+            positions = self.shorts.values() if short else self.longs.values()
+        result = [pos for pos in positions if pos.asset is asset or asset in pos.asset.__dict__.values()]
+        return result
+
+    def covered_call(self, call, quantity=None, limit=None):
+        """Sells calls in the given quantity, but ensures that they are 'covered' by owning stock equal to the number of shares accounted for by the contracts in the case of assignment
+
+        Args:
+            call (Call): The call to be sold short
+            quantity (Number): The quantity to sell
+            limit (Number): Specifies a maximum amount to sell when
+                quantity is not specified
+
+        Returns:
+            sold_short (Number): The number of calls sold short
+            The portfolio is also modified in place by selling the given quantity of calls and purchasing the necessary shares
+        """
+        # Determining current values
+        current = self.get_position(call.underlying)
+        current = current.quantity if current is not None else 0
+        sold_short = sum(pos.quantity for pos in self.get_related_positions(call.underlying, short=True, positions=self.call.values())) * 100
+        available = current - sold_short
+
+        # Determining the maximum quantity that we can sell
+        if quantity is None:
+            quantity = max(math.floor((available + (self.liquid/call.underlying.value)) / 100) * 100, 0)
+        else:
+            quantity *= 100
+
+        # Shares need to be bought
+        if available < quantity:
+            can_purchase = math.floor(self.liquid / call.underlying.value)
+            purchase_quantity = quantity - available
+
+            # We lack the necessary liquidity to cover the sale
+            if can_purchase < purchase_quantity:
+                raise ValueError(f"Not enough liquidity to purchase {purchase_quantity} shares of the underyling to cover the short sale of {int(quantity / 100)} {call.name} contracts (requires {self.base_symbol}{round(purchase_quantity * call.underlying.value, 2)}, only have {self.base_symbol}{self.liquid})")
+
+            # Making the purchase
+            self.buy(call.underlying, purchase_quantity)
+
+        # Selling the calls
+        quantity = int(quantity / 100)
+        self.short(call, quantity)
+        return quantity
+
+
+
 
 
 # Uses a protected keyword, so must be used set outside of the class

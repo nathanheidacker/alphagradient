@@ -13,6 +13,7 @@ Todo:
 # Standard imports
 from datetime import datetime, timedelta, time
 from numbers import Number
+from pathlib import Path
 import pickle
 import os
 # from typing import List
@@ -48,12 +49,15 @@ def currency_info(base=None, save=False):
         except:
             return -1
 
-    info = pd.read_pickle("alphagradient/finance/currency_info_raw.p")
+    raw_path = Path(__file__).parent.joinpath("currency_info_raw.p")
+    pickle_path = Path(__file__).parents[1].joinpath("finance/currency_info.p")
+    info = pd.read_pickle(raw_path)
     info["VALUE"] = info["CODE"].map(mapper)
     info = info[info["VALUE"] > 0]
 
-    with open("alphagradient/finance/currency_info.p", "wb") as p:
-        info.to_pickle(p)
+    if save:
+        with open(pickle_path, "wb") as p:
+            info.to_pickle(p)
 
     return info
 
@@ -70,7 +74,8 @@ def get_data(asset):
     data = None
 
     # Getting the data from pickles
-    path = f"alphagradient/data/pickles/{key}.p"
+    base_path = Path(__file__).parent
+    path = base_path.joinpath(f"pickles/{key}.p")
     try:
         with open(path, "rb") as data:
             return AssetData(asset.__class__, pd.read_pickle(data), preinitialized=True)
@@ -80,7 +85,7 @@ def get_data(asset):
         pass
 
     # Getting the data from raw files
-    path = f"alphagradient/data/raw/{key}.csv"
+    path = base_path.joinpath(f"raw/{key}.csv")
     try:
         return AssetData(asset.__class__, path)
     except Exception:
@@ -246,6 +251,8 @@ class AssetData:
         self.resolution, success = self._get_resolution()
         if success:
             self._define_periods(asset_type)
+
+        # Single value dataframe
         elif not data.empty:
             if self._data.index[0].time() == time():
                 first = self._data.index[0]
@@ -257,11 +264,21 @@ class AssetData:
                 self._data["_period_close_"] = [self._data.index[0]]
                 self._data["_period_open_"] = [self._data.index[0]]
             self._data["_time_resolution_"] = [self.resolution]
-        else:
-            self._data.columns = self._data.columns + ["_time_resolution_", "_period_open_", "_period_close_"]
 
-        self._get_firstlast()
-        self._get_stats(asset_type)
+        # Dataframe is empty, add new columns
+        else:
+            new_cols = ["_time_resolution_", "_period_open_", "_period_close_", "CHANGE"]
+            self._data = self._data.reindex(self._data.columns.union(new_cols), axis=1)
+            print(self._data)
+
+        if not data.empty:
+            self._get_firstlast()
+            self._get_stats(asset_type)
+
+        else:
+            t = utils.set_time(datetime.today(), "0:0:0")
+            self._first, self._last = t,t
+
 
     def __getattr__(self, attr):
         try:
@@ -412,13 +429,20 @@ class AssetData:
         return (resolution, True) if resolution is not None else (default, False)
 
     def _get_firstlast(self):
+        """Saves this dataset's first and last available dates"""
         self._first = self._data["_period_open_"][0]
         self._last = self._data["_period_close_"][-1]
 
     def _define_periods(self, cls):
+        """Defines opening and closing periods at each index in the dataset
+
+        Returns:
+            Modifies this dataset in place
+        """
 
         @np.vectorize
         def close_map(close, time_res, open_date):
+            """Vectorized mapping function set datetimes to market close if they should be evaluated at market close"""
             if time_res >= np.timedelta64(1, "D"):
                 return utils.set_time(pd.to_datetime(open_date), cls.market_close)
             return close
@@ -426,18 +450,18 @@ class AssetData:
         index = self._data.index.to_series()
         self._data["_period_open_"] = index
         self._data["_period_close_"] = index + self._data["_time_resolution_"]
-        #self._data["_period_close_"] = self._data.apply(lambda row: row.name + row["_time_resolution_"], axis=1)
+
+        # This time remapping only occurs when timedelta >= 1
         if self.resolution == timedelta(days=1):
 
-            # NEW VECTORIZATION
-            #self._data["_period_open_"] = self._data["_period_open_"].map(lambda dt: utils.set_time(dt, cls.market_open))
+            # Setting the opening time at each index to the market open time
             self._data["_period_open_"] = self._set_time_vectorized(self._data["_period_open_"], cls.market_open)
 
-            # NEW VECTORIZATION
-            #self._data["_period_close_"] = self._data.apply(close_map, axis=1)
+            # Setting the closing time at each index to the market close time, only if the delta is >= 1
             self._data["_period_close_"] = close_map(self._data["_period_close_"], self._data["_time_resolution_"], self._data["_period_open_"])
 
     def _get_stats(self, asset):
+        """Adds a new "CHANGE" column to the dataset which corresponds to the percentage change in closing price compared to the previous period"""
         if len(self._data) > 1:
             shifted = self._data[asset.close_value].shift(1)
             shifted.name = "A"
@@ -459,7 +483,7 @@ class AssetData:
         elif date >= data["_period_open_"]:
             return data[asset.open_value]
         else:
-            return data[asset.open_value]
+            return self.valuate(self.prev(date), asset)
 
     def next(self, date):
         if isinstance(date, str):

@@ -21,6 +21,7 @@ from weakref import WeakValueDictionary as WeakDict
 import math
 import pickle
 import os
+from pathlib import Path
 #import typing
 
 # Third Party imports
@@ -31,7 +32,8 @@ import pandas as pd
 from ..data import datatools
 from .. import utils
 
-_currency_info = pd.read_pickle("AlphaGradient/finance/currency_info.p")
+_currency_info_path = Path(__file__).parent.joinpath("currency_info.p")
+_currency_info = pd.read_pickle(_currency_info_path)
 
 @unique
 class types(Enum):
@@ -82,6 +84,8 @@ class types(Enum):
     # Non-asset types that need to be instantiated manually
     undefined = auto() # Used when the subclass is hidden
     portfolio = auto()
+
+    # Reconsider if these are necessary
     algorithm = auto()
     basket = auto()
     universe = auto()
@@ -245,7 +249,8 @@ class Asset(ABC):
 
     Attributes:
         _args (dict): Arguments used in most recent initialization.
-            Referenced to determine whether
+            Referenced to determine whether arguments have changed materially since previous
+            instantiation
         name (str): Name of the asset
         value (Number): The value of this asset as a number,
             representing a quantity of the global base currency.
@@ -408,9 +413,6 @@ class Asset(ABC):
                 elif data != self._args["data"]:
                     skip = False
 
-                if date != self._args["date"]:
-                    self._valuate(date)
-
             if skip:
                 return
 
@@ -421,15 +423,9 @@ class Asset(ABC):
 
         # Attribute Initialization
         self.name = name
-        self.base = base if base in list(_currency_info["CODE"]) else types.currency.instances.base.base
+        self.base = base if base in list(_currency_info["CODE"]) else self._global_base
         self._value = data if isinstance(data, Number) else 0
         self.close = True
-
-        # Accept isoformat datestrings as well as datetimes
-        date = date if date else self._global_start
-        self.date = date if isinstance(
-            date, datetime) else datetime.fromisoformat(date)
-
         self.data = None
 
         # Data entry is prohibited, data must always be None
@@ -494,7 +490,7 @@ class Asset(ABC):
                                  "force=True.")
 
         # Ensures that the initial price is set properly
-        self._valuate(date)
+        self._valuate()
         self.initialized = True
         self._save()
 
@@ -589,7 +585,7 @@ class Asset(ABC):
     def open(self):
         return self.date.time() >= self.market_open and self.date.time() < self.market_close if self.market_close != self.market_open else True
 
-    def _valuate(self, date=None):
+    def _valuate(self):
         """Updates asset prices when time steps take place
 
         This is the method that is actually called under the hood when
@@ -605,12 +601,7 @@ class Asset(ABC):
             price (float): Updates the instance's price inplace, and
                 also returns it
         """
-        self.date = self.normalize_date(date)
-
-        if self.data:
-            self.value = self._data_valuate(self.date)
-        else:
-            self.value = self.valuate(self.date)
+        self.value = self.quote(self.date)
 
     def _data_valuate(self, date=None):
         """Determines how asset prices update when using data
@@ -659,7 +650,7 @@ class Asset(ABC):
     def quote(self, date):
         date = self.normalize_date(date)
         if self.data:
-            return self.date.valuate(date, self)
+            return self.data.valuate(date, self)
         else:
             return self.valuate(date)
 
@@ -717,12 +708,13 @@ class Asset(ABC):
         return settings.values() if unpack else settings
 
     def _save(self):
+        """Saves this asset's data locally"""
         if self.data:
-            path = f"alphagradient/data/pickles/{self.key}.p"
+            path = self._basepath.joinpath(f"data/pickles/{self.key}.p")
             with open(path, "wb") as p:
                 self.data._data.to_pickle(p)
 
-    def _step(self, date):
+    def _step(self, *args, **kwargs):
         """Automatically called before this asset is valuated during time steps
 
         This function is a hook to perform some behavior on the asset
@@ -790,8 +782,11 @@ class Asset(ABC):
             hv (float): A floating point number representing the average
                 deviation of this asset's price from its moving average over the same period, expressed as a percentage of the current value.
         """
+
+        ### TODO ### THIS MUST CONSIDER THE INTERVALS OF TIME BETWEEN EACH INDEX, RIGHT NOW ASSUMES THAT ALL VALUES ARE EQUIDISTANT / DAILY. TIME RESOLUTION OF THE DATA WILL AFFECT THE STD
+
         # 252 Trading days per year
-        multiplier = (days / 365) * (252 ** 0.5)
+        multiplier = ((days / (252 / 365)) ** 0.5)
         start = self.date - timedelta(days=days)
         data = self.data.range(start, self.date)
         return self.data._data["CHANGE"].std() * multiplier

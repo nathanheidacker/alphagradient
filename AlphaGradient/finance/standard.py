@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 from abc import ABC, abstractmethod
 from numbers import Number
 from random import random
+from pathlib import Path
 import math
 import json
 
@@ -27,13 +28,13 @@ from .asset import Asset, types
 from ..data import datatools
 from .. import utils
 
-with open("AlphaGradient/finance/standard_asset_settings.json") as f:
+with open(Path(__file__).parent.joinpath("standard_asset_settings.json")) as f:
     settings = json.load(f)
 """settings (dict): dictionary of settings for initializing standard asset subclasses"""
 
 
 def _getinfo(base="USD"):
-    """TODO"""
+    """think this function has been replaced by 'currency_info' in datatools, probably needs to be deleted"""
 
     def mapper(code):
         """TODO"""
@@ -43,6 +44,7 @@ def _getinfo(base="USD"):
             return history["Close"].item()
         except:
             return -1
+
 
     info = pd.read_pickle("AlphaGradient/finance/currency_info_old.p")
     info["VALUE"] = info["CODE"].map(mapper)
@@ -70,14 +72,8 @@ class Currency(Asset, settings=settings["CURRENCY"]):
             base currency instance
 
     """
-
     base = "USD"
-    info = pd.read_pickle("AlphaGradient/finance/currency_info.p")
-
-    @classmethod
-    def update_info(cls):
-        """TODO"""
-        pass
+    info = pd.read_pickle(Path(__file__).parent.joinpath("currency_info.p"))
 
     def __new__(cls, *args, **kwargs):
         if not args:
