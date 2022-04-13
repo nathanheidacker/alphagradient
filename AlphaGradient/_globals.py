@@ -7,7 +7,7 @@ Todo:
         - One at a time and for entire exchanges
 """
 # Standard imports
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from collections import deque
 from pathlib import Path
 import requests
@@ -15,6 +15,7 @@ import requests
 # Third party imports
 from p_tqdm import p_map
 from bs4 import BeautifulSoup as bs
+import pandas as pd
 
 # Local imports
 from .finance import (
@@ -30,6 +31,7 @@ from .finance import (
                       )
 from .finance.standard import Option
 from .data.datatools import AssetData
+from .algorithm import Algorithm, Run, Performance
 from . import utils
 
 # SET DEFAULTS FOR COLLECTIONS
@@ -66,15 +68,19 @@ class Globals:
         self._resolution = GLOBAL_DEFAULT_RESOLUTION
         self._date = GLOBAL_DEFAULT_START
 
-        self._shareprop("start", Asset, name="_global_start")
-        self._shareprop("start", Basket, name="_global_start")
-        self._shareprop("end", Basket, name="_global_end")
-        self._shareprop("resolution", Asset, name="_global_res")
-        self._shareprop("resolution", AssetData, name="_global_res")
-        self._shareprop("resolution", Basket, name="_global_res")
-        for cls in [Asset, Portfolio]:
+        for cls in [Asset, Basket, Algorithm]:
+            self._shareprop("start", cls, name="_global_start")
+
+        for cls in [Basket, Algorithm]:
+            self._shareprop("end", cls, name="_global_end")
+
+        for cls in [Asset, AssetData, Basket, Algorithm]:
+            self._shareprop("resolution", cls, name="_global_res")
+
+        for cls in [Asset, Portfolio, Run, Performance]:
             self._shareprop("date", cls)
 
+        # Baskets must also have the ability to set the global date
         date_getter = lambda this: getattr(self, "date")
         date_setter = lambda this, dt: setattr(self, "date", dt)
         setattr(Basket, "date", property(date_getter, date_setter))
@@ -163,10 +169,6 @@ class Globals:
 
         else:
             raise TypeError(f"Unable to set global date to {dt}, invalid type {type(dt).__name__}")
-
-        for portfolio in types.portfolio.instances.values():
-            portfolio.update_positions()
-            portfolio.update_history()
 
     @property
     def start(self):
@@ -331,22 +333,9 @@ class Globals:
 
         if assets:
             deque(map(sync_asset, assets), maxlen=0)
-            #p_map(sync_asset_batch, assets)
 
         if portfolios:
             deque(map(sync_portfolio, portfolios), maxlen=0)
-            #p_map(sync_portfolio, portfolios)
-
-        """
-        for asset in self.all_assets():
-            if isinstance(asset, (Call, Put)):
-                asset.reset()
-            asset._valuate(date)
-
-        for portfolio in list(types.portfolio.instances.values()):
-            portfolio.date = date
-            portfolio.reset()
-        """
 
     def autosync(self):
         """automatically determines best global variables for
@@ -392,7 +381,11 @@ class Globals:
             asset._step()
 
         for portfolio in types.portfolio.instances.values():
+            portfolio.update_positions()
             portfolio.update_history()
+
+        for algo in types.algorithm.instances.values():
+            algo.stats.update()
 
     def refresh(self):
         pass
@@ -423,6 +416,8 @@ class Globals:
         """
         if isinstance(resolution, timedelta):
             return resolution
+        elif isinstance(resolution, int):
+            return timedelta(days=resolution)
         else:
             raise TypeError(f"Resolution must be a datetime.timedelta "
                             "object. Received "

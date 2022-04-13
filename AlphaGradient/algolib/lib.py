@@ -3,7 +3,7 @@
 quality financial algorithms to be used freely.
 
 Todo:
-    * NA
+	* NA
 """
 
 # Standard Imports
@@ -17,70 +17,87 @@ import numpy as np
 # Local Imports
 from .. import agproxy as ag
 
-class SpyCoveredCalls(ag.Algorithm):
+class ThetaGang(ag.Algorithm):
+	"""An example algorithm in the algorithm library used to demonstrate some of AlphaGradient's
+	standard features and best practices
 
-    def setup(self, start, end):
-        env = ag.finance.Basket(start=start, force=True)
-        self.spy = env.stock("SPY")
-        self.initial = self.spy.value * 150
-        self.pf = env.main
-        self.pf.invest(self.initial)
-        print(self.pf.cash)
-        print(env.portfolios)
-        env.finalize(manual=["9:30 AM", "4:00 PM"])
-        print(env.times)
+	This is a tutorial algorithm that seeks to demonstrate some of AlphaGradient's features and standard design practices. This algorithm sells the maximum numnber of covered calls on SPY that it can, with a bounded strike price to prevent from selling calls that could lose money when assigned
 
-        return env
+	Heres a breakdown:
 
-    def run(self, start, end):
-        start = start or self.start
-        step = 1
-        day = 1
-        while self.date < end:
+		1) At the beginning of the day, buy as many shares of SPY as we can to the nearest multiple of 100
 
-            if self.env.open:
+		2) Using SPY shares as collateral, sells 1 DTE covered calls on SPY where the strike is determined by SPY's current value. The algorithm will never sell a call with a strike below it's average cost for the shares it owns. This prevents it from losing money in the case of call assignment.
+	"""
+	def __init__(self, *args, bounded=True, **kwargs):
+		super().__init__(*args, **kwargs)
 
-                # Buying spy if we can buy spy
-                to_buy = math.floor((self.pf.liquid / self.spy.value) / 100) * 100
-                if to_buy > 0:
-                    self.env.buy(self.spy, to_buy)
+		# Determines whether or not a lower bound should be placed on the strike
+		self.bounded = bounded
 
-                # Selling calls if we can sell calls
-                position = self.pf.longs.get("STOCK_SPY", False)
-                available = 0
-                if position:
-                    available = position.quantity - (sum([pos.quantity for pos in list(self.pf.call.values())]) * 100)
-                to_sell = 0
-                if available >= 100:
-                    to_sell = math.floor(available / 100)
-                    to_sell = min(to_sell, 10)
-                    self.env.short(self.spycall(), to_sell)
+	def setup(self, start, end):
+		"""This is the environement setup that is performed before each backtest. Must return an environment object"""
 
-            # Go to the next trading day
-            days = ((self.date - start).days + 1)
-            if days > day:
-                day = days
-                step = 0
-            else:
-                step += 1
-            self.verbose(f"DAY {day} | STEP {step}: ")
-            if self.verbose is print:
-                self.pf.print_changes()
-            self.verbose(self.pf.positions)
-            self.verbose(self.env.assets, "\n\n")
-            self.env.next()
+		# Creating a basket with the given start parameter
+		env = ag.finance.Basket(start=start)
 
-        self.pf.liquidate(force=True)
-        ret = round(((self.pf.cash.quantity - self.initial) / self.initial) * 100, 2)
-        print(f"Initial: {ag.finance.Cash(self.initial)} | Current: {self.pf.cash} | Profit: {self.pf.cash - ag.finance.Cash(self.initial)} | Return: {ret}%, {(math.floor(ret / 10) + 1) / 10}x")
+		# Creating SPY stock, attaching it to self (will be referenced frequently)
+		# This call to the stock() method both instantiates the stock within the environment, AND returns it
+		self.spy = env.stock("SPY")
 
-    def spycall(self, offset=1, delta=1):
-        strike = self.spy.value + offset
-        delta = self.spy.date + timedelta(days=delta)
-        if delta.weekday() >= 4 and delta.weekday() <= 6:
-            delta += timedelta(days=(7 - delta.weekday()))
-        call = self.env.call(self.spy, int(strike), delta)
-        return call
+		# Creating the stock normally like so:
+		# self.spy = ag.finance.Stock("SPY")
+		# will NOT allow the environment to track it or update its value data as time progresses
+
+		# Initial investment into the primary portfolio
+		env.invest(self.spy.value * 150)
+
+		# We only want the algorithm to evaluate at market open and close of each day
+		# Finalizing will dramatically increase execution time, but is not necessary
+		env.finalize(manual=["9:30 AM", "4:00 PM"])
+
+		return env
+
+	def cycle(self):
+		"""The actions to perform at every valuation point"""
+
+		# Selling as many covered calls on SPY as we can
+		self.env.covered_call(self.generate_call())
+
+		# The above line of code is a shortcut for:
+		# self.env.main.covered_call(self.generate_call())
+
+		# Showing the changes at every time step
+		if self.verbose is print:
+			self.stats.change_report()
+			print(self.env.main.positions)
+
+	def generate_call(self, delta=1):
+		"""Generates the ideal SPY call to be sold based on current circumstances"""
+
+		# Getting our current position in the Asset <STOCK SPY>
+		spy_position = self.env.get_position(self.spy)
+
+		# Determining our optimal strike price
+		optimal = math.floor(self.spy.value) + delta
+
+		# Determining a lower bound for our strike price (the ceiling of our basis)
+		lower_bound = optimal
+		if spy_position and self.bounded:
+			lower_bound = math.ceil(spy_position.average_cost)
+
+		# Determining our strike price
+		strike = max(optimal, lower_bound)
+
+		# Determining the call expiry date (1 DTE)
+		expiry = self.env.date + timedelta(days=1)
+
+		# We can't sell calls with expiries on weekends or outside of market hours
+		expiry = ag.utils.nearest_expiry(expiry)
+
+		# Creating the call
+		# Creating the call using the environment so that it doesnt have to be added retroactively
+		return self.env.call(self.spy, strike, expiry)
 
 
 

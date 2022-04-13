@@ -11,6 +11,7 @@ from .algorithm import Algorithm
 from ._globals import __globals
 from .data import datatools
 from . import finance
+from . import utils
 
 def __getattr__(name):
     if name == "types":
