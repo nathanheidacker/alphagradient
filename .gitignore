@@ -2,6 +2,4 @@
 **/__pycache__
 dev.py
 **/.DS_Store
-*/data/raw
-*/data/pickles
-.stats.prof
+*.prof
