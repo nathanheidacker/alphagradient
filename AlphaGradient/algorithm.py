@@ -2,16 +2,25 @@
 """AG module containing algorithm class
 
 Todo:
-	* Implement algorithms
+	* Finish finalize method for Runs
+		1) Calculate weights for each performance based on initial account values
+		2) Aggregate total value data across all portfolios (for use in calculating best and worst metrics)
+	* Profile() function to generate a comprehensive report
+	* Best() and Worst() functions with timedelta as a parameter
+		For all possible periods of length determined by the given timedelta, which period had the best or worst performance (change in total value)
+		* Should be
 """
 
 # Standard imports
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from numbers import Number
+import math
 
 # Third party imports
 import pandas as pd
+import numpy as np
+from tqdm import tqdm
 
 # Local imports
 from .finance import types, Asset, Basket, Portfolio
@@ -41,6 +50,7 @@ class Performance:
 
 		self.start = self._data.index[0]
 		self.end = self._data.index[-1]
+		self.benchmark = Asset.benchmark.fget(1)
 
 		if len(self._data) > 1:
 			shifted = self._data["VALUE"].shift(1)
@@ -59,7 +69,7 @@ class Performance:
 			return self._data.index.get_loc(self._data.index.asof(date))
 
 		def get_benchmark_index(date, benchmark=None):
-			benchmark = Asset.benchmark if benchmark is None else benchmark
+			benchmark = self.benchmark if benchmark is None else benchmark
 			if date <= benchmark.data.first:
 				return 0
 			return benchmark.data._data.index.get_loc(benchmark.data._data.index.asof(date))
@@ -85,7 +95,7 @@ class Performance:
 			return self._data.iloc[start:end, :]
 
 		def benchmark_range(start, end, benchmark=None):
-			benchmark = Asset.benchmark if benchmark is None else benchmark
+			benchmark = self.benchmark if benchmark is None else benchmark
 			start = get_benchmark_index(start, benchmark)
 			end = get_benchmark_index(end, benchmark)
 			if end <= start:
@@ -107,7 +117,7 @@ class Performance:
 			return data["CHANGE"].std() * multiplier
 
 		def benchmark_vol(date=None, days=365, benchmark=None):
-			benchmark = Asset.benchmark if benchmark is None else benchmark
+			benchmark = self.benchmark if benchmark is None else benchmark
 			multiplier = ((days / (252 / 365)) ** 0.5)
 			data = td_benchmark_range(date, days, benchmark)
 			return data["CHANGE"].std() * multiplier
@@ -117,11 +127,11 @@ class Performance:
 			return data["VALUE"].mean()
 
 		def beta(date=None, days=365, benchmark=None):
-			benchmark = Asset.benchmark if benchmark is None else benchmark
+			benchmark = self.benchmark if benchmark is None else benchmark
 			self_vol = vol(date, days)
 			bench_vol = benchmark_vol(date, days, benchmark)
-			self_data = td_range(date, days)["VALUE"]
-			bench_data = td_benchmark_range(date, days, benchmark)[benchmark.close_value]
+			self_data = td_range(date, days)["CHANGE"]
+			bench_data = td_benchmark_range(date, days, benchmark)["CHANGE"].asof(self_data.index)
 			r = self_data.corr(bench_data)
 			if bench_vol == 0:
 				return 0
@@ -135,8 +145,7 @@ class Performance:
 			return (quote(end) / initial) - 1
 
 		def benchmark_roi(date=None, days=365, benchmark=None):
-			benchmark = Asset.benchmark if benchmark is None else benchmark
-			print(benchmark.fget(benchmark))
+			benchmark = self.benchmark if benchmark is None else benchmark
 			start, end = get_dates(date, days)
 			initial = benchmark.quote(start)
 			if initial == 0:
@@ -147,23 +156,24 @@ class Performance:
 			return (roi(date, days) + 1) ** (365 / days) - 1
 
 		def alpha(date=None, days=365, benchmark=None):
-			benchmark = Asset.benchmark if benchmark is None else benchmark
+			benchmark = self.benchmark if benchmark is None else benchmark
 			run_roi = roi(date, days)
 			bench_roi = benchmark_roi(date, days, benchmark)
-			expected_roi = beta(date, days, benchmark) * (bench_roi - Asset.rfr)
+			expected_roi = beta(date, days, benchmark) * (bench_roi - Asset.rfr.fget(1))
 			return run_roi - expected_roi
 
-		def years(start=None):
+		def periods(delta=365, start=None):
 			start = self.start if start is None else start
+			delta = timedelta(days=delta) if not isinstance(delta, timedelta) else delta
 			periods = []
 			while start < self.end:
-				period_end = min(start + timedelta(days=365), self.end)
+				period_end = min(start + delta, self.end)
 				periods.append((start, period_end))
 				start = period_end
 			return tuple(periods)
 
-		def index_years(start=None):
-			return tuple([tuple([get_index(t) for t in period]) for period in years(start)])
+		def index_periods(delta=365, start=None):
+			return tuple([tuple([get_index(t) for t in period]) for period in periods(delta, start)])
 
 		self.range = _range
 		self.quote = quote
@@ -173,8 +183,8 @@ class Performance:
 		self.roi = roi
 		self.cagr = cagr
 		self.alpha = alpha
-		self.years = years
-		self.index_years = years
+		self.periods = periods
+		self.index_periods = index_periods
 
 
 	def changes(self, date=None, *, steps=None, delta=None, header_info=False):
@@ -258,18 +268,18 @@ class Performance:
 		return changes
 
 	def change_report(self, date=None, *, steps=None, delta=None, header=False, border=False):
-		"""Prints a formatted list of changes from the given date to the index before it"""
+		"""Returns a formatted list of changes from the given date to the index before it"""
 
 		# Grabbing changes
 		changes, current, previous = self.changes(date, steps=steps, delta=delta, header_info=True)
 
-		# Initializing components of the final print
+		# Initializing components of the final report
 		title = ""
 
 		if header:
 			if current == previous:
 
-				#Occurs when printing the first index, ie during initialization
+				#Occurs when reporting the first index, ie during initialization
 				if current == self.data.index[0]:
 					title = f"CHANGES FROM INITIALIZATION ON {current.date()} {utils.timestring(current)}, {utils.get_weekday(current)[:3]}\n"
 
@@ -334,18 +344,20 @@ class Run:
 		# If the run's environment has been finalized, we can get a more precise measurement of
 		# the completeness of the run by using timesteps over days
 		if env.times:
-			total = len(env.times) * self.duration.days
-			step_getter = lambda self: (self.timesteps, total)
-			completion_getter = lambda self: round(((self.timesteps / total) * 100), 2)
-			self._sg = step_getter
-			self._cg = completion_getter
+			self._total = len(env.times) * self.duration.days
+			step_getter = (lambda self: (self.timesteps, self._total)).__get__(self, Run)
+			completion_getter = (lambda self: round(((self.timesteps / self._total) * 100), 2)).__get__(self, Run)
+			self._step = step_getter
+			self._completion = completion_getter
+
+		# Calling __get__ with self and Run turns the func into a bound method of this Run instance
 
 		else:
-			total = self.duration.days
-			step_getter = lambda self: (self.day, total)
-			completion_getter = lambda self: round(((self.day / total) * 100), 2)
-			self._sg = step_getter
-			self._cg = completion_getter
+			self._total = self.duration.days
+			step_getter = (lambda self: (self.day, self._total)).__get__(self, Run)
+			completion_getter = (lambda self: round(((self.day / self._total) * 100), 2)).__get__(self, Run)
+			self._step = step_getter
+			self._completion = completion_getter
 			# CAN PROPERTY TAKE IN AN OBJECT TO BIND TO?
 
 	def __bool__(self):
@@ -354,11 +366,17 @@ class Run:
 	def __str__(self):
 		return f"<{self.algo_name} Algorithm Backtest: {self.duration}>"
 
+	def __repr__(self):
+		return self.__str__()
+
 	def __getattr__(self, attr):
 		if self.performances:
 			perf = list(self.performances.values())[0]
-			if getattr(perf, attr, False) and utils.is_func(getattr(perf, attr)):
-				return self._aggregate(attr)
+			if getattr(perf, attr, False):
+				if utils.is_func(getattr(perf, attr)):
+					return self._aggregate(attr)
+				return {pname : getattr(p, attr) for pname, p in self.performances}
+		raise AttributeError(f"AlphaGradient Run object has no attribute '{attr}'")
 
 
 	def finalize(self):
@@ -366,14 +384,26 @@ class Run:
 		performance metric calculation"""
 		self.complete = True
 		for performance in self.performances.values():
-			print(f"Finalizing performances")
 			performance.finalize()
+
+		data = []
+		for name, performance in self.performances.items():
+			series = performance.data["VALUE"]
+			series.name = name
+			data.append(series)
+
+		self.history = pd.DataFrame(data).transpose()
+		self.initial = self.history.iloc[0, :].to_dict()
+		self.history["TOTAL"] = self.history.sum(axis=1)
+		self.weights = {k : v / self.history.iloc[0, :]["TOTAL"] for k, v in self.initial.items()}
+		self.history["CHANGE"] = self.history["TOTAL"].pct_change()
+
 
 	@property
 	def completion(self):
 		if self.complete:
 			return 100
-		return self._cg(self)
+		return self._completion()
 
 	@property
 	def day(self):
@@ -401,19 +431,29 @@ class Run:
 
 	def completion_report(self):
 		"""Returns a small report of the state of completion of the current run"""
-		counter, total = self._sg(self)
+		counter, total = self._step()
 		return f"DAY {self.day} | STEP {self.timesteps_today} | COMPLETION: {self.completion}% ({counter} / {total}) | REMAINING: {self.remaining}"
 
 	def _aggregate(self, func_name):
 
-		def aggregated(*args, **kwargs):
-			return {k: getattr(v, func_name)(*args, **kwargs) for k, v in self.performances.items()}
+		def aggregated(*args, aggregate=False, **kwargs):
+			attr_dict = {k: getattr(v, func_name)(*args, **kwargs) for k, v in self.performances.items()}
+			if aggregate:
+				attr_dict = {k:v for k, v in attr_dict.items() if not math.isnan(v)}
+				adj_weights = {k:v for k, v in self.weights.items() if k in attr_dict}
+				new_total = sum(adj_weights.values())
+				adj_weights = {k : v / new_total for k, v in adj_weights.items()}
+				values = np.array(list(attr_dict.values()))
+				weights = np.array(list(adj_weights.values()))
+				return (values * weights).sum()
+			return attr_dict
 
 		return aggregated
 
-	def mean(self, d):
-		return np.array(d.values()).mean()
-
+	def profile(self):
+		profit = self.history["TOTAL"][-1] - self.history["TOTAL"][0]
+		roi = round(self.roi(days="max", aggregate=True) * 100, 2)
+		return {"PROFIT": f"${round(profit, 2)}", "ROI": f"{roi}% | {round(roi / 100, 2)}x"}
 
 
 class Stats:
@@ -434,14 +474,14 @@ class Stats:
 		return run
 
 	def change_report(self, date=None, *, steps=None, delta=None):
-		"""Prints a report of changes to the main portfolio resulting from the most recent timestep"""
+		"""Returns a report of changes to the main portfolio resulting from the most recent timestep"""
 		comp_report = self.current.completion_report()
 		change_report = self.current.main.change_report(date=date,
-		                                                steps=steps,
-		                                                delta=delta,
-		                                                header=True,
-		                                                border=True)
-		print(f"{comp_report}\n{change_report}")
+														steps=steps,
+														delta=delta,
+														header=True,
+														border=True)
+		return f"{comp_report}\n{change_report}"
 
 	@property
 	def runs(self):
@@ -466,14 +506,33 @@ class Stats:
 
 class Algorithm(ABC):
 
-	def __init__(self, start=None, end=None, resolution=None, verbose=False):
+	def __init__(self, start=None, end=None, resolution=None, verbose=False, progress=True):
 		self.start = self._global_start if start is None else self.validate_date(start)
 		self.end = self._global_end if end is None else self.validate_end(end)
 		self.resolution = self._global_res if resolution is None else self.validate_resolution(resolution)
 		self._environment = self.setup(self.start, self.end)
-		self.verbose = print if verbose else lambda *args, **kwargs: None
+		self.verbose = verbose
+		self.print = print if verbose else utils.NullClass()
 		self.stats = Stats(self)
 		self.type.instances[self._generate_name()] = self
+
+		# Reroutes some traditional tqdm functionality to work automatically with Run objects
+		# without requiring user input. Essentially a partial class version of tqdm
+		class tqdm_partial(tqdm):
+			def __init__(this, *args, total=None, **kwargs):
+				total = self.stats.current._total if total is None else total
+				super().__init__(*args, total=total, **kwargs)
+				this.set_description(str(self.stats.current))
+				this.ncols = 150
+			def update(this, n=None):
+				if n is None:
+					n = self.stats.current._step()[0] - this.n
+				super().update(n=n)
+			def close(this, *args, **kwargs):
+				this.update(this.total - this.n)
+				super().close(*args, **kwargs)
+
+		self.progress = tqdm_partial if (progress and not verbose) else utils.NullClass()
 
 	def __call__(self, *args, start=None, end=None, **kwargs):
 
@@ -484,7 +543,7 @@ class Algorithm(ABC):
 		# Reset stats for new run
 		self.stats._reset(self.env, start, end)
 
-		# Dont run setup on first call
+		# Dont run setup on first call (runs will be empty after initialization)
 		if self.stats.runs:
 			self.env = self.setup(*args, start=start, end=end, **kwargs)
 
@@ -500,10 +559,15 @@ class Algorithm(ABC):
 
 	def default_run(self, start, end, *args, **kwargs):
 		"""The default run cycle when none is implemented by an algorithm"""
+
+		# Manual control of tqdm progress bar
+		progress_bar = self.progress()
 		while self.date < end:
 			if self.env.open:
 				self.cycle()
 			self.env.next()
+			progress_bar.update()
+		progress_bar.close()
 
 	@classmethod
 	def _generate_name(cls):

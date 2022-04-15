@@ -8,6 +8,16 @@ import math
 # Third Party imports
 import pandas as pd
 
+def bounded(to_bound, lower=None, upper=None):
+	if lower is None and upper is None:
+		raise ValueError(f"Of the parameters 'lower' and 'upper', at least one must be specified")
+	if lower:
+		to_bound = max(to_bound, lower)
+	if upper:
+		to_bound = min(to_bound, upper)
+
+	return to_bound
+
 def is_func(f):
 	"""Given an object f, returns a boolean value indicating whether or not f is a kind of function
 
@@ -19,7 +29,7 @@ def is_func(f):
 	"""
 
 	# Fake class to access type 'method'
-	class c:
+	class C:
 		def method(self):
 			pass
 
@@ -30,13 +40,17 @@ def is_func(f):
 	# Fake lambda to access type 'lambda'
 	lamb = lambda: None
 
+	# Fake instance to access type 'bound method'
+	c = C()
+
 	# Gathering all callable types
 	functype = type(func)
-	methodtype = type(c.method)
+	methodtype = type(C.method)
+	boundmethodtype = type(c.method)
 	lambdatype = type(lamb)
 	builtintype = type(print)
 
-	return isinstance(f, (functype, methodtype, lambdatype, builtintype))
+	return isinstance(f, (functype, methodtype, boundmethodtype, lambdatype, builtintype))
 
 def nearest_expiry(expiry, method="after"):
 	"""Given an expiry datetime for use in options contracts, returns the nearest valid expiry"""
@@ -196,4 +210,14 @@ def auto_batch_size(iterable):
 
 def auto_batch(iterable):
 	return get_batches(iterable, auto_batch_size(iterable))
+
+class NullClass:
+	def __call__(self, *args, **kwargs):
+		"""Allows infinite call/attribute chaining"""
+		return self
+	def __getattr__(self, attr):
+		"""Allows infinite attribute chaining"""
+		return self
+	def __bool__(self):
+		return False
 

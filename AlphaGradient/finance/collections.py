@@ -312,6 +312,7 @@ class Basket:
 		else:
 			self._times = sorted(list(set([t for asset in self.assets for t in asset.data.get_times()])))
 
+		self._times = sorted(set(self._times))
 		self._reset_time_index()
 
 	@staticmethod

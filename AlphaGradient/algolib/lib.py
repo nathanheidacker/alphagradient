@@ -68,9 +68,7 @@ class ThetaGang(ag.Algorithm):
 		# self.env.main.covered_call(self.generate_call())
 
 		# Showing the changes at every time step
-		if self.verbose is print:
-			self.stats.change_report()
-			print(self.env.main.positions)
+		self.print(self.stats.change_report())
 
 	def generate_call(self, delta=1):
 		"""Generates the ideal SPY call to be sold based on current circumstances"""
