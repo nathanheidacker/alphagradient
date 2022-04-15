@@ -1,5 +1,7 @@
-aenum
+pathos
+p_tqdm
+datapackage
 numpy
 pandas
-sklearn
-matplotlib
+yfinance
+aenum
