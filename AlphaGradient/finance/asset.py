@@ -81,8 +81,7 @@ class types(Enum):
                 else:
                     raise AttributeError(f"Asset type \'{self}\' has no instance \'base\'")
 
-            def __str__(self):
-                return '{' + str([x for x in self.items()])[1:-1] + '}'
+        return (name, Instances())
 
     # Non-asset types that need to be instantiated manually
     undefined = auto() # Used when the subclass is hidden

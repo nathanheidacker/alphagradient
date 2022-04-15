@@ -805,11 +805,6 @@ class Portfolio:
 
         return quantity
 
-
-
-
-
 # Uses a protected keyword, so must be used set outside of the class
 setattr(Portfolio, "type", types.portfolio)
 setattr(types.portfolio, "c", Portfolio)
->>>>>>> q1-2022

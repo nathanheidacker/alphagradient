@@ -1626,8 +1626,6 @@ class _filterexp:
 
         return result
 
-
-
 class UniverseView(Universe):
     """A Universe with filters applied, with functionality for removing, adding, or changing filters applied"""
     def __init__(self, base, stocklist, filterr):
@@ -1663,11 +1661,6 @@ class UniverseView(Universe):
 
         return result
 
-
-
-
-
 # Using a protected keyword, attr must be set outside of the class
 setattr(Universe, "type", types.universe)
 setattr(types.universe, "c", Universe)
->>>>>>> q1-2022
