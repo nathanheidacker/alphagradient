@@ -600,13 +600,12 @@ class Algorithm(ABC):
         """The default run cycle when none is implemented by an algorithm"""
 
         # Manual control of tqdm progress bar
-        progress_bar = self.progress()
-        while self.date < end:
-            if self.env.open:
-                self.cycle()
-            self.env.next()
-            progress_bar.update()
-        progress_bar.close()
+        with self.progress() as progress:
+            while self.date < end:
+                if self.env.open:
+                    self.cycle()
+                self.env.next()
+                progress.update()
 
     @classmethod
     def _generate_name(cls):

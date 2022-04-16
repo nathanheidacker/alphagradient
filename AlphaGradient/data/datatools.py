@@ -477,6 +477,7 @@ class AssetData:
 
     def valuate(self, date, asset):
         date = date if date >= self.first else self.first
+        # Calling asof on the index is WAY faster than calling it directly on the frame
         data = self._data.loc[self._data.index.asof(date)]
         if date >= data["_period_close_"]:
             return data[asset.close_value]
