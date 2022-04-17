@@ -66,7 +66,7 @@ class Globals:
         self._end = GLOBAL_DEFAULT_END
         self._resolution = GLOBAL_DEFAULT_RESOLUTION
         self._date = GLOBAL_DEFAULT_START
-        self._persistent = None
+        self._persistent = self._find_persistent()
 
         for cls in [Asset, Basket, Algorithm]:
             self._shareprop("start", cls, name="_global_start")
@@ -466,8 +466,9 @@ class Globals:
             modifies the global instance in place by saving the storage path
         """
         if path is None:
-            path = Path(os.getcwd())
-        path = path.joinpath("/alphagradient.persistent/")
+            path = self._default_persistent()
+        else:
+            path = path.joinpath("alphagradient.persistent/")
         if not os.path.isdir(path):
             path.mkdir()
         self._persistent = path
@@ -475,6 +476,16 @@ class Globals:
     @property
     def persistent(self):
         return self._persistent
+
+    def _find_persistent(self):
+        path = self._default_persistent()
+        if os.path.isdir(path):
+            return path
+        return None
+
+    def _default_persistent(self):
+        return Path(os.getcwd()).joinpath("alphagradient.persistent/")
+
 
 
 __globals = Globals()
