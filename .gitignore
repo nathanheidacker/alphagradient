@@ -4,3 +4,5 @@ dev.py
 **/.DS_Store
 *.prof
 **/alphagradient.egg-info
+/build
+/dist

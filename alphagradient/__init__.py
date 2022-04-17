@@ -4,6 +4,8 @@
 Todo:
     * organize imports
 """
+# Standard imports
+import os
 
 # Local imports
 from .finance.asset import types as _types
@@ -30,3 +32,11 @@ def __getattr__(name):
     except KeyError as ke:
         raise AttributeError(f"AttributeError: module \'{__name__}\' "
                              f"has no attribute \'{name}\''") from ke
+
+# Setting up some empty directories
+pickle_path = __globals.path.joinpath("/data/pickles/")
+raw_path = __globals.path.join("data/raw/")
+
+for path in [pickle_path, raw_path]:
+    if not os.path.isdir(path):
+        os.mkdir(path)
