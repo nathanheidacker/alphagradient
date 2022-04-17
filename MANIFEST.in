@@ -1,4 +1,4 @@
-include finance/currency_info.p
-include finance/exchange_info.p
-include finance/standard_asset_settings.json
-include data/curreny_info_raw.p
+include alphagradient/finance/currency_info.p
+include alphagradient/finance/exchange_info.p
+include alphagradient/finance/standard_asset_settings.json
+include alphagradient/data/curreny_info_raw.p
