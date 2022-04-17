@@ -717,8 +717,8 @@ class Asset(ABC):
 
     def _save(self):
         """Saves this asset's data locally"""
-        if self.data:
-            path = self._basepath.joinpath(f"data/pickles/{self.key}.p")
+        if self.data and self._global_persistent_path is not None:
+            path = self._global_persistent_path.joinpath(f"{self.key}.p")
             with open(path, "wb") as p:
                 self.data._data.to_pickle(p)
 
