@@ -168,7 +168,7 @@ class Basket:
         self._resolution = self._global_res if resolution is None else self.validate_resolution(resolution)
         self._assets = []
         if isinstance(assets, dict):
-        	assets = list(assets.values())
+            assets = list(assets.values())
         self.track([] if assets is None else assets)
         self._portfolios = [] if portfolios is None else ([portfolios] if isinstance(portfolios, Portfolio) else list(portfolios))
         self._base = self._global_base if not isinstance(base, Currency) else base

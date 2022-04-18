@@ -20,7 +20,7 @@ https://github.com/nathanheidacker/alphagradient
 Binary installers for the latest released version are available at the [Python
 Package Index (PyPI)](https://pypi.org/project/alphagradient)
 
-```sh
+```
 # using pip
 pip install alphagradient
 ```
@@ -77,7 +77,7 @@ strike = math.floor(spy.value) + 5
 expiry = datetime.fromisoformat("2022-04-14 16:00:00")
 call = ag.finance.Call(spy, strike=strike, expiry=expiry)
 ```
-```sh
+```
 >>>spy
 <STOCK SPY: $446.52 /share> // as of April 6th, 2022 EOD
 
@@ -117,7 +117,7 @@ call_position = portfolio.get_position(call, short=True)
 ```
 
 Note that relative to the portfolio that holds them, short positions are always negative as they represent a debt that must be repaid.
-```sh
+```
 >>>portfolio.positions
 {'CASH': <USD $11451.91>, 'STOCK_SPY_LONG': <200 shares @ $446.52 | RETURN: 0.0%>, 'SPY451C2022-04-14_SHORT': <2 contracts @ $-377.96 | RETURN: 0.0%>}
 
@@ -135,7 +135,7 @@ Note that relative to the portfolio that holds them, short positions are always 
 today += timedelta(days=7)
 ag.globals.step(today)
 ```
-```sh
+```
 >>>portfolio.positions
 {'CASH': <USD $11451.91>, 'STOCK_SPY_LONG': <200 shares @ $446.52 | RETURN: -0.72%>, 'SPY451C2022-04-14_SHORT': <2 contracts @ $-377.96 | RETURN: 96.03%>}
 
@@ -158,7 +158,7 @@ profit = portfolio.liquid - initial
 roi = round(profit / initial * 100, 3)
 roi = f"{roi}%"
 ```
-```sh
+```
 >>>portfolio.positions
 {'CASH': <USD $100083.93>}
 
@@ -195,7 +195,7 @@ universe = ag.finance.Universe("all")
 
 ```
 Heres the performance of a little script I made to demonstrate initializing from 0. This was peformed on a M1 Macbook Air with a modest internet connection (~100Mbps)
-```sh
+```
 $ python3 make_universe.py
 
 Beginning Script...
@@ -217,7 +217,7 @@ Successfully added 10419 of 12066 stocks (937 failures, 710 timeouts, 1647 total
 Elapsed Time:  847.0219991250001 seconds
 ```
 Here's performance on the second run
-```sh
+```
 $ python3 make_universe.py
 
 Beginning Script...
@@ -249,7 +249,7 @@ Filtering operations return a UniverseView, which is a 'view' of an initialized 
 filtered = universe.filter[universe.value > 1000]
 ```
 
-```sh
+```
 >>>len(universe)
 10995
 
@@ -268,7 +268,7 @@ filtered = filtered.filter[universe.alpha() > 0]
 filtered = universe.filter[universe.value > 100, universe.alpha() > 0]
 ```
 
-```sh
+```
 >>>len(filtered)
 8
 
@@ -314,7 +314,7 @@ env.stock("DIA")
 qqq = ag.finance.Stock("QQQ")
 env.track(qqq)
 ```
-```sh
+```
 >>>env.assets
 [<STOCK SPY: $443.31 /share>, <STOCK DIA: $345.76 /share>, <STOCK QQQ: $346.35 /share>]
 
@@ -345,7 +345,6 @@ True
 Finally, AlphaGradient Algorithms are a framework for organizing all of these components to create backtestable financial algorithms. To create a new algorithm, simply subclass from ag.Algorithm and define two new functions, setup and cycle, which are discussed below. Anything passed to an instantiated algorithm object when called will be passed to both of these functions.
 
 Both of these functions share an identical minimal function header. That is, if you don't define any additional arguments that you need for your algorithm, the minimum that both will always be passed (and should therefore be capable of accepting) is: (*args, start, end, ** kwargs). start and end will **always** be passed to both of these functions as explicit keyword arguments, so you must accept them, even if you don't use them. This means that the minimum function header for either setup OR cycle is as such:
-
 ```python
 def setup(self, **kwargs):
     ...
@@ -421,120 +420,120 @@ Here is a more advanced example that demonstates some common design patterns and
 
 ```python
 class ThetaGang(ag.Algorithm):
-	"""An example algorithm in the algorithm library used to demonstrate some of
-	AlphaGradient's standard features and best practices
+  """An example algorithm in the algorithm library used to demonstrate some of
+  AlphaGradient's standard features and best practices
 
-	This is a tutorial algorithm that seeks to demonstrate some of AlphaGradient's
-	features and standard design practices. This algorithm sells the maximum number
-	of covered calls on SPY that it can, with a bounded strike price to prevent from
-	selling calls that could lose money when assigned
+  This is a tutorial algorithm that seeks to demonstrate some of AlphaGradient's
+  features and standard design practices. This algorithm sells the maximum number
+  of covered calls on SPY that it can, with a bounded strike price to prevent from
+  selling calls that could lose money when assigned
 
-	Here's a breakdown:
+  Here's a breakdown:
 
-		1) At the beginning of the day, buy as many shares of SPY as we can to the
-		nearest multiple of 100
+    1) At the beginning of the day, buy as many shares of SPY as we can to the
+    nearest multiple of 100
 
-		2) Using SPY shares as collateral, sells 1 DTE covered calls on SPY where
-		the strike is determined by SPY's current value. The algorithm will never
-		sell a call with a strike below it's average cost for the shares it owns.
-		This prevents it from losing money in the case of call assignment.
+    2) Using SPY shares as collateral, sells 1 DTE covered calls on SPY where
+    the strike is determined by SPY's current value. The algorithm will never
+    sell a call with a strike below it's average cost for the shares it owns.
+    This prevents it from losing money in the case of call assignment.
 
-		3) The strike bounding component of 2) is toggle-able by instantiating with
-		bounded=False
-	"""
+    3) The strike bounding component of 2) is toggle-able by instantiating with
+    bounded=False
+  """
 
-	def __init__(self, *args, bounded=True, **kwargs):
-		super().__init__(*args, **kwargs)
+  def __init__(self, *args, bounded=True, **kwargs):
+    super().__init__(*args, **kwargs)
 
-		# Determines whether or not a lower bound should be placed on the strike
-		self.bounded = bounded
+    # Determines whether or not a lower bound should be placed on the strike
+    self.bounded = bounded
 
 
-	def setup(self, *args, start, end, **kwargs):
-		# Creating a basket with the given start parameter
-		env = ag.finance.Environment(start=start)
+  def setup(self, *args, start, end, **kwargs):
+    # Creating a basket with the given start parameter
+    env = ag.finance.Environment(start=start)
 
-		# Creating SPY stock, attaching it to self (will be referenced frequently)
-		# This call to the stock() method both instantiates the stock within the environment,
-		# AND returns it, allowing us to set it as an attribute
-		self.spy = env.stock("SPY")
+    # Creating SPY stock, attaching it to self (will be referenced frequently)
+    # This call to the stock() method both instantiates the stock within the environment,
+    # AND returns it, allowing us to set it as an attribute
+    self.spy = env.stock("SPY")
 
-		# Initial investment into the primary portfolio
-		env.invest(self.spy.value * 150)
+    # Initial investment into the primary portfolio
+    env.invest(self.spy.value * 150)
 
-		# We only want the algorithm to evaluate at market open and close of each day
-		# Finalizing will dramatically increase execution time, but is not necessary
-		env.finalize(manual=["9:30 AM", "4:00 PM"])
+    # We only want the algorithm to evaluate at market open and close of each day
+    # Finalizing will dramatically increase execution time, but is not necessary
+    env.finalize(manual=["9:30 AM", "4:00 PM"])
 
-		return env
+    return env
 
-	def cycle(self, *args, start, end, **kwargs):
-		"""The actions to perform at every valuation point"""
+  def cycle(self, *args, start, end, **kwargs):
+    """The actions to perform at every valuation point"""
 
-		# Selling as many covered calls on SPY as we can
-		self.env.covered_call(self.generate_call())
+    # Selling as many covered calls on SPY as we can
+    self.env.covered_call(self.generate_call())
 
-		# The above line of code is a shortcut for:
-		# self.env.main.covered_call(self.generate_call())
+    # The above line of code is a shortcut for:
+    # self.env.main.covered_call(self.generate_call())
 
-		# Showing the changes at every time step
-		self.print(self.stats.change_report())
+    # Showing the changes at every time step
+    self.print(self.stats.change_report())
 
-	def generate_call(self, delta=1):
-		"""Generates the ideal SPY call to be sold based on current circumstances"""
+  def generate_call(self, delta=1):
+    """Generates the ideal SPY call to be sold based on current circumstances"""
 
-		# Getting our current position in the Asset <STOCK SPY>
-		spy_position = self.env.get_position(self.spy)
+    # Getting our current position in the Asset <STOCK SPY>
+    spy_position = self.env.get_position(self.spy)
 
-		# Determining our optimal strike price
-		optimal = math.floor(self.spy.value) + delta
+    # Determining our optimal strike price
+    optimal = math.floor(self.spy.value) + delta
 
-		# Determining a lower bound for our strike price (the ceiling of our basis)
-		lower_bound = optimal
-		if spy_position and self.bounded:
-			lower_bound = math.ceil(spy_position.average_cost)
+    # Determining a lower bound for our strike price (the ceiling of our basis)
+    lower_bound = optimal
+    if spy_position and self.bounded:
+      lower_bound = math.ceil(spy_position.average_cost)
 
-		# Determining our strike price
-		strike = max(optimal, lower_bound)
+    # Determining our strike price
+    strike = max(optimal, lower_bound)
 
-		# Determining the call expiry date (1 DTE)
-		expiry = self.env.date + timedelta(days=1)
+    # Determining the call expiry date (1 DTE)
+    expiry = self.env.date + timedelta(days=1)
 
-		# We can't sell calls with expiries on weekends or outside of market hours
-		expiry = ag.utils.nearest_expiry(expiry)
+    # We can't sell calls with expiries on weekends or outside of market hours
+    expiry = ag.utils.nearest_expiry(expiry)
 
-		# Creating the call using the environment so that it doesnt have to be added retroactively
-		return self.env.call(self.spy, strike, expiry)
+    # Creating the call using the environment so that it doesnt have to be added retroactively
+    return self.env.call(self.spy, strike, expiry)
 ```
 
 This is a relatively complex algorithm, but here's what it looks like without the comments. It's less than 30 lines of code.
 ```python
 class ThetaGang(ag.Algorithm):
-	def __init__(self, *args, bounded=True, **kwargs):
-		super().__init__(*args, **kwargs)
-		self.bounded = bounded
+  def __init__(self, *args, bounded=True, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.bounded = bounded
 
-	def setup(self, *args, start, end, **kwargs):
-		env = ag.finance.Environment(start=start)
-		self.spy = env.stock("SPY")
-		env.invest(self.spy.value * 150)
-		env.finalize(manual=["9:30 AM", "4:00 PM"])
-		return env
+  def setup(self, *args, start, end, **kwargs):
+    env = ag.finance.Environment(start=start)
+    self.spy = env.stock("SPY")
+    env.invest(self.spy.value * 150)
+    env.finalize(manual=["9:30 AM", "4:00 PM"])
+    return env
 
-	def cycle(self, *args, start, end, **kwargs):
-		self.env.covered_call(self.generate_call())
-		self.print(self.stats.change_report())
+  def cycle(self, *args, start, end, **kwargs):
+    self.env.covered_call(self.generate_call())
+    self.print(self.stats.change_report())
 
-	def generate_call(self, delta=1):
-		spy_position = self.env.get_position(self.spy)
-		optimal = math.floor(self.spy.value) + delta
-		lower_bound = optimal
-		if spy_position and self.bounded:
-			lower_bound = math.ceil(spy_position.average_cost)
-		strike = max(optimal, lower_bound)
-		expiry = self.env.date + timedelta(days=1)
-		expiry = ag.utils.nearest_expiry(expiry)
-		return self.env.call(self.spy, strike, expiry)
+  def generate_call(self, delta=1):
+    spy_position = self.env.get_position(self.spy)
+    optimal = math.floor(self.spy.value) + delta
+    lower_bound = optimal
+    if spy_position and self.bounded:
+      lower_bound = math.ceil(spy_position.average_cost)
+    strike = max(optimal, lower_bound)
+    expiry = self.env.date + timedelta(days=1)
+    expiry = ag.utils.nearest_expiry(expiry)
+    return self.env.call(self.spy, strike, expiry)
 ```
 
 ### Backtesting
@@ -580,7 +579,7 @@ if __name__ == "__main__":
     main()
 ```
 Here's the output:
-```sh
+```
 $ python3 backtest.py
 <IndexHold Algorithm Backtest: 3650 days, 0:00:00>: 100%|███████████████████████████████████████████████████████| 7300/7300 [00:04<00:00, 1591.71it/s]
 <ThetaGang Algorithm Backtest: 3650 days, 0:00:00>: 100%|████████████████████████████████████████████████████████| 7300/7300 [00:16<00:00, 448.67it/s]
