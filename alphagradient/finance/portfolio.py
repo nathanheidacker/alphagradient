@@ -30,15 +30,18 @@ class View:
         self.value = position.value
         self.symbol = position.symbol
         self.cash = isinstance(position, Cash)
+        self.unit = position.asset.unit
+        self.units = position.asset.units
         #self.beta = position.asset.beta()
 
     def __str__(self):
         if self.cash:
             return f"CASH {self.symbol}{self.value}"
         short = "SHORT" if self.short else "LONG"
-        return f"{self.asset}_{short}: {self.quantity} @ " \
+        unit = self.unit if self.quantity == 1 else self.units
+        return f"{self.asset}_{short}: {self.quantity} {unit} @ " \
                f"{self.symbol}" \
-               f"{round(self.value / self.quantity, 2)}"
+               f"{round(self.value / self.quantity, 2)} /{self.unit}"
 
     def __repr__(self):
         return self.__str__()
@@ -144,12 +147,15 @@ class Position:
         return self.asset is other.asset and self.short is other.short
 
     def __str__(self):
-        return (f"{self.quantity} units @ {self.symbol}{self.average_cost} "
-                f"| MV: {self.price} "
-                f"| RETURN: {round(self.percent_return, 2)}%")
+        unit = self.asset.unit if self.quantity == 1 else self.asset.units
+        return (f"<{self.quantity} {self.asset.key} {unit} @ {self.symbol}{self.average_cost}"
+                f" /{self.asset.unit} | VALUE: {self.price} "
+                f"| RETURN: {round(self.percent_return, 2)}%>")
 
     def __repr__(self):
-        return self.__str__()
+        unit = self.asset.unit if self.quantity == 1 else self.asset.units
+        return (f"<{self.quantity} {unit} @ {self.symbol}{self.average_cost} "
+                f"| RETURN: {round(self.percent_return, 2)}%>")
 
     def __setstate__(self, state):
         self.__dict__ = state
@@ -538,6 +544,7 @@ class Portfolio:
         self._cash -= Cash.from_position(position)
 
         # Updating the portfolio's history to reflect purchase
+        self.update_positions()
         self.update_history()
 
     def sell(self, asset, quantity):
@@ -580,6 +587,7 @@ class Portfolio:
                              f"{asset.name} {asset.type}") from e
 
         # Updating the portfolio's history to reflect sale
+        self.update_positions()
         self.update_history()
 
     def short(self, asset, quantity):
@@ -610,6 +618,7 @@ class Portfolio:
         self._cash -= Cash.from_position(position)
 
         # Updating the portfolio's history to reflect short sale
+        self.update_positions()
         self.update_history()
 
     def cover(self, asset, quantity):
@@ -658,6 +667,7 @@ class Portfolio:
                              f"asset {asset.name} {asset.type}")
 
         # Updating the portfolio's history to reflect short cover
+        self.update_positions()
         self.update_history()
 
     def _history(self):

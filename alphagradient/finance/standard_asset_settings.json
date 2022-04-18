@@ -35,7 +35,8 @@
       "open_value":"OPEN",
       "close_value":"CLOSE",
       "market_open":"9:30 AM",
-      "market_close":"4:00 PM"
+      "market_close":"4:00 PM",
+      "units":["share", "shares"]
    },
    "BROWNIANSTOCK":{
       "hidden":false,
@@ -52,7 +53,10 @@
          "ADJ_CLOSE"
       ],
       "open_value":"OPEN",
-      "close_value":"CLOSE"
+      "close_value":"CLOSE",
+      "market_open":"9:30 AM",
+      "market_close":"4:00 PM",
+      "units":["share", "shares"]
    },
    "OPTION":{
       "hidden":false,
@@ -69,7 +73,10 @@
          "ADJ_CLOSE"
       ],
       "open_value":"OPEN",
-      "close_value":"CLOSE"
+      "close_value":"CLOSE",
+      "market_open":"9:30 AM",
+      "market_close":"4:00 PM",
+      "units":["contract", "contracts"]
    },
    "CALL":{
       "hidden":false,
@@ -86,7 +93,10 @@
          "ADJ_CLOSE"
       ],
       "open_value":"OPEN",
-      "close_value":"CLOSE"
+      "close_value":"CLOSE",
+      "market_open":"9:30 AM",
+      "market_close":"4:00 PM",
+      "units":["contract", "contracts"]
    },
    "PUT":{
       "hidden":false,
@@ -103,6 +113,9 @@
          "ADJ_CLOSE"
       ],
       "open_value":"OPEN",
-      "close_value":"CLOSE"
+      "close_value":"CLOSE",
+      "market_open":"9:30 AM",
+      "market_close":"4:00 PM",
+      "units":["contract", "contracts"]
    }
 }

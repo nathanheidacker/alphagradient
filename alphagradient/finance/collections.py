@@ -12,8 +12,6 @@ from datetime import datetime, time, timedelta
 from weakref import WeakValueDictionary as WeakDict
 from enum import Enum, auto
 from urllib import request
-from pathos.multiprocessing import ProcessingPool as Pool
-from p_tqdm import p_map
 from collections import OrderedDict, deque
 from copy import copy
 from pathlib import Path
@@ -22,10 +20,13 @@ import os
 import math
 
 # Third Party imports
+from pathos.multiprocessing import ProcessingPool as Pool
+from p_tqdm import p_map
 import yfinance as yf
 import yfinance.shared as shared
 import pandas as pd
 import numpy as np
+import tqdm
 
 # Local Imports
 from .. import utils
@@ -134,9 +135,12 @@ class Basket:
             new = self.c(*args, force=force, **kwargs)
             new._valuate()
             new.base = self._basket.base.code
-            self._basket.assets.append(new)
             self[new.name] = new
             return new
+
+        def __setitem__(self, key, value):
+            self._basket._assets.append(value)
+            super().__setitem__(key, value)
 
         def __str__(self):
             return str(dict(self))
@@ -146,7 +150,7 @@ class Basket:
 
         def __getattr__(self, attr):
             try:
-                return self[attr]
+                return self[attr.upper()]
             except KeyError:
                 raise AttributeError(f"AlphaGradient Basket has no \
                                      {attr.capitalize()} instance {attr}")
@@ -162,8 +166,11 @@ class Basket:
         self._start = self._global_start if start is None else self.validate_date(start)
         self._end = self._global_end if end is None else self.validate_date(end)
         self._resolution = self._global_res if resolution is None else self.validate_resolution(resolution)
-        self._assets = [] if assets is None else list(assets)
-        self._portfolios = [] if portfolios is None else list(portfolios)
+        self._assets = []
+        if isinstance(assets, dict):
+        	assets = list(assets.values())
+        self.track([] if assets is None else assets)
+        self._portfolios = [] if portfolios is None else ([portfolios] if isinstance(portfolios, Portfolio) else list(portfolios))
         self._base = self._global_base if not isinstance(base, Currency) else base
         self._times = []
         self._time_index = 0
@@ -247,6 +254,15 @@ class Basket:
     @base.setter
     def base(self, code):
         self._base = Currency.validate_code(code, error=True)
+
+    def track(self, *assets):
+        """For all assets in *assets, adds them to this environment"""
+        iterables = assets
+        for assets in iterables:
+            assets = [assets] if isinstance(assets, Asset) else list(assets)
+            if all(isinstance(asset, Asset) for asset in assets):
+                for asset in assets:
+                    getattr(self, asset.type.name.lower())[asset.name] = asset
 
     def portfolio(self, initial, name=None, base=None):
         """Instantiates a portfolio within this basket
@@ -932,7 +948,9 @@ class Universe(dict):
         self.update()
 
         tickers, stock_input = self._ticker_input(tickers)
-        self.print(f"Initializing Universe: {len(tickers)} Stocks")
+        init_message = f"Initializing Universe: {len(tickers)} Stocks"
+        self.print(init_message)
+        self.print(("-" * len(init_message)))
         if not stock_input:
             self.add(tickers)
 
@@ -1004,8 +1022,8 @@ class Universe(dict):
             self.local_csv = []
             self.local = []
         else:
-            pickle_path = self._basepath.joinpath("data/pickles/")
-            raw_path = self._basepath.joinpath("data/raw/")
+            pickle_path = self._global_persistent_path
+            raw_path = self._global_persistent_path
             self.local_p = sorted([f[6:-2] for f in os.listdir(pickle_path) if f.startswith("STOCK_") and f.endswith(".p")])
             self.local_csv = sorted([f[6:-4] for f in os.listdir(raw_path) if f.startswith("STOCK_") and f.endswith(".csv")])
             self.local = sorted(list(set(self.local_p + self.local_csv)))
@@ -1080,11 +1098,19 @@ class Universe(dict):
         def get_instantiated(tickers):
             """Gets the tickers that are already instantiated in AG"""
             to_instantiate = []
+            instantiated = []
             for ticker in tickers:
                 if types.stock.instances.get(ticker):
-                    self[ticker] = types.stock[ticker]
+                    instantiated.append(ticker)
                 else:
                     to_instantiate.append(ticker)
+
+            if instantiated:
+                stock_or_stocks = "stock" if len(instantiated) == 1 else "stocks"
+                is_or_are = "is" if len(instantiated) == 1 else "are"
+                self.print(f"[1]: adding {len(instantiated)} {stock_or_stocks} that {is_or_are} already instantiated")
+                for ticker in instantiated:
+                    self[ticker] = types.stock[ticker]
             return to_instantiate
 
         # Ensures that we don't reinitialize stocks that already exist
@@ -1092,7 +1118,7 @@ class Universe(dict):
 
         # The number of columns for progress displays
         ncols = 100
-        self.print(f"Adding {len(all_tickers)} Stocks to Universe")
+        self.print(f"[2]: initializing {len(all_tickers)} stocks to be added to Universe")
 
         # Separating uninitialized tickers into online and local
         local = []
@@ -1103,7 +1129,7 @@ class Universe(dict):
 
         def get_local(tickers):
             """Gets all tickers that have data available locally"""
-            self.print(f"Initializing {len(tickers)} Stocks from local data")
+            self.print(f"[3]: initializing {len(tickers)} stocks from local data")
             stocks = p_map(lambda ticker: Stock(ticker), tickers, ncols=ncols, disable=(not self.verbose))
             for stock in stocks:
                 self[stock.name] = stock
@@ -1117,7 +1143,7 @@ class Universe(dict):
                 timeout (Number): The amount of time to wait for each
                     stock when attempting download before considering it a failure / timeout error
             """
-            self.print(f"Initializing {len(tickers)} Stocks from online data")
+            self.print(f"[4]: initializing {len(tickers)} stocks from online data")
             for i, batch in enumerate(utils.auto_batch(tickers)):
                 self.print(f"Batch {i + 1}: downloading {len(batch)} stocks")
                 data = yf.download(
@@ -1136,9 +1162,7 @@ class Universe(dict):
                 self.print(f"Initializing {len(batch)} Stocks from downloaded batch ({len(to_remove)} failures)")
 
                 if batch:
-                    stocks = p_map(lambda ticker: Stock(ticker, data=data[ticker].dropna(how="all")),
-                                   batch, ncols=ncols,
-                                   disable=(not self.verbose))
+                    stocks = p_map(lambda ticker: Stock(ticker, data=data[ticker].dropna(how="all")), batch, ncols=ncols, disable=(not self.verbose))
                 else:
                     stocks = []
 
@@ -1150,9 +1174,13 @@ class Universe(dict):
             """A version of get_online that utilizes multiprocessing"""
             size = utils.auto_batch_size(tickers)
             batches = math.ceil(len(tickers) / size)
-            self.print(f"Initializing {len(tickers)} Stocks from online data ({batches} batches)")
+            self.print(f"[4]: initializing {len(tickers)} stocks from online data ({batches} batches)")
 
             def get_batch(batch):
+                # Not sure why this is necessary... but it seems to prevent yf.download from halting
+                data = yf.Ticker("SPY").history(period="1d")
+
+                # The actual data we need
                 data = yf.download(
                                    " ".join(batch),
                                    group_by="Ticker",
@@ -1168,6 +1196,8 @@ class Universe(dict):
                 }
                 for ticker in to_remove:
                     batch.remove(ticker)
+
+                data = data.sort_index()
 
                 return ([Stock(ticker, data=data[ticker].dropna(how="all")) for ticker in batch], errors)
 
@@ -1191,6 +1221,8 @@ class Universe(dict):
         else:
             if local:
                 get_local(local)
+            else:
+                self.print(f"[3]: no local data detected, moving on to online initialization")
             if online:
                 errors = get_online_mp(online)
             else:
@@ -1207,7 +1239,7 @@ class Universe(dict):
         # Attempting timeout one more time
         # TODO: This is not a complete solution
         while timeouts:
-            self.print(f"\nRetrying {len(timeouts)} timeouts")
+            self.print(f"\n[5]: retrying {len(timeouts)} timeouts")
             errors = get_online_mp(timeouts, timeout=10)
 
             n_timeout = len(errors["timeout"])

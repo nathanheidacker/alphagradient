@@ -63,7 +63,7 @@ class types(Enum):
             subclass to which the enum member corresponds"""
             def __getattr__(self, item):
                 try:
-                    return self[item]
+                    return self[item.upper()]
                 except KeyError:
                     raise AttributeError(
                         f"Asset type \'{name}\' has no instance \'{item}\'")
@@ -280,6 +280,7 @@ class Asset(ABC):
                           close_value=None,
                           market_open=None,
                           market_close=None,
+                          units=None,
                           settings=None,
                           **kwargs):
         """Controls behavior for instantiation of Asset subclasses.
@@ -318,6 +319,7 @@ class Asset(ABC):
         cls.close_value = close_value
         cls.market_open = market_open
         cls.market_close = market_close
+        cls.unit, cls.units = units if units is not None else (None, None)
 
         # Ensuring safe access if nothing is passed
         settings = {} if settings is None else settings
@@ -340,6 +342,9 @@ class Asset(ABC):
 
             if prohibit_data is None:
                 prohibit_data = settings.get("prohibit_data", False)
+
+            if settings.get("units", False):
+                cls.unit, cls.units = settings["units"]
 
         # Setting the data protocol
         cls.data_protocol = DataProtocol._get(require_data, prohibit_data)
@@ -368,6 +373,10 @@ class Asset(ABC):
         # Used when a new asset subclass is hidden from the AG api
         if not getattr(cls, 'type', None):
             cls.type = types.undefined
+
+        if cls.unit is None or cls.units is None:
+            cls.unit = "unit"
+            cls.units = "units"
 
     def __new__(cls, *args, **kwargs):
         # Seeing if this asset is already instantiated
@@ -494,7 +503,7 @@ class Asset(ABC):
         self._save()
 
     def __str__(self):
-        return f'<{self.type} {self.name}: {self.price}>'
+        return f'<{self.type} {self.name}: {self.price} /{self.unit}>'
 
     def __hash__(self):
         return self.key.__hash__()

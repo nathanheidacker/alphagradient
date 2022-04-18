@@ -80,7 +80,7 @@ class Globals:
         for cls in [Asset, Portfolio, Run, Performance]:
             self._shareprop("date", cls)
 
-        for cls in [Asset, utils]:
+        for cls in [Asset, Universe, utils]:
             self._shareprop("persistent", cls, name="_global_persistent_path")
 
         # Baskets must also have the ability to set the global date

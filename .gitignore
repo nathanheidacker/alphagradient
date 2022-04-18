@@ -4,6 +4,6 @@ dev.py
 **/.DS_Store
 *.prof
 **/alphagradient.egg-info
-**/*.sublime_workspace
+**/alphagradient.persistent
 /build
 /dist
