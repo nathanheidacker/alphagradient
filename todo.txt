@@ -1,0 +1,118 @@
+New Features:
+-------------
+ - Unit testing for all ag features
+ - Algorithm testing - validating backtest accuracy
+ - improved statistical profiling, HTML outputs w/ graphs
+
+Current Bugs:
+-------------
+ - passing in start is not the algorithms real start
+
+Design Changes:
+--------------
+ - Instantiating new assets should update the global start and global end every time
+ - Algorithms should require a start and an end as inputs under all circumstances
+ 	- raise errors when those are out of bounds
+ - Environments should be able to have separate, isolated dates from the global date
+ 	- Environments should be able to update the date of all their tracked assets independently
+ 	- An asset's date should refer to the last time it was valuated, not the global date
+ 	- The same should be true of a portfolio
+ - Algorithm runtimes
+ 	- start and end should be permanent positional arguments in slots 1 and 2
+ 	- leaving start blank should automatically determine an 'optimal' start for the algorithm
+ 	  based on assets tracked by the environment. This start should allow ample time for historical
+ 	  volatility calculations, while also leaving significant room for backtesting. The start date be within the date interval for all asset datasets
+ 	- leaving end blank should automatically determine an 'optimal' end for the algorithm based on
+ 	  assets tracked by the environment. This end date should be within the date interval for all asset datasets.
+
+Formatting Changes:
+-------------------
+ - In order, Files should be formatted as such
+ 	- Module Docstring and encoding format, also usr/bin/python3
+ 	- Imports
+ 		- ORDER OF IMPORT TYPE FOR EACH CATEGORY
+ 		- 1) from x import x as x 	|
+ 		- 2) from x import x 		|-- Should all be organized by length descending
+ 		- 3) import x as x 			|-- within their respective category
+ 		- 4) import x				|
+ 		- Split into 3 sections -- Standard library imports, then third party, then local
+ 		- Label categories with a comment above each, ie # Local Imports \n from .x import x
+ 	- Module-Level Constants
+ 		- Documentation ABOVE
+ 	- Module-Level Functions
+ 		** This format also applies to methods and method documentation **
+ 		1) Header
+ 		2) Docstring
+ 			a) Short
+ 			b) Long
+ 			c) Examples
+ 			d) Parameters (eg param (bool): explanation)
+ 				I  ) param name
+ 				II ) param type in parentheses
+ 				III) colon
+ 				IV ) explanation
+ 				V  ) if options exist, bullet list of options with explanation for each
+ 			d) Returns
+ 				I ) Actual return value - Should follow same format as a parameter
+ 				II) Explanation for the return. If None, explain what is modified in place.
+ 			e) Raises
+ 				I  ) Name of the exception that is raised
+ 				II ) colon
+ 				III) Explain each instance in which the exception can be raised separately
+ 				IV ) For each instance, explain WHY the exception is raised. Why is it an exception?
+ 		3) In-Function functions / classes / definitions
+ 			- Note: This should also be documented. What are they doing here?
+ 		4) Variable Initialization
+ 			- Variables used throughout the function should be defined at the top
+ 			  inside of their own block when possible / logical.
+ 		5) Code Blocks, with a comment above each unless completely obvious
+ 		6) Return Statement (Even if returning None)
+ 	- Classes
+ 		1) Header
+ 		2) Docstring
+ 			a) Short
+ 			b) Long
+ 			c) Examples
+ 			d) Properties (documentation in the property.setter is allowed ONLY if necessary)
+ 		3) Dunder methods					--- Should be organized in order of importance
+ 		4) Methods that define in-class classes
+ 		5) Private methods					|
+ 		6) Property/Setter pairs			|-- Should be organized alphabetically
+ 		7) Public methods					|
+ 	- Others (Setting attributes on classes and such)
+ - Headers should be separated by two lines of space
+ - Code blocks within function definitions should be separated by one line of space
+ - Comments go above code blocks
+ - Side comments are only allowed if VERY small
+ - Everything should be TYPED from now on
+ - Up for consideration - Running everything through black for code styling
+
+Structural Changes:
+-------------------
+ - Considering two stage globals setup, not sure if that actually solves the problem.
+ - Custom types for the purposes of typing/linting should be declared in utils, then imported
+ 	- This may not always be possible, but should be used if possible.
+ - Data should be merged into asset.py, AssetData should be a class inside of Asset
+ - Defining Singletons in utils for inheritence??
+ 	- Using types to turn classes into singletons is probably not a good design pattern
+ 	- We found out that we don't really need types for API purposes
+ - Basic AG objects should be accessible on the base module, ag.Stock > ag.finance.Stock
+ 	- This change should occur in the top-level __init__.py
+ - Baskets should be called environments, and they should mirror all of the top-level AG module
+   functionality, but with
+   	- This is part of the reason why types probably shouldnt exist.
+   	- just develop a general api whos structure can be mirrored for environments.
+   	- Should globals be called api? some calls make more sense as global ie ag.globals.sync
+
+Longer Term Changes:
+--------------------
+ - Implementation of other asset classes in standard.py
+ - Better online_data tools, higher quality automatic data
+ 	- Skip yfinance, start using yahoo finance and google finance apis directly
+ 	- Find better sources of online stock data
+ - Machine Learning toolkit for working with AG assets
+ 	- Modeling framework that takes in a neural net and creates a dataloader, whose function is to
+ 	  return data (using ag assets as inputs) of appropriate size to be fed into the network
+ 	- The whole model should take a NN as an input (from any library) when instantiating the class
+ 	- The instantiated object should take ag assets as inputs and output predictions about the
+ 	  asset.
