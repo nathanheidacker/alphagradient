@@ -30,78 +30,77 @@ import tqdm
 
 # Local Imports
 from .. import utils
-from .asset import Asset, types
-from .portfolio import Portfolio, Cash
-from .standard import Currency, Stock, Call, Put
-from ..data import datatools
+from ._asset import Asset, types
+from ._portfolio import Portfolio, Cash
+from ._standard import Currency, Stock, Call, Put
+from .._data import _datatools
 
-class Basket:
-    """A 'basket' of assets and other AlphaGradient objects that all
-    share the same date and time resolution
+class Environment:
+    """An AlphaGradient virtual environment instance
 
     This object essentially represents an isolated financial
     environment that ensures all instantiated assets/objects are
     compatible with eachother and are valuated at the same moment in
     time.
 
-    Baskets should be used in algorithms for creating isolated
+    Environments should be used in algorithms for creating isolated
     financial environments that keep AG objects conveniently
     accessible in one place.
 
     Other attributes not included in the list below include all
-    instantiable asset types (eg. basket.stock, basket.call, etc.),
+    instantiable asset types (eg. environment.stock, environment.call, etc.),
     which will return a dictionary of assets of that type which exist
-    in this basket, where keys are the asset.key. These attributes
+    in this Environment, where keys are the asset.key. These attributes
     double as functions for instantiation of that asset type within
-    the basket. Instantiating an asset by calling these attributes
+    the Environment. Instantiating an asset by calling these attributes
     will take/accept the same arguments for instantiation as when
     instantiated normally through alphagradient.finance.
 
-    Similarly to how the the global types enum works, baskets also
+    Similarly to how the the global types enum works, environments also
     permit attribute access of specific assets when accessed as the
-    attribute of a type (eg. basket.stock.SPY will access SPY, if this
-    basket is tracking it).
+    attribute of a type (eg. environment.stock.SPY will access SPY, if this
+    environment is tracking it).
 
-    Baskets can also directly access the attributes of their portfolios
-    with attribute access. When a basket keeps track of multiple
+    Environments can also directly access the attributes of their portfolios
+    with attribute access. When an environment keeps track of multiple
     portfolios, accessing the portfolio attribute will instead return
     a dictionary corresponding to that attribute, where keys are the
     portfolio names and values are the respective attribute.
 
     Attributes:
-        date (datetime): This basket's current date (the last
+        date (datetime): This environment's current date (the last
             valuation date of all currently tracked AlphaGradient
             objects). Any assets that are newly instantiated inside of
-            this basket will automatically be valuated on this date
-        start (datetime): This basket's start date, which all tracked
+            this environment will automatically be valuated on this date
+        start (datetime): This environment's start date, which all tracked
             assets will valuate to if no steps have been taken.
-            basket.date returns to this date when reset is called.
-        end (datetime): This basket's end date, which algorithms will
+            environment.date returns to this date when reset is called.
+        end (datetime): This environment's end date, which algorithms will
             use as a default to determine when backtesting should end
             if none is provided.
         resolution (timedelta): The default period of time inbetween
             timesteps.
-        base (str): The base currency used by this basket represented
+        base (str): The base currency used by this environment represented
             as a currency code. All newly tracked/insantiated assets
             and objects will use this currency as a default base if
             none are provided during intantiation
         assets (list(Asset)): A list of assets currently within or
-            tracked by this basket.
+            tracked by this environment.
         portfolios (dict(Portfolio)): A dictionary of portfolios in
             which keys are the portfolio names, which are provided
             during instantiation. If no names are provided,
             defaults to "MAIN", then "P0", "P1", "P2", ..., "PN"
         status (Status): A member of the Status enum which corresponds
-            to how many portfolios this basket is currently tracking.
-            Controls behavior of basket bound methods that facilitate
+            to how many portfolios this environment is currently tracking.
+            Controls behavior of environment bound methods that facilitate
             portfolio transactions such as buy, sell, short, and cover.
     """
 
     class Status(Enum):
-        """Denotes a basket's portfolio status, controlling basket
+        """Denotes an environment's portfolio status, controlling environment
         bound methods for portfolio transactions
 
-        Status indicates how many portfolios belong to this basket. Baskets without a portfolio will not be able to perform portfolio bound methods. Baskets with a single portfolio will autonatically route all portfolio methods to the bound portoflio. Baskets with multiple portfolios require calls to portfolio bound methods to specify the name of the portfolio on which the transaction is to be executed. If no name is specified, attempt to perform the transaction on a portfolio named "MAIN", if one exists."""
+        Status indicates how many portfolios belong to this environment. Environments without a portfolio will not be able to perform portfolio bound methods. Environments with a single portfolio will autonatically route all portfolio methods to the bound portoflio. Environments with multiple portfolios require calls to portfolio bound methods to specify the name of the portfolio on which the transaction is to be executed. If no name is specified, attempt to perform the transaction on a portfolio named "MAIN", if one exists."""
         NONE = auto()
         SINGLE = auto()
         MULTIPLE = auto()
@@ -119,27 +118,27 @@ class Basket:
 
     class AssetDict(WeakDict):
         """A weakref dictionary of assets belonging to one asset
-        subclass. Allows baskets attribute access to specific asset
+        subclass. Allows environments attribute access to specific asset
         classes, as well as asset instantiation"""
-        def __init__(self, cls, basket):
+        def __init__(self, cls, env):
             self._name = cls.__name__
             self.c = cls
-            self._basket = basket
+            self._env = env
             super().__init__()
 
         def __call__(self, *args, **kwargs):
-            force = self._basket.force
+            force = self._env.force
             if kwargs.get("force"):
                 force = kwargs["force"]
                 kwargs.pop("force")
             new = self.c(*args, force=force, **kwargs)
             new._valuate()
-            new.base = self._basket.base.code
+            new.base = self._env.base.code
             self[new.name] = new
             return new
 
         def __setitem__(self, key, value):
-            self._basket._assets.append(value)
+            self._env._assets.append(value)
             super().__setitem__(key, value)
 
         def __str__(self):
@@ -152,7 +151,7 @@ class Basket:
             try:
                 return self[attr.upper()]
             except KeyError:
-                raise AttributeError(f"AlphaGradient Basket has no \
+                raise AttributeError(f"AlphaGradient Environment has no \
                                      {attr.capitalize()} instance {attr}")
 
     def __init__(self,
@@ -192,7 +191,7 @@ class Basket:
         elif getattr(Portfolio, attr, False):
             return self._redirect(attr)
         else:
-            raise AttributeError(f"AlphaGradient Basket object has no attribute {attr}")
+            raise AttributeError(f"AlphaGradient Environment object has no attribute {attr}")
 
     def __contains__(self, other):
         if isinstance(other, Asset):
@@ -265,7 +264,7 @@ class Basket:
                     getattr(self, asset.type.name.lower())[asset.name] = asset
 
     def portfolio(self, initial, name=None, base=None):
-        """Instantiates a portfolio within this basket
+        """Instantiates a portfolio within this environment
 
         Args:
             initial (Number): The initial quantity of the base currency
@@ -276,7 +275,7 @@ class Basket:
 
         Returns:
             new (Portfolio): returns a new portfolio based on the
-                inputs, and adds it to this basket's tracked portfolios
+                inputs, and adds it to this environment's tracked portfolios
         """
         if isinstance(initial, Portfolio):
             self._portfolios.append(initial)
@@ -289,7 +288,7 @@ class Basket:
             return new
 
     def data(self, dtype="dict"):
-        """Returns all of the datasets in the assets tracked by this basket
+        """Returns all of the datasets in the assets tracked by this environment
 
         Args:
             dtype (str | type): the dtype of the returned data object
@@ -307,7 +306,7 @@ class Basket:
         elif dtype in [list, "list"]:
             return [asset.data for asset in self.assets if asset.data]
         else:
-            raise ValueError(f"Unsupported type {dtype=}. Basket data "
+            raise ValueError(f"Unsupported type {dtype=}. Environment data "
                              "can only be returned as a list or a "
                              "dictionary")
 
@@ -384,10 +383,10 @@ class Basket:
         """Determines the default start datetime based on the tracked assets
 
         Returns the maximum start date of all asset datasets currently
-        inside of this basket. If there are none, returns the global start
+        inside of this environment. If there are none, returns the global start
 
         Returns:
-            start (datetime): the default start for this basket
+            start (datetime): the default start for this environment
         """
         data = [dataset._first for dataset in self.data(dtype=list)]
         return max(data).to_pydatetime() if data else self._global_start
@@ -396,10 +395,10 @@ class Basket:
         """Determines the default end datetime based on the tracked assets
 
         Returns the minimum end date of all asset datasets currently
-        inside of this basket. If there are none, returns the global end
+        inside of this environment. If there are none, returns the global end
 
         Returns:
-            end (datetime): the default end for this basket
+            end (datetime): the default end for this environment
         """
         data = [dataset._last for dataset in self.data(dtype=list)]
         return min(data).to_pydatetime() if data else self._global_end
@@ -408,36 +407,36 @@ class Basket:
         """Determines the default resolution based on the tracked assets
 
         Returns the minimum time resolution of all asset datasets
-        currently inside of this basket. If there are none, returns
+        currently inside of this environment. If there are none, returns
         the global resolution
 
         Returns:
             resolution (timedelta): the default resolution for this
-                basket
+                environment
         """
         data = [dataset.resolution for dataset in self.data(dtype=list)]
         return min(data) if data else self._global_res
 
     def auto(self):
         """Automatically sets the start, end, and resolution of this
-        basket to their defaults based on currently tracked assets"""
+        environment to their defaults based on currently tracked assets"""
         self.start = self.default_start()
         self.end = self.default_end()
         self.resolution = self.default_resolution()
 
     def sync(self, date=None):
-        """Syncs all alphagradient objects in this basket to the given datetime
+        """Syncs all alphagradient objects in this environment to the given datetime
 
         Valuates all assets to the given date, and sets the date of all
         portfolios to the given date. This only occurs for objects
-        within this basket, rather than globally. Date defaults to
-        baskets current date if none is provided
+        within this environment, rather than globally. Date defaults to
+        environment's current date if none is provided
 
         Args:
             date (datetime): The date to sync to
 
         Returns:
-            None (NoneType): Modifies this basket in place
+            None (NoneType): Modifies this environment in place
         """
         if date is not None:
             date = self.validate_date(date)
@@ -467,27 +466,27 @@ class Basket:
         start date
 
         Returns:
-            None (NoneType): Modifies this basket in place
+            None (NoneType): Modifies this environment in place
         """
         self.auto()
         # Auto call will set a new self.start, which is then used in the sync
         self.sync(self.start)
 
     def step(self, delta=None):
-        """Takes a single time step in this basket, moving all
+        """Takes a single time step in this environment, moving all
         alphagradient objects forward by the given delta
 
         The function that should be called in algorithms to iterate
         forward in time after everything has been accomplished and
         evaluated in the current period. Automatically moves all ag
-        objects in this basket forward in time by the given delta,
-        which defaults to the basket.resolution if none is provided.
+        objects in this environment forward in time by the given delta,
+        which defaults to the environment.resolution if none is provided.
 
         Args:
             delta (timedelta): The step size
 
         Returns:
-            None (NoneType): Modifies this basket in place
+            None (NoneType): Modifies this environment in place
         """
 
         # Handling string delta inputs
@@ -526,7 +525,7 @@ class Basket:
 
         for algo in types.algorithm.instances.values():
             if algo.env is self:
-                algo.stats.update()
+                algo.stats._update()
 
         # Cleaning out expired assets
         self._assets = [asset for asset in self.assets if not asset.expired]
@@ -590,7 +589,7 @@ class Basket:
 
 
     def buy(self, asset, quantity, name=None):
-        """Buys an asset using this basket's main portfolio, unless
+        """Buys an asset using this environment's main portfolio, unless
         specified otherwise.
 
         Creates a long position in the given asset with a purchase
@@ -603,16 +602,16 @@ class Basket:
                 transaction will take place
 
         Returns:
-            None (NoneType): Modifies this basket in place
+            None (NoneType): Modifies this environment in place
 
         Raises:
-            ValueError: If basket has no active portfolios, or if name
+            ValueError: If environment has no active portfolios, or if name
             is not specified when there are multiple portfolios none
             of which are named "MAIN"
         """
         # Transactions require a portfolio
         if self.NONE:
-            raise ValueError("This basket has no active portfolios. "
+            raise ValueError("This environment has no active portfolios. "
                              "Please instantiate one in order to make "
                              "transactions")
 
@@ -629,7 +628,7 @@ class Basket:
                 try:
                     self.portfolios["MAIN"].buy(asset, quantity)
                 except KeyError:
-                    raise ValueError("This basket has multiple "
+                    raise ValueError("This environment has multiple "
                                      "portfolios. The portfolio name "
                                      "for this transaction must be "
                                      "specified")
@@ -640,12 +639,12 @@ class Basket:
                     portfolio = self.portfolios[name]
                     portfolio.buy(asset, quantity)
                 except KeyError:
-                    raise ValueError(f"Basket has no portfolio "
+                    raise ValueError(f"Environment has no portfolio "
                                      "instance named "
                                      f"{name.__repr__()}")
 
     def sell(self, asset, quantity, name=None):
-        """Sells an asset using this basket's main portfolio, unless
+        """Sells an asset using this environment's main portfolio, unless
         specified otherwise.
 
         Decrements a long position in the given asset by 'quantity'.
@@ -659,16 +658,16 @@ class Basket:
                 transaction will take place
 
         Returns:
-            None (NoneType): Modifies this basket in place
+            None (NoneType): Modifies this environment in place
 
         Raises:
-            ValueError: If basket has no active portfolios, or if name
+            ValueError: If environment has no active portfolios, or if name
                 is not specified when there are multiple portfolios none
                 of which are named "MAIN"
         """
         # Transactions require a portfolio
         if self.NONE:
-            raise ValueError("This basket has no active portfolios. "
+            raise ValueError("This environment has no active portfolios. "
                              "Please instantiate one in order to make "
                              "transactions")
 
@@ -685,7 +684,7 @@ class Basket:
                 try:
                     self.portfolios["MAIN"].sell(asset, quantity)
                 except KeyError:
-                    raise ValueError("This basket has multiple "
+                    raise ValueError("This environment has multiple "
                                      "portfolios. The portfolio name "
                                      "for this transaction must be "
                                      "specified")
@@ -696,12 +695,12 @@ class Basket:
                     portfolio = self.portfolios[name]
                     portfolio.sell(asset, quantity)
                 except KeyError:
-                    raise ValueError(f"Basket has no portfolio "
+                    raise ValueError(f"Environment has no portfolio "
                                      "instance named "
                                      f"{name.__repr__()}")
 
     def short(self, asset, quantity, name=None):
-        """Shorts an asset using this basket's main portfolio, unless
+        """Shorts an asset using this environment's main portfolio, unless
         specified otherwise.
 
         Creates a short position in the given asset with a short sale
@@ -714,16 +713,16 @@ class Basket:
                 transaction will take place
 
         Returns:
-            None (NoneType): Modifies this basket in place
+            None (NoneType): Modifies this environment in place
 
         Raises:
-            ValueError: If basket has no active portfolios, or if name
+            ValueError: If environment has no active portfolios, or if name
                 is not specified when there are multiple portfolios
                 none of which are named "MAIN"
         """
         # Transactions require a portfolio
         if self.NONE:
-            raise ValueError("This basket has no active portfolios. "
+            raise ValueError("This environment has no active portfolios. "
                              "Please instantiate one in order to make "
                              "transactions")
 
@@ -740,7 +739,7 @@ class Basket:
                 try:
                     self.portfolios["MAIN"].short(asset, quantity)
                 except KeyError:
-                    raise ValueError("This basket has multiple "
+                    raise ValueError("This environment has multiple "
                                      "portfolios. The portfolio name "
                                      "for this transaction must be "
                                      "specified")
@@ -751,12 +750,12 @@ class Basket:
                     portfolio = self.portfolios[name]
                     portfolio.short(asset, quantity)
                 except KeyError:
-                    raise ValueError(f"Basket has no portfolio "
+                    raise ValueError(f"Environment has no portfolio "
                                      "instance named "
                                      f"{name.__repr__()}")
 
     def cover(self, asset, quantity, name=None):
-        """Covers the short sale of an asset using this basket's main
+        """Covers the short sale of an asset using this environment's main
         portfolio, unless specified otherwise.
 
         Decrements a long position in the given asset by 'quantity'.
@@ -770,16 +769,16 @@ class Basket:
                 transaction will take place
 
         Returns:
-            None (NoneType): Modifies this basket in place
+            None (NoneType): Modifies this environment in place
 
         Raises:
-            ValueError: If basket has no active portfolios, or if name
+            ValueError: If environment has no active portfolios, or if name
                 is not specified when there are multiple portfolios
                 none of which are named "MAIN"
         """
         # Transactions require a portfolio
         if self.NONE:
-            raise ValueError("This basket has no active portfolios. "
+            raise ValueError("This environment has no active portfolios. "
                              "Please instantiate one in order to make "
                              "transactions")
 
@@ -796,7 +795,7 @@ class Basket:
                 try:
                     self.portfolios["MAIN"].cover(asset, quantity)
                 except KeyError:
-                    raise ValueError("This basket has multiple "
+                    raise ValueError("This environment has multiple "
                                      "portfolios. The portfolio name "
                                      "for this transaction must be "
                                      "specified")
@@ -807,14 +806,14 @@ class Basket:
                     portfolio = self.portfolios[name]
                     portfolio.cover(asset, quantity)
                 except KeyError:
-                    raise ValueError(f"Basket has no portfolio "
+                    raise ValueError(f"Environment has no portfolio "
                                      "instance named "
                                      f"{name.__repr__()}")
 
     def _redirect(self, attr):
         """Redirects attribute access to a the proper portfolio when
         user attempts to access portfolio attributes through the
-        basket
+        environment
 
         Args:
             attr (str): The attribute being accessed
@@ -828,7 +827,7 @@ class Basket:
 
         # No portfolios are present
         if self.NONE:
-            raise AttributeError(f"Basket has no active portfolios. "
+            raise AttributeError(f"Environment has no active portfolios. "
                                  "Must instantiate at least one "
                                  "portfolio to access portfolio "
                                  f"attribute {attr}")
@@ -850,20 +849,20 @@ class Basket:
                 else:
                     return {name: getattr(p, attr) for name, p in self.portfolios.items()}
 
-            # Reroute attribute errors back to the basket object
+            # Reroute attribute errors back to the environment object
             except AttributeError as e:
-                raise AttributeError(f"AlphaGradient Basket object has no attribute {attr}")
+                raise AttributeError(f"AlphaGradient Environment object has no attribute {attr}")
 
     def reset(self):
-        """Resets this basket to its own start date, and syncs all
+        """Resets this environment to its own start date, and syncs all
         assets back to that start date"""
         self.date = self.start
         self.sync()
 
 
 # Using a protected keyword, attr must be set outside of the class
-setattr(Basket, "type", types.basket)
-setattr(types.basket, "c", Basket)
+setattr(Environment, "type", types.environment)
+setattr(types.environment, "c", Environment)
 
 def _get_exchange_info():
     """Returns a dataframe of exchange listings for initializing the Universe class

@@ -19,9 +19,9 @@ from bs4 import BeautifulSoup as bs
 import pandas as pd
 
 # Local imports
-from .finance import (
+from ._finance import (
                       Portfolio,
-                      Basket,
+                      Environment,
                       Universe,
                       types,
                       Asset,
@@ -30,13 +30,13 @@ from .finance import (
                       Put,
                       Stock
                       )
-from .finance.standard import Option
-from .data.datatools import AssetData
-from .algorithm import Algorithm, Run, Performance
+from ._finance._standard import Option
+from ._data._datatools import AssetData
+from ._algorithm import Algorithm, Backtest, Performance
 from . import utils
 
 GLOBAL_DEFAULT_START = datetime.fromisoformat("2000-01-03")
-GLOBAL_DEFAULT_END = utils.set_time(datetime.today(), "0:0:0")
+GLOBAL_DEFAULT_END = utils.set_time(datetime.today(), "00:00:00")
 GLOBAL_DEFAULT_RESOLUTION = timedelta(days=1)
 GLOBAL_DEFAULT_BASE = "USD"
 
@@ -68,25 +68,25 @@ class Globals:
         self._date = GLOBAL_DEFAULT_START
         self._persistent = self._find_persistent()
 
-        for cls in [Asset, Basket, Algorithm]:
+        for cls in [Asset, Environment, Algorithm]:
             self._shareprop("start", cls, name="_global_start")
 
-        for cls in [Basket, Algorithm]:
+        for cls in [Environment, Algorithm]:
             self._shareprop("end", cls, name="_global_end")
 
-        for cls in [Asset, AssetData, Basket, Algorithm]:
+        for cls in [Asset, AssetData, Environment, Algorithm]:
             self._shareprop("resolution", cls, name="_global_res")
 
-        for cls in [Asset, Portfolio, Run, Performance]:
+        for cls in [Asset, Portfolio, Backtest, Performance]:
             self._shareprop("date", cls)
 
         for cls in [Asset, Universe, utils]:
             self._shareprop("persistent", cls, name="_global_persistent_path")
 
-        # Baskets must also have the ability to set the global date
+        # Environments must also have the ability to set the global date
         date_getter = lambda this: getattr(self, "date")
         date_setter = lambda this, dt: setattr(self, "date", dt)
-        setattr(Basket, "date", property(date_getter, date_setter))
+        setattr(Environment, "date", property(date_getter, date_setter))
 
         self._base_code = GLOBAL_DEFAULT_BASE
         #self._shareprop("_base_code", Currency, name="base")
@@ -97,7 +97,7 @@ class Globals:
         self._shareprop("path", Universe, name="_basepath")
 
         self._base = Currency(Currency.base)
-        self._shareprop("base", Basket, name="_global_base")
+        self._shareprop("base", Environment, name="_global_base")
 
         self._rfr = self._get_rfr()
         self._shareprop("rfr", Asset)
@@ -413,7 +413,7 @@ class Globals:
             portfolio.update_history()
 
         for algo in types.algorithm.instances.values():
-            algo.stats.update()
+            algo.stats._update()
 
     def refresh(self):
         pass

@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-"""AG module containing all standard asset types
-
-This module contains ag.Asset implementations of all of the most
-standard classes of assets typically used in financial algorithms.
+"""
 
 Todo:
     * Type Hints
@@ -12,11 +9,11 @@ Todo:
 # Standard imports
 from datetime import datetime, timedelta
 from abc import ABC, abstractmethod
+from yaml import load, Loader
 from numbers import Number
 from random import random
 from pathlib import Path
 import math
-import json
 
 # Third party imports
 import yfinance as yf
@@ -24,12 +21,12 @@ import pandas as pd
 import numpy as np
 
 # Local imports
-from .asset import Asset, types
-from ..data import datatools
+from ._asset import Asset, types
+from .._data import _datatools
 from .. import utils
 
-with open(Path(__file__).parent.joinpath("standard_asset_settings.json")) as f:
-    settings = json.load(f)
+with open(Path(__file__).parent.joinpath("standard_asset_settings.yml")) as f:
+    settings = load(f, Loader)
 """settings (dict): dictionary of settings for initializing standard asset subclasses"""
 
 
@@ -104,7 +101,7 @@ class Currency(Asset, settings=settings["CURRENCY"]):
             return None
         else:
             data = yf.download(f"{self.code}{self.base}=X", auto_adjust=False, timeout=5, progress=False)
-            return datatools.AssetData(Currency, data)
+            return _datatools.AssetData(Currency, data)
 
     @classmethod
     def get_symbol(cls, base=None):
@@ -185,7 +182,7 @@ class Stock(Asset, settings=settings["STOCK"]):
 
     def online_data(self):
         data = yf.download(self.name, auto_adjust=False, timeout=3, progress=False)
-        return datatools.AssetData(Stock, data)
+        return _datatools.AssetData(Stock, data)
 
     @property
     def ticker(self):

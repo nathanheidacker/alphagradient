@@ -31,7 +31,7 @@ import pandas as pd
 import numpy as np
 
 # Local imports
-from ..data import datatools
+from .._data import _datatools
 from .. import utils
 
 _currency_info_path = Path(__file__).parent.joinpath("currency_info.p")
@@ -89,7 +89,7 @@ class types(Enum):
 
     # Reconsider if these are necessary
     algorithm = auto()
-    basket = auto()
+    environment = auto()
     universe = auto()
 
     def __init__(self, *args, **kwargs):
@@ -237,7 +237,10 @@ class DataProtocol(Enum):
 
 
 class Asset(ABC):
-    """Abstract base class representing a financial asset
+    """
+    Abstract base class representing a financial asset
+
+    :no-index:
 
     The ABC underlying all standard and custom asset classes within
     AlphaGradient, designed to be used in conjunction with other
@@ -445,7 +448,7 @@ class Asset(ABC):
             if data is None:
 
                 # First attempt to get data from saved files
-                data = datatools.get_data(self)
+                data = _datatools.get_data(self)
 
                 # Second attempt to get data from online data
                 if data is None and getattr(self, "online_data", False):
@@ -460,7 +463,7 @@ class Asset(ABC):
                     # When we need to force the instantiation of an
                     # asset that requires data, but no data is available
                     if force:
-                        data = datatools.AssetData(self.__class__, 1)
+                        data = _datatools.AssetData(self.__class__, 1)
                     else:
                         raise ValueError(f"{self.name} {self.type} "
                                          "could not be initialized "
@@ -486,7 +489,7 @@ class Asset(ABC):
 
             # Data input received, make a new asset dataset
             else:
-                self.data = datatools.AssetData(self.__class__, data, columns)
+                self.data = _datatools.AssetData(self.__class__, data, columns)
 
             # Data verification when required
             if self.data_protocol is DataProtocol.REQUIRED and not self.data:

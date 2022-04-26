@@ -15,7 +15,7 @@ from datetime import datetime, date, timedelta
 import numpy as np
 
 # Local Imports
-from .. import agproxy as ag
+from .. import _proxy as ag
 
 class IndexHold(ag.Algorithm):
     """A tutorial algorithm! Buy and Hold!"""
@@ -23,10 +23,10 @@ class IndexHold(ag.Algorithm):
     def setup(self, *args, start, **kwargs):
         # Our initial balance
         initial = 1_000_000
-        spy = ag.finance.Stock("SPY")
+        spy = ag.Stock("SPY")
 
         # Creating an environment object
-        env = ag.finance.Basket(start=start, assets=spy)
+        env = ag.Environment(start=start, assets=spy)
 
         # identical to env.main.invest(initial)
         env.invest(initial)
@@ -75,7 +75,7 @@ class ThetaGang(ag.Algorithm):
         """This is the environement setup that is performed before each backtest. Must return an environment object"""
 
         # Creating a basket with the given start parameter
-        env = ag.finance.Basket(start=start)
+        env = ag._finance.Environment(start=start)
 
         # Creating SPY stock, attaching it to self (will be referenced frequently)
         # This call to the stock() method both instantiates the stock within the environment, AND returns it

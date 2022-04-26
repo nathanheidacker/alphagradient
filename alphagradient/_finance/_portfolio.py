@@ -17,8 +17,8 @@ import pandas as pd
 import numpy as np
 
 # Local imports
-from .asset import types
-from .standard import Currency
+from ._asset import types
+from ._standard import Currency
 from .. import utils
 
 class View:
@@ -389,8 +389,8 @@ class Portfolio:
     """
 
     def __init__(self, initial, name=None, base=None):
-        if isinstance(name, types.basket.c):
-            self.name = self._generate_name(basket=name)
+        if isinstance(name, types.environment.c):
+            self.name = self._generate_name(environment=name)
         else:
             self.name = self._generate_name() if name is None else name
         self._base = Currency.base if base is None else base
@@ -410,9 +410,9 @@ class Portfolio:
     def __repr__(self):
         return self.__str__()
 
-    def _generate_name(self, last=[0], basket=None):
+    def _generate_name(self, last=[0], environment=None):
         """generates a name for this portfolio"""
-        if basket is None:
+        if environment is None:
             if last[0] == 0 and not self.type.instances:
                 return "MAIN"
             else:
@@ -420,8 +420,8 @@ class Portfolio:
                 last[0] += 1
                 return name
         else:
-            if basket._portfolios:
-                return f"P{len(basket._portfolios) - 1}"
+            if environment._portfolios:
+                return f"P{len(environment._portfolios) - 1}"
             else:
                 return "MAIN"
 

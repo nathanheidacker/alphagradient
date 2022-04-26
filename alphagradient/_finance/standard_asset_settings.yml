@@ -1,0 +1,112 @@
+---
+CURRENCY:
+  hidden: false
+  require_data: false
+  prohibit_data: false
+  required:
+  - OPEN
+  - CLOSE
+  optional:
+  - HIGH
+  - LOW
+  - VOLUME
+  - ADJ_CLOSE
+  open_value: OPEN
+  close_value: CLOSE
+STOCK:
+  hidden: false
+  require_data: true
+  prohibit_data: false
+  required:
+  - OPEN
+  - CLOSE
+  optional:
+  - HIGH
+  - LOW
+  - VOLUME
+  - ADJ_CLOSE
+  - DIVIDENDS
+  - SPLITS
+  open_value: OPEN
+  close_value: CLOSE
+  market_open: 9:30 AM
+  market_close: 4:00 PM
+  units:
+  - share
+  - shares
+BROWNIANSTOCK:
+  hidden: false
+  require_data: false
+  prohibit_data: true
+  required:
+  - OPEN
+  - CLOSE
+  optional:
+  - HIGH
+  - LOW
+  - VOLUME
+  - ADJ_CLOSE
+  open_value: OPEN
+  close_value: CLOSE
+  market_open: 9:30 AM
+  market_close: 4:00 PM
+  units:
+  - share
+  - shares
+OPTION:
+  hidden: false
+  require_data: false
+  prohibit_data: true
+  required:
+  - OPEN
+  - CLOSE
+  optional:
+  - HIGH
+  - LOW
+  - VOLUME
+  - ADJ_CLOSE
+  open_value: OPEN
+  close_value: CLOSE
+  market_open: 9:30 AM
+  market_close: 4:00 PM
+  units:
+  - contract
+  - contracts
+CALL:
+  hidden: false
+  require_data: false
+  prohibit_data: true
+  required:
+  - OPEN
+  - CLOSE
+  optional:
+  - HIGH
+  - LOW
+  - VOLUME
+  - ADJ_CLOSE
+  open_value: OPEN
+  close_value: CLOSE
+  market_open: 9:30 AM
+  market_close: 4:00 PM
+  units:
+  - contract
+  - contracts
+PUT:
+  hidden: false
+  require_data: false
+  prohibit_data: true
+  required:
+  - OPEN
+  - CLOSE
+  optional:
+  - HIGH
+  - LOW
+  - VOLUME
+  - ADJ_CLOSE
+  open_value: OPEN
+  close_value: CLOSE
+  market_open: 9:30 AM
+  market_close: 4:00 PM
+  units:
+  - contract
+  - contracts

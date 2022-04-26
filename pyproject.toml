@@ -7,3 +7,6 @@ addopts = "--cov=alphagradient"
 testpaths = [
     "test",
 ]
+
+[mypy]
+ignore_missing_imports = true

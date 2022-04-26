@@ -1,19 +1,25 @@
 # -*- coding: utf-8 -*-
-"""Base initializer for the whole AlphaGradient package
-
-Todo:
-    * organize imports
-"""
-# Standard imports
-import os
+"""Base initializer for the whole AlphaGradient package"""
 
 # Local imports
-from .finance.asset import types as _types
-from .algorithm import Algorithm
+from ._finance._asset import types as _types
+from ._algorithm import Algorithm
 from ._globals import __globals
-from .data import datatools
-from . import finance
+from ._data import _datatools
+from ._finance import (
+    Asset,
+    Portfolio,
+    Cash,
+    Currency,
+    Stock,
+    Call,
+    Put,
+    Environment,
+    Universe
+)
+from . import utils
 from . import algolib
+from . import dtypes
 
 def __getattr__(name):
     if name == "types":
@@ -32,3 +38,21 @@ def __getattr__(name):
     except KeyError as ke:
         raise AttributeError(f"AttributeError: module \'{__name__}\' "
                              f"has no attribute \'{name}\''") from ke
+
+
+__all__ = [
+    # FINANCE IMPORTS
+    'Asset',
+    'Portfolio', 
+    'Cash', 
+    'Currency', 
+    'Stock', 
+    'Call',
+    'Put',
+    'Environment',
+    'Universe',
+
+    # OTHER TOP LEVEL CLASSES
+    'Algorithm',
+    ''
+]

@@ -1,4 +1,4 @@
- # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """AG module containing tools for creation/manipulation of asset data
 
 This module contains tools for accessing, creating, and modifying data
@@ -16,6 +16,7 @@ from numbers import Number
 from pathlib import Path
 import pickle
 import os
+
 # from typing import List
 
 # Third party imports
@@ -25,15 +26,14 @@ import numpy as np
 # Local imports
 from .. import utils
 
+
 def currency_info(base=None, save=False):
     """Returns a DataFrame with all currency values updated relative
     to the base
 
     Args:
-        base (str): Currency code on which to base all currency
-            valuations
-        save (bool): Whether or not the dataframe should be saved as a
-            pickle to the local directory
+        base (str): Currency code on which to base all currency valuations
+        save (bool): Whether or not the dataframe should be saved as a pickle to the local directory
 
     Returns:
         info (pd.DataFrame): The updated currency info
@@ -61,14 +61,15 @@ def currency_info(base=None, save=False):
 
     return info
 
+
 def get_data(asset):
     """Accesses locally stored data relevant to this asset
 
     Args:
-        asset (Asset): The asset to retrieve data for
+                    asset (Asset): The asset to retrieve data for
 
     Returns:
-        data (AssetData): Stored dataset relevant to the asset
+                    data (AssetData): Stored dataset relevant to the asset
     """
     key = asset.key
     data = None
@@ -103,12 +104,12 @@ class AssetData:
 
     All AlphaGradient assets seeking to use tabular data must use
     AssetData datasets. AssetData accepts any of the following inputs:
-        * numbers (for assets with constant prices, or unit prices)
-        * os.path-like objects
-        * file-object-like objects
-        * array-like objects (lists, ndarray, etc.)
-        * pathstrings
-        * pandas DataFrames
+                    * numbers (for assets with constant prices, or unit prices)
+                    * os.path-like objects
+                    * file-object-like objects
+                    * array-like objects (lists, ndarray, etc.)
+                    * pathstrings
+                    * pandas DataFrames
 
     AssetDatasets take tabular data and clean/validate it to make it
     usable for ag assets. They check for the presence of required data,
@@ -117,12 +118,13 @@ class AssetData:
     formatting is consistent between all assets.
 
     Attributes:
-        data (pd.DataFrame): The dataset for the asset
-        open_value (str): The column to associate with open
-        close_value (str): The column to associate with close
-        first (datetime): The first available date for this dataset
-        last (datetime): The last available date for this dataset
+                    data (pd.DataFrame): The dataset for the asset
+                    open_value (str): The column to associate with open
+                    close_value (str): The column to associate with close
+                    first (datetime): The first available date for this dataset
+                    last (datetime): The last available date for this dataset
     """
+
     _set_time_vectorized = np.vectorize(utils.set_time, excluded=["t"])
 
     def __init__(self, asset_type, data, columns=None, preinitialized=False):
@@ -133,12 +135,18 @@ class AssetData:
             self._get_firstlast()
             self.resolution = self._global_res
             if len(self._data) > 1:
-                self.resolution = self._data["_time_resolution_"].value_counts().index[0].to_pytimedelta()
+                self.resolution = (
+                    self._data["_time_resolution_"]
+                    .value_counts()
+                    .index[0]
+                    .to_pytimedelta()
+                )
             return
 
         # Unpacking necessary values from the asset type
-        _, _, _, required, optional, close_value, open_value \
-        = asset_type.get_settings(unpack=True)
+        _, _, _, required, optional, close_value, open_value = asset_type.get_settings(
+            unpack=True
+        )
 
         # Formatting required columns
         required = required if required else []
@@ -164,9 +172,11 @@ class AssetData:
         # Handle list inputs, np.ndarray inputs
         elif isinstance(data, (list, np.ndarray)):
             if not columns:
-                raise ValueError(f"{type(data).__name__} input "
-                                 "requires explicit column names "
-                                 "during initialization")
+                raise ValueError(
+                    f"{type(data).__name__} input "
+                    "requires explicit column names "
+                    "during initialization"
+                )
             data = pd.DataFrame(data, columns=columns)
 
         elif isinstance(data, AssetData):
@@ -175,13 +185,17 @@ class AssetData:
         # Handle inputs that can be processed by pd.read_table
         elif not isinstance(data, pd.DataFrame):
             try:
-                data = pd.read_table(data, sep=',')
+                data = pd.read_table(data, sep=",")
             except (TypeError, ValueError) as e:
                 pass
 
         # Final check that we have valid data prior to formatting
         if isinstance(data, pd.DataFrame):
-            if isinstance(data.index, pd.core.indexes.datetimes.DatetimeIndex) or isinstance(data.index.name, str) and data.index.name.lower() == "date":
+            if (
+                isinstance(data.index, pd.core.indexes.datetimes.DatetimeIndex)
+                or isinstance(data.index.name, str)
+                and data.index.name.lower() == "date"
+            ):
                 data.index.name = "DATE"
                 data["DATE"] = data.index
 
@@ -189,8 +203,7 @@ class AssetData:
                 data["DATE"] = data["DATE"].values
 
                 # OLD METHOD OF REMOVING TZINFO
-                #data["DATE"] = data["DATE"].map(lambda date: date.replace(tzinfo=None))
-
+                # data["DATE"] = data["DATE"].map(lambda date: date.replace(tzinfo=None))
 
         else:
             raise ValueError(f"Unable to create valid asset dataset from {data}")
@@ -199,8 +212,12 @@ class AssetData:
         data.columns = [self.column_format(column) for column in data.columns]
 
         # Grabbing "OPEN" and "CLOSE" by defauly if not specified
-        open_value = "OPEN" if ("OPEN" in data.columns and not open_value) else open_value
-        close_value = "CLOSE" if ("CLOSE" in data.columns and not close_value) else close_value
+        open_value = (
+            "OPEN" if ("OPEN" in data.columns and not open_value) else open_value
+        )
+        close_value = (
+            "CLOSE" if ("CLOSE" in data.columns and not close_value) else close_value
+        )
 
         # Broadcasting open to close or close to open in case only one is provided
         if close_value and not open_value:
@@ -215,8 +232,10 @@ class AssetData:
 
         # By this point both should be present if even one was provided
         elif not all([close_value, open_value]):
-            raise ValueError("Must specify at least one opening or "
-                             "closing value name present in the data")
+            raise ValueError(
+                "Must specify at least one opening or "
+                "closing value name present in the data"
+            )
 
         # Both an open and close have been explicitly provided
         else:
@@ -242,8 +261,10 @@ class AssetData:
 
         # Both of the values (open and close) must be in required
         if not all([value in required for value in [open_value, close_value]]):
-            raise ValueError("Must specify at least one opening or "
-                             "closing value name present in the data")
+            raise ValueError(
+                "Must specify at least one opening or "
+                "closing value name present in the data"
+            )
 
         # Final formatting requirements
         data = self.validate_columns(data, required, optional)
@@ -272,7 +293,12 @@ class AssetData:
 
         # Dataframe is empty, add new columns
         else:
-            new_cols = ["_time_resolution_", "_period_open_", "_period_close_", "CHANGE"]
+            new_cols = [
+                "_time_resolution_",
+                "_period_open_",
+                "_period_close_",
+                "CHANGE",
+            ]
             self._data = self._data.reindex(self._data.columns.union(new_cols), axis=1)
             print(self._data)
 
@@ -282,8 +308,7 @@ class AssetData:
 
         else:
             t = utils.set_time(datetime.today(), "0:0:0")
-            self._first, self._last = t,t
-
+            self._first, self._last = t, t
 
     def __getattr__(self, attr):
         try:
@@ -292,7 +317,7 @@ class AssetData:
             try:
                 return self.data[attr]
             except KeyError as e:
-                raise AttributeError(f"\'AssetData\' object has no attribute {e}")
+                raise AttributeError(f"'AssetData' object has no attribute {e}")
 
     def __getitem__(self, item):
         return self.data[item]
@@ -322,7 +347,9 @@ class AssetData:
 
     @property
     def data(self):
-        return self._data.drop(["_time_resolution_", "_period_open_", "_period_close_"], axis=1)
+        return self._data.drop(
+            ["_time_resolution_", "_period_open_", "_period_close_"], axis=1
+        )
 
     @staticmethod
     def column_format(column):
@@ -332,12 +359,12 @@ class AssetData:
         spaces replaced with underscores
 
         Args:
-            column (str): The column name to be altered
+                        column (str): The column name to be altered
 
         Returns:
-            column (str): The altered column name
+                        column (str): The altered column name
         """
-        return column.replace(' ', '_').upper()
+        return column.replace(" ", "_").upper()
 
     def validate_columns(self, data, required, optional):
         """Ensures that the input data meets the formatting
@@ -349,29 +376,29 @@ class AssetData:
         that don't show up in either the required or optional lists.
 
         TODO:
-            * allow dictionaries to be passed in to enforce specific
-                column dtypes.
-            * Implement more checks to ensure that data is error-free,
-                and lacks missing elements (or implement measures to
-                be safe in the presence of missing data)
+                        * allow dictionaries to be passed in to enforce specific
+                                        column dtypes.
+                        * Implement more checks to ensure that data is error-free,
+                                        and lacks missing elements (or implement measures to
+                                        be safe in the presence of missing data)
 
         Args:
-            data (tabular data): the data being validated
-            required (list of str): a list of strings representing
-                column names. All of the columns in this list must be
-                present to produce a viable dataset.
-            optional (list of str): a list of strings representing
-                column names. Columns in the data that are not required
-                will still be kept in the data if they are present in
-                this list. Otherwise, they will not be included.
+                        data (tabular data): the data being validated
+                        required (list of str): a list of strings representing
+                                        column names. All of the columns in this list must be
+                                        present to produce a viable dataset.
+                        optional (list of str): a list of strings representing
+                                        column names. Columns in the data that are not required
+                                        will still be kept in the data if they are present in
+                                        this list. Otherwise, they will not be included.
 
         Returns:
-            data (tabular data): a verified (and slightly modified)
-                asset dataset
+                        data (tabular data): a verified (and slightly modified)
+                                        asset dataset
 
         Raises:
-            ValueError: raised when the input dataset does not satisfy
-                the requirements
+                        ValueError: raised when the input dataset does not satisfy
+                                        the requirements
         """
         # Check for column requirements
         required = required if required else {}
@@ -381,10 +408,13 @@ class AssetData:
         def to_dict(columns):
             if isinstance(columns, list):
                 columns = [self.column_format(column) for column in columns]
-                columns = {column: 'float' for column in columns}
+                columns = {column: "float" for column in columns}
 
             elif isinstance(columns, dict):
-                columns = {self.column_format(column): dtype for column, dtype in columns.items()}
+                columns = {
+                    self.column_format(column): dtype
+                    for column, dtype in columns.items()
+                }
 
             return columns
 
@@ -392,7 +422,7 @@ class AssetData:
         optional = to_dict(optional)
 
         # Checking whether all of the required columns have been satisfied
-        satisfied = {column : (column in data.columns) for column in required}
+        satisfied = {column: (column in data.columns) for column in required}
         unsatisfied = [column for column, present in satisfied.items() if not present]
         if unsatisfied:
             unsatisfied = str(unsatisfied)[1:-1]
@@ -400,11 +430,11 @@ class AssetData:
 
         # Coercing dtypes to those specified in required and optional
         # CURRENTLY NOT IMPLENENTED, REQUIRED PASSED IN AS LIST
-        '''
+        """
         for column_dict in [required, optional]:
             for column, dtype in column_dict:
                 self.data[column] = self.data[column].astype(dtype)
-        '''
+        """
 
         # Dropping columns that are not present in optional or required
         for column in data.columns:
@@ -418,8 +448,8 @@ class AssetData:
         of the dataset's datetime index.
 
         Returns:
-            resolution (timedelta): The dataset's granularity with
-                respect to intervals of time
+                        resolution (timedelta): The dataset's granularity with
+                                        respect to intervals of time
         """
         default = self._global_res
         resolution = None
@@ -442,7 +472,7 @@ class AssetData:
         """Defines opening and closing periods at each index in the dataset
 
         Returns:
-            Modifies this dataset in place
+                        Modifies this dataset in place
         """
 
         @np.vectorize
@@ -460,10 +490,16 @@ class AssetData:
         if self.resolution == timedelta(days=1):
 
             # Setting the opening time at each index to the market open time
-            self._data["_period_open_"] = self._set_time_vectorized(self._data["_period_open_"], cls.market_open)
+            self._data["_period_open_"] = self._set_time_vectorized(
+                self._data["_period_open_"], cls.market_open
+            )
 
             # Setting the closing time at each index to the market close time, only if the delta is >= 1
-            self._data["_period_close_"] = close_map(self._data["_period_close_"], self._data["_time_resolution_"], self._data["_period_open_"])
+            self._data["_period_close_"] = close_map(
+                self._data["_period_close_"],
+                self._data["_time_resolution_"],
+                self._data["_period_open_"],
+            )
 
     def _get_stats(self, asset):
         """Adds a new "CHANGE" column to the dataset which corresponds to the percentage change in closing price compared to the previous period"""
@@ -478,7 +514,6 @@ class AssetData:
             shifted = self._data[asset.close_value]
 
         self._data["CHANGE"] = shifted
-
 
     def valuate(self, date, asset):
         date = date if date >= self.first else self.first
@@ -559,27 +594,26 @@ class AssetData:
     contained in index interval will raise a KeyError. Suddently, this behavior becomes acceptable
     when indexing using a slice??? No clue whats happening here.
     """
+
     def range(self, start, end):
         return self._data.loc[start:end]
 
     def get_times(self):
-
         def uniquetimes(series):
             return pd.Series(series.map(lambda t: t.time()).unique()).to_list()
 
-        return list(set(uniquetimes(self._data["_period_open_"]) + uniquetimes(self._data["_period_close_"])))
-
-
-
-
-
-
+        return list(
+            set(
+                uniquetimes(self._data["_period_open_"])
+                + uniquetimes(self._data["_period_close_"])
+            )
+        )
 
 
 # NOTE: THIS IS ONLY RELEVANT FOR COLUMN ENUM DATASETS.
 # THE NEW IMPLEMENTATION DOES NOT REQUIRE THIS.
 
-'''
+"""
 This is a little bit hacky, but this this needs to be defined outside
 of the scope of AssetData even though it is only intended to be used
 in that class. This is because the COLUMNS enum defined within will
@@ -588,16 +622,14 @@ defining it outside, we can use Value within the COLUMNS enum scope,
 allowing us to bypass the requirement that all values be the same.
 Ordinarily, we could just use 'settings=NoAlias', but it imposes too
 many restrictions when loading saved asset datasets from pickles.
-'''
+"""
 
-#Value = namedtuple('Value', 'type name')
-
-
+# Value = namedtuple('Value', 'type name')
 
 
 # Below is the implementation of asset datasets that use enumerations
 # for columns names. This may be revisited in the future
-'''
+"""
 class AssetData(pd.DataFrame):
 
     class COLUMNS(Enum):
@@ -747,11 +779,11 @@ class AssetData(pd.DataFrame):
             return self.COLUMNS[column.replace(' ', '_').upper()]
         except KeyError:
             return None
-'''
+"""
 
 # OLD LEDGER SYSTEM
 
-'''
+"""
 
 class Ledger(pd.DataFrame):
 
@@ -918,4 +950,4 @@ def from_raw_ledger(asset_type, asset_name, ledger=None):
             return None
 
     return None
-'''
+"""

@@ -1,9 +1,12 @@
 .mypy_cache
 **/__pycache__
 dev.py
+devutils.py
+deletethis
 **/.DS_Store
 *.prof
 **/alphagradient.egg-info
 **/alphagradient.persistent
 /build
 /dist
+/docs/_build

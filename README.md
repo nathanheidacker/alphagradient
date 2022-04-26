@@ -63,7 +63,7 @@ from datetime import datetime, timedelta
 from math import floor
 
 # Date as of writing this documentation
-today = datetime.fromisoformat(f"2022-04-06 16:00:00")
+today = datetime.fromisoformat("2022-04-06 16:00:00")
 
 # Setting the global date to today
 ag.globals.sync(today)
@@ -190,7 +190,7 @@ Lastly, one can pass in "all", which will initialize the Universe with all avail
 
 ```python
 # Persisting our asset data locally
-ag.globals.persist() // creates folder called 'alphagradient.persistent' in current directory
+ag.globals.persist() # creates folder called 'alphagradient.persistent' in current directory
 universe = ag.finance.Universe("all")
 
 ```
@@ -207,7 +207,7 @@ Initializing Universe: 12067 Stocks
 [3]: no local data detected, moving on to online initialization
 [4]: initializing 12066 stocks from online data (121 batches)
 100%|█████████████████████████████████████████████████████████████| 121/121 [13:08<00:00,  6.52s/it]
-Successfully added 10419 of 12066 stocks (937 failures, 710 timeouts, 1647 total errors))
+Successfully added 10419 of 12066 stocks (937 failures, 710 timeouts, 1647 total errors)
 
 [5]: retrying 710 timeouts
 [4]: initializing 710 stocks from online data (19 batches)
@@ -229,7 +229,7 @@ Initializing Universe: 10996 Stocks
 [3]: initializing 10995 stocks from local data
 100%|████████████████████████████████████████████████████████| 10995/10995 [00:15<00:00, 702.14it/s]
 
-Successfully added 10995 of 10995 stocks (0 failures, 0 timeouts, 0 total errors))
+Successfully added 10995 of 10995 stocks (0 failures, 0 timeouts, 0 total errors)
 
 Elapsed Time:  17.487481792 seconds
 ```
@@ -364,11 +364,11 @@ def cycle(self, *args, additional_keyword_parameter=None, **kwargs):
 
 #### Defining Setup
 
-Setup is the first of two functions that must be defined in any new algorithm. Setup is a function that creates/resets and returns an Environment object. The setup function is responsible for the creation of this object, and is called prior to every backtest. The environment returned by setup will automatically be bound to the algorithm, so it can be referred to in cycle.
+Setup is the first of two functions that must be defined in any new algorithm. Setup is a function that creates/resets and returns an Environment object. The setup function is called prior to every backtest. The environment returned by setup will automatically be bound to the algorithm at algo_alias_here.env, so it can be referred to in cycle.
 
 #### Defining Cycle
 
-Cycle is the second of two functions that must be defined in any new algorithm. Cycle defines the algorithm's behavior at each time step. cycle is run at every new step in time. Cycle should return None; it modifies the environment in place.
+Cycle is the second of two functions that must be defined in any new algorithm. Cycle defines the algorithm's behavior at each time step. Cycle should return None; it modifies the environment in place.
 
 Setup defines the algorithm's initial environment, and cycle's job is to alter it over the course of the algorithm's runtime. Changes to the environment across the duration of the algorithms runtime are automatically recorded by the algorithm, and can be used to generate statistical performance measures after the backtest is complete.
 
