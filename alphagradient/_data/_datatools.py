@@ -4,20 +4,19 @@
 This module contains tools for accessing, creating, and modifying data
 and datasets for use in AlphaGradient objects.
 
-Todo:
+TODO:
     * AUTOMATICALLY DETERMINE RESOLUTION OF DATASETS
     * Implement dtype coercion on column validation
     * Type Hints
 """
 
 # Standard imports
+from __future__ import annotations
+
 from datetime import datetime, timedelta, time
 from numbers import Number
 from pathlib import Path
-import pickle
 import os
-
-# from typing import List
 
 # Third party imports
 import pandas as pd
@@ -26,19 +25,43 @@ import numpy as np
 # Local imports
 from .. import utils
 
+# Typing
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Optional,
+    Type,
+    Union,
+)
+from typing_extensions import TypeAlias
 
-def currency_info(base=None, save=False):
+from ..utils import DatetimeLike
+
+if TYPE_CHECKING:
+    from .._finance import Asset
+
+_AssetData: TypeAlias = "AssetData"
+"""Type Alias for AssetData"""
+
+ValidData = Union[Path, str, _AssetData, pd.DataFrame, np.ndarray, float]
+"""Valid inputs for AssetData conversion"""
+
+
+def currency_info(base: Optional[str] = None, save: bool = False) -> pd.DataFrame:
     """Returns a DataFrame with all currency values updated relative
     to the base
 
-    Args:
-        base (str): Currency code on which to base all currency valuations
-        save (bool): Whether or not the dataframe should be saved as a pickle to the local directory
+    Parameters:
+        base:
+            Currency code on which to base all currency valuations
+
+        save:
+            Whether or not the dataframe should be saved as a pickle to the
+            local directory
 
     Returns:
-        info (pd.DataFrame): The updated currency info
+        The updated currency info
     """
-
     base = "USD" if base is None else base
 
     def mapper(code):
@@ -62,14 +85,19 @@ def currency_info(base=None, save=False):
     return info
 
 
-def get_data(asset):
-    """Accesses locally stored data relevant to this asset
+def get_data(asset: Asset) -> Optional[AssetData]:
+    """
+    Accesses locally stored data relevant to this asset
 
-    Args:
-                    asset (Asset): The asset to retrieve data for
+    This function safely accesses locally stored data for this asset, either in
+    the persistent storage or a locally identified path (using CSVs, or other
+    forms of storage for tabular data). It will return None if nothing is found
+
+    Parameters:
+        asset: The asset to retrieve data for
 
     Returns:
-                    data (AssetData): Stored dataset relevant to the asset
+        Stored dataset relevant to the asset. None if nothing is found
     """
     key = asset.key
     data = None
@@ -79,7 +107,7 @@ def get_data(asset):
 
     # Returning if the global persistent path has not been set
     if base_path is None:
-        return
+        return None
 
     # Trying to get the data from persistent pickles
     path = base_path.joinpath(f"{key}.p")
@@ -103,36 +131,66 @@ class AssetData:
     """Datetime-indexed datesets that store financial data for assets.
 
     All AlphaGradient assets seeking to use tabular data must use
-    AssetData datasets. AssetData accepts any of the following inputs:
-                    * numbers (for assets with constant prices, or unit prices)
-                    * os.path-like objects
-                    * file-object-like objects
-                    * array-like objects (lists, ndarray, etc.)
-                    * pathstrings
-                    * pandas DataFrames
+    AssetData datasets.
+
+    AssetData accepts any of the following inputs:
+        * numbers (for assets with constant prices, or unit prices)
+        * os.path-like objects (eg. pathlib.Path)
+        * file-object-like objects
+        * array-like objects (lists, ndarray, etc.)
+        * strings that represent paths
+        * pandas DataFrames
 
     AssetDatasets take tabular data and clean/validate it to make it
-    usable for ag assets. They check for the presence of required data,
-    remove unnecessary data, ensure that dataframes are
-    datetime-indexed, coerce data dtypes (TODO), and ensure that
-    formatting is consistent between all assets.
+    usable for alphagradient assets. They check for the presence of required
+    data, remove unnecessary data, ensure that dataframes are datetime-indexed,
+    coerce data dtypes (TODO), and ensure that formatting is consistent between
+    all assets.
+
+    Parameters:
+        asset_type:
+            The asset type that defines the constraints for the formatting of
+            this dataset. Different asset types allow different kinds of data.
+
+        data (ValidData):
+            A valid dataset to format (see docstring for acceptable types)
+
+        columns:
+            A list of strings to be used as columns. Optional
+
+        preinitialized:
+            Whether or not the data being passed in is already an initialized
+            AssetData dataset. This requires that the data input is a
+            pd.DataFrame object that has been loaded from a persistent
+            AlphaGradient AssetData file (located in persistent storage)
 
     Attributes:
-                    data (pd.DataFrame): The dataset for the asset
-                    open_value (str): The column to associate with open
-                    close_value (str): The column to associate with close
-                    first (datetime): The first available date for this dataset
-                    last (datetime): The last available date for this dataset
+        open_value (str):
+            The column to associate with market open
+
+        close_value (str):
+            The column to associate with market close
+
+        single_valued (bool):
+            True if this AssetData defines only one of close_value and open_value,
+            or if they are the same. False if both are defined and different.
     """
 
     _set_time_vectorized = np.vectorize(utils.set_time, excluded=["t"])
 
-    def __init__(self, asset_type, data, columns=None, preinitialized=False):
+    def __init__(
+        self,
+        asset_type: Type[Asset],
+        data: ValidData,
+        columns: Optional[list[str]] = None,
+        preinitialized: bool = False,
+    ):
 
         # When the data is already initialized
         if preinitialized:
+            assert type(data) is pd.DataFrame
             self._data = data
-            self._get_firstlast()
+            self._init_firstlast()
             self.resolution = self._global_res
             if len(self._data) > 1:
                 self.resolution = (
@@ -267,16 +325,16 @@ class AssetData:
             )
 
         # Final formatting requirements
-        data = self.validate_columns(data, required, optional)
+        data = self._init_columns(data, required, optional)  # type: ignore[arg-type]
 
         # Setting date column as DatetimeIndex
         data = data.set_index(pd.DatetimeIndex(data["DATE"]))
         data.drop("DATE", axis=1, inplace=True)
 
         self._data = data
-        self.resolution, success = self._get_resolution()
+        self.resolution, success = self._init_resolution()
         if success:
-            self._define_periods(asset_type)
+            self._init_periods(asset_type)
 
         # Single value dataframe
         elif not data.empty:
@@ -303,14 +361,14 @@ class AssetData:
             print(self._data)
 
         if not data.empty:
-            self._get_firstlast()
-            self._get_stats(asset_type)
+            self._init_firstlast()
+            self._init_stats(asset_type)
 
         else:
             t = utils.set_time(datetime.today(), "0:0:0")
             self._first, self._last = t, t
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> Any:
         try:
             return self.data.__getattr__(attr)
         except AttributeError:
@@ -319,54 +377,47 @@ class AssetData:
             except KeyError as e:
                 raise AttributeError(f"'AssetData' object has no attribute {e}")
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: Any) -> Any:
         return self.data[item]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.data.__str__()
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return not self._data.empty
 
-    def __getstate__(self):
+    def __getstate__(self) -> dict[str, Any]:
         return self.__dict__
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: dict[str, Any]) -> None:
         self.__dict__ = state
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._data)
 
     @property
-    def first(self):
+    def first(self) -> datetime:
+        """The first date available in the data"""
         return self._first
 
     @property
-    def last(self):
+    def last(self) -> datetime:
+        """The last date available in the data"""
         return self._last
 
     @property
-    def data(self):
+    def data(self) -> pd.DataFrame:
+        """The data associated with this Asset Dataset"""
         return self._data.drop(
             ["_time_resolution_", "_period_open_", "_period_close_"], axis=1
         )
 
-    @staticmethod
-    def column_format(column):
-        """The standard string format for columns
-
-        Takes a column name string and returns it in uppercase, with
-        spaces replaced with underscores
-
-        Args:
-                        column (str): The column name to be altered
-
-        Returns:
-                        column (str): The altered column name
-        """
-        return column.replace(" ", "_").upper()
-
-    def validate_columns(self, data, required, optional):
+    def _init_columns(
+        self,
+        data: pd.DataFrame,
+        required: Union[list[str], dict[str, str]],
+        optional: Union[list[str], dict[str, str]],
+    ) -> pd.DataFrame:
         """Ensures that the input data meets the formatting
         requirements to be a valid asset dataset
 
@@ -376,29 +427,31 @@ class AssetData:
         that don't show up in either the required or optional lists.
 
         TODO:
-                        * allow dictionaries to be passed in to enforce specific
-                                        column dtypes.
-                        * Implement more checks to ensure that data is error-free,
-                                        and lacks missing elements (or implement measures to
-                                        be safe in the presence of missing data)
+            * allow dictionaries to be passed in to enforce specific column dtypes.
+            * | Implement more checks to ensure that data is error-free, and
+              | lacks missing elements (or implement measures to be safe in the
+              | presence of missing data)
 
-        Args:
-                        data (tabular data): the data being validated
-                        required (list of str): a list of strings representing
-                                        column names. All of the columns in this list must be
-                                        present to produce a viable dataset.
-                        optional (list of str): a list of strings representing
-                                        column names. Columns in the data that are not required
-                                        will still be kept in the data if they are present in
-                                        this list. Otherwise, they will not be included.
+        Parameters:
+            data:
+                The data being validated
+
+            required:
+                A list of strings representing column names. All of the columns
+                in this list must be present to produce a viable dataset.
+
+            optional:
+                A list of strings representing column names. Columns in the
+                data that are not required will still be kept in the data if
+                they are present in this list. Otherwise, they will not be
+                included.
 
         Returns:
-                        data (tabular data): a verified (and slightly modified)
-                                        asset dataset
+            A verified (and potentially coerced) asset dataset
 
         Raises:
-                        ValueError: raised when the input dataset does not satisfy
-                                        the requirements
+            ValueError:
+                raised when the input dataset does not satisfy the requirements
         """
         # Check for column requirements
         required = required if required else {}
@@ -423,7 +476,9 @@ class AssetData:
 
         # Checking whether all of the required columns have been satisfied
         satisfied = {column: (column in data.columns) for column in required}
-        unsatisfied = [column for column, present in satisfied.items() if not present]
+        unsatisfied: Any = [
+            column for column, present in satisfied.items() if not present
+        ]
         if unsatisfied:
             unsatisfied = str(unsatisfied)[1:-1]
             raise ValueError(f"AssetData missing required columns: {unsatisfied}")
@@ -443,37 +498,13 @@ class AssetData:
 
         return data
 
-    def _get_resolution(self):
-        """Automatically determines the time resolution (granularity)
-        of the dataset's datetime index.
-
-        Returns:
-                        resolution (timedelta): The dataset's granularity with
-                                        respect to intervals of time
-        """
-        default = self._global_res
-        resolution = None
-
-        if self._data is not None and len(self._data) > 1:
-            res_data = self._data.index.to_series()
-            res_data = res_data.shift(-1) - res_data
-            res_data[-1] = res_data[-2]
-            resolution = res_data.value_counts().index[0].to_pytimedelta()
-            self._data["_time_resolution_"] = res_data
-
-        return (resolution, True) if resolution is not None else (default, False)
-
-    def _get_firstlast(self):
-        """Saves this dataset's first and last available dates"""
+    def _init_firstlast(self) -> None:
+        """Saves this dataset's first and last available dates inplace"""
         self._first = self._data["_period_open_"][0]
         self._last = self._data["_period_close_"][-1]
 
-    def _define_periods(self, cls):
-        """Defines opening and closing periods at each index in the dataset
-
-        Returns:
-                        Modifies this dataset in place
-        """
+    def _init_periods(self, cls) -> None:
+        """Defines opening and closing periods at each index in the dataset"""
 
         @np.vectorize
         def close_map(close, time_res, open_date):
@@ -501,36 +532,123 @@ class AssetData:
                 self._data["_period_open_"],
             )
 
-    def _get_stats(self, asset):
-        """Adds a new "CHANGE" column to the dataset which corresponds to the percentage change in closing price compared to the previous period"""
+    def _init_resolution(self) -> tuple[timedelta, bool]:
+        """Automatically determines the time resolution (granularity)
+        of the dataset's datetime index."""
+        default = self._global_res
+        resolution = None
+
+        if self._data is not None and len(self._data) > 1:
+            res_data = self._data.index.to_series()
+            res_data = res_data.shift(-1) - res_data
+            res_data[-1] = res_data[-2]
+            resolution = res_data.value_counts().index[0].to_pytimedelta()
+            self._data["_time_resolution_"] = res_data
+
+        return (resolution, True) if resolution is not None else (default, False)
+
+    def _init_stats(self, asset_type: Type[Asset]) -> None:
+        """Adds a new "CHANGE" column to the dataset which corresponds to the
+        percentage change in closing price compared to the previous period
+
+        TODO:
+            lmao, I didnt realize that pandas had a builtin pct_change func.
+            woops... look to replace later.
+        """
         if len(self._data) > 1:
-            shifted = self._data[asset.close_value].shift(1)
+            shifted = self._data[asset_type.close_value].shift(1)
             shifted.name = "A"
             shifted[0] = shifted[1]
             shifted = shifted.to_frame()
-            shifted["B"] = self._data[asset.close_value]
+            shifted["B"] = self._data[asset_type.close_value]
             shifted = (shifted["B"] / shifted["A"]) - 1
         else:
-            shifted = self._data[asset.close_value]
+            shifted = self._data[asset_type.close_value]
 
         self._data["CHANGE"] = shifted
 
-    def valuate(self, date, asset):
-        date = date if date >= self.first else self.first
-        # Calling asof on the index is WAY faster than calling it directly on the frame
-        data = self._data.loc[self._data.index.asof(date)]
-        if date >= data["_period_close_"]:
-            return data[asset.close_value]
-        elif date >= data["_period_open_"]:
-            return data[asset.open_value]
-        else:
-            return self.valuate(self.prev(date), asset)
+    @staticmethod
+    def column_format(column: str) -> str:
+        """
+        The standard string format for columns
 
-    def next(self, date):
-        if isinstance(date, str):
-            date = datetime.fromisoformat(date)
+        Takes a column name string and returns it in uppercase, with
+        spaces replaced with underscores
 
-        date = date if date >= self.first else self.first
+        This is the column format used for all AlphaGradient AssetData columns,
+        it publicly accessible in case users need it to properly format inputs
+        in a dynamic fashion
+
+        Parameters:
+            column (str): The column name to be altered
+
+        Returns:
+            The altered column name
+        """
+        return column.replace(" ", "_").upper()
+
+    def get_index(self, date: DatetimeLike) -> int:
+        """
+        Given a DatetimeLike object, returns the corresponding integer index
+
+        Given any DatetimeLike object, returns an integer value corresponding
+        to the index value which is nearest that datetime. If the date is before
+        the beginning of the data, returns index 0. Otherwise, uses asof for
+        determination of 'nearest'
+
+        Parameters:
+            date (DatetimeLike):
+                The datetimelike object to find the index of
+
+        Returns:
+            The index value as an integer
+        """
+        date = max(utils.to_datetime(date), self._first)
+        if date <= self.first:
+            return 0
+        return self._data.index.get_loc(self._data.index.asof(date))
+
+    def get_times(self) -> list[time]:
+        """
+        Returns a list of unique times present in this data
+
+        For all available points in this AssetData's time-series index, converts
+        to a python time object, and then returns the set of all unique times as
+        a list.
+
+        Returns:
+            A set of unique times for this dataset (as a list)
+        """
+
+        def uniquetimes(series):
+            return pd.Series(series.map(lambda t: t.time()).unique()).to_list()
+
+        return list(
+            set(
+                uniquetimes(self._data["_period_open_"])
+                + uniquetimes(self._data["_period_close_"])
+            )
+        )
+
+    def next(self, date: DatetimeLike) -> datetime:
+        """
+        Given a DatetimeLike object, returns the next available datetime in the
+        dataset
+
+        Given an object which can be coerced into a python datetime, returns
+        a datetime corresponding to the next available datetime in the index.
+        The next datetime MUST be GREATER than the given datetime, so if the
+        input datetime falls on an index value directly, it will return the next
+        index value.
+
+        Parameters:
+            date (DatetimeLike):
+                The date for which the next available date will be determined
+
+        Returns:
+            A datetime corresponding to the next available date in the index
+        """
+        date = max(utils.to_datetime(date), self._first)
         index = self._data.index
         value = index.asof(date)
         ind = index.get_loc(value)
@@ -548,9 +666,25 @@ class AssetData:
 
         return self._data.iloc[ind]["_period_open_"]
 
-    def prev(self, date):
-        if isinstance(date, str):
-            date = datetime.fromisoformat(date)
+    def prev(self, date: DatetimeLike) -> datetime:
+        """
+        Given a DatetimeLike object, returns the previous datetime in the
+        dataset
+
+        Given an object which can be coerced into a python datetime, returns
+        a datetime corresponding to the previous datetime in the index.
+        The previous datetime MUST be LESS than the given datetime, so if the
+        input datetime falls on an index value directly, it will return the
+        previous index value.
+
+        Parameters:
+            date (DatetimeLike):
+                The date for which the previous date will be determined
+
+        Returns:
+            A datetime corresponding to the previous date in the index
+        """
+        date = utils.to_datetime(date)
         index = self._data.index
         value = index.asof(date)
         ind = index.get_loc(value)
@@ -568,49 +702,86 @@ class AssetData:
             elif date >= prev_close:
                 return prev_open
 
+        return openn
+
+    def range(
+        self, start: Union[DatetimeLike, float], end: Union[DatetimeLike, float]
+    ) -> pd.DataFrame:
+        """
+        Given a start and an end, indexes the the dataframe after coercing to datetimes
+
+        Expands regular indexing on an interval on a time-series dataframe by
+        allowing coercion of not only DatetimeLike objects, but numbers as well.
+
+        When numbers are passed in, uses the other input as a context to identify
+        a period of time from that point, where the number respresents the number
+        of days difference. For this reason, only one of the two inputs may be
+        numbers.
+
+        TODO:
+            Is this safe?? It is dramatically more performant, but I'm not entirely sure how/why it works.
+            For example, indexing using a scalar value that is not present in the index but which is
+            contained in index interval will raise a KeyError. Suddently, this behavior becomes acceptable
+            when indexing using a slice??? No clue whats happening here.
+
+        Parameters:
+            start (DatetimeLike | Number):
+                The beginning of the range to return
+
+            end (DatetimeLike | Number):
+                The end of the range to return
+
+        Returns:
+            A range of the available data corresponding to the period defined
+            by start and end.
+        """
+        start_number = isinstance(start, (int, float))
+        end_number = isinstance(end, (int, float))
+        if start_number or end_number:
+            if start_number and end_number:
+                raise ValueError(f"Only one parameter may be defined as number")
+            elif start_number:
+                assert isinstance(start, (int, float))
+                end = utils.to_datetime(end)
+                start = end - timedelta(days=start)
+            elif end_number:
+                assert isinstance(end, (int, float))
+                start = utils.to_datetime(start)
+                end = start + timedelta(days=end)
         else:
-            return openn
+            start = utils.to_datetime(start)
+            end = utils.to_datetime(end)
+        return self._data.loc[start:end]  # type: ignore[misc]
 
-    def get_index(self, date):
-        date = date if date >= self.first else self.first
-        if date <= self.first:
-            return 0
-        return self._data.index.get_loc(self._data.index.asof(date))
+    def valuate(self, date: DatetimeLike, asset: Asset) -> float:
+        """
+        Given a DatetimeLike object, returns the data value (representing an
+        asset value) associated with that datetime.
 
-    def range2(self, start, end):
-        start = self.get_index(start)
-        end = self.get_index(end)
-        if end > len(self._data) - 1:
-            end = len(self._data)
-        if end - start < 1:
-            end += 1
-        return self._data.iloc[start:end, :]
+        Parameters:
+            date (DatetimeLike):
+                The datetime whose associated price information is requested
 
-    """
-    TODO
+            asset:
+                The asset (or asset type) that is being valuated. Different
+                potentially have different column names that they associate
+                with open and closing prices.
 
-    Is this safe?? It is dramatically more performant, but I'm not entirely sure how/why it works.
-    For example, indexing using a scalar value that is not present in the index but which is
-    contained in index interval will raise a KeyError. Suddently, this behavior becomes acceptable
-    when indexing using a slice??? No clue whats happening here.
-    """
-
-    def range(self, start, end):
-        return self._data.loc[start:end]
-
-    def get_times(self):
-        def uniquetimes(series):
-            return pd.Series(series.map(lambda t: t.time()).unique()).to_list()
-
-        return list(
-            set(
-                uniquetimes(self._data["_period_open_"])
-                + uniquetimes(self._data["_period_close_"])
-            )
-        )
+        Returns:
+            The price information at the given datetime
+        """
+        date = max(self.first, utils.to_datetime(date))
+        # Calling asof on the index is WAY faster than calling it directly on the frame
+        data = self._data.loc[self._data.index.asof(date)]
+        if date >= data["_period_close_"]:
+            return data[asset.close_value]
+        elif date >= data["_period_open_"]:
+            return data[asset.open_value]
+        else:
+            return self.valuate(self.prev(date), asset)
 
 
-# NOTE: THIS IS ONLY RELEVANT FOR COLUMN ENUM DATASETS.
+# NOTE: THE NOTE BELOW IS ONLY RELEVANT FOR COLUMN ENUM DATASETS.
 # THE NEW IMPLEMENTATION DOES NOT REQUIRE THIS.
 
 """

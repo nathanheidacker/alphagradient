@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+import builtins
 from datetime import (
     date,
     datetime,
@@ -12,6 +13,7 @@ from datetime import (
     timedelta,
 )
 import math
+from pathlib import Path
 
 # Third Party Imports
 import numpy as np
@@ -23,11 +25,31 @@ from typing import (
     Any,
     Literal,
     Generator,
+    Generic,
     Iterable,
     Optional,
-    Type,
-    Union
+    TypeVar,
+    Union,
 )
+
+T = TypeVar("T")
+
+
+class PropertyType(Generic[T]):
+    """A Type class for property objects themselves, before being bound to a class instance"""
+
+    def fget(self, *args: Any) -> T:
+        ...
+
+
+Property = builtins.property
+"""A Type for builtin properties that have been bound to a class instance"""
+
+PyNumber = Union[int, float]
+"""Numeric type that does not include complex numbers (only native python types)"""
+
+Number = Union[PyNumber, np.number, pd.core.arrays.numeric.NumericDtype]
+"""Numeric type that does not include complex numbers"""
 
 DatetimeLike = Union[pd.Timestamp, np.datetime64, date, datetime, str]
 """Objects convertable to python datetimes"""
@@ -40,6 +62,8 @@ DateOrTime = Union[DatetimeLike, time]
 
 if TYPE_CHECKING:
     from typeshed import SupportsLessThanT as SLTT
+
+_global_persistent_path: PropertyType[Path]
 
 
 def auto_batch(iterable: Iterable) -> Generator:
@@ -77,12 +101,13 @@ def auto_batch_size(iterable: Iterable) -> int:
 
     # Output Parameters
     horizontal_offset = 10000
-    horizontal_stretch = (70 / 100_000_000)
+    horizontal_stretch = 70 / 100_000_000
     vertical_offset = 100
 
     # Building the quadratic
+    output: Number
     output = len(iterable) - horizontal_offset
-    output = output ** 2
+    output = output**2
     output *= -1
     output *= horizontal_stretch
     output += vertical_offset
@@ -97,9 +122,9 @@ def bounded(
     """
     Bounds an object between a lower and upper bound
 
-    Given an object that defines behavior for comparison (__lt__, __gt__), 
-    returns the object bounded between the lower and upper bounds. Boundaries 
-    will be ommited if they are not provided (None). If lower and upper are not 
+    Given an object that defines behavior for comparison (__lt__, __gt__),
+    returns the object bounded between the lower and upper bounds. Boundaries
+    will be ommited if they are not provided (None). If lower and upper are not
     None, they must be of the same type as to_bound.
 
     Type Explanation:
@@ -115,8 +140,7 @@ def bounded(
     """
     if lower is None and upper is None:
         raise ValueError(
-            "Of the parameters 'lower' and 'upper', at least one must be"
-            "specified"
+            "Of the parameters 'lower' and 'upper', at least one must be" "specified"
         )
     if lower:
         to_bound = max(to_bound, lower)
@@ -130,7 +154,7 @@ def deconstruct_dt(dt: DateOrTime) -> dict[str, float]:
     """
     Returns a dictionary of datetime attribute values on object 'dt'
 
-    Given a DatetimeLike object, returns a dictionary where keys are the 
+    Given a DatetimeLike object, returns a dictionary where keys are the
     object's date and time related attribute names, and values are the object's
     associated attribute values.
 
@@ -141,7 +165,7 @@ def deconstruct_dt(dt: DateOrTime) -> dict[str, float]:
         A dictionary of attributes and their associated values on dt
 
     Raises:
-        TypeError: Raised if dt is not a datetime-like object, as it wont have 
+        TypeError: Raised if dt is not a datetime-like object, as it wont have
         the proper attributes.
     """
     # The potential attributes to be accessed
@@ -175,7 +199,7 @@ def get_batches(iterable: Iterable, size: int = 100) -> Generator:
     """
     Returns a generator of the iterable which yields batches of the given size
 
-    Given an iterable, uses the size parameter to create a generator which 
+    Given an iterable, uses the size parameter to create a generator which
     yields batches of the iterable of the given size.
 
     Parameter:
@@ -185,7 +209,7 @@ def get_batches(iterable: Iterable, size: int = 100) -> Generator:
     Returns:
         A generator which yields batches of size 'size' of the iterable
     """
-    # Because we will be indexing the iterable, we must instantiate the entire 
+    # Because we will be indexing the iterable, we must instantiate the entire
     # thing in memory in case it isnt (ie generators)
     iterable = list(iterable)
     last = len(iterable)
@@ -200,8 +224,8 @@ def get_time(t: DateOrTime) -> time:
     """
     Given a timestring or datetime-like object, returns a datetime.time object
 
-    Given an object t which represents a time or a datetime, returns a native 
-    python datetime.time object of the appropriate time. t can be an isoformat 
+    Given an object t which represents a time or a datetime, returns a native
+    python datetime.time object of the appropriate time. t can be an isoformat
     time string or datetime string, or a datetime-like object
 
     Parameters:
@@ -210,11 +234,8 @@ def get_time(t: DateOrTime) -> time:
     Returns:
         The converted datetime.time object
     """
-    if isinstance(t, time):
-        return t
-    elif isinstance(t, str):
-        return read_timestring(t)  # type: ignore[return-value]
-
+    if isinstance(t, (time, str)):
+        return to_time(t)
     return to_datetime(t).time()
 
 
@@ -267,7 +288,7 @@ def is_func(f: Any) -> bool:
         f: The object who's status as a function is being determined
 
     Returns:
-        True if f is a method, function, builtin-method-or-function, or lambda, 
+        True if f is a method, function, builtin-method-or-function, or lambda,
         else False
     """
 
@@ -327,13 +348,13 @@ def nearest_expiry(
     """
     Returns the nearest valid expiry to the input datetime object
 
-    Determining expiries for options contracts can be difficult, because they 
+    Determining expiries for options contracts can be difficult, because they
     must fall on a business day, and their expiry time must be the market close.
-    Given an expiry whose validity is unknown, this function returns the 
-    nearest expiry that is guaranteed to be valid. If the given expiry is 
+    Given an expiry whose validity is unknown, this function returns the
+    nearest expiry that is guaranteed to be valid. If the given expiry is
     valid, it will be unchanged when it is returned.
 
-    The method argument is used to determine how the 'nearest' is defined. It 
+    The method argument is used to determine how the 'nearest' is defined. It
     has three options: "after", "before", and "both"
 
     Method must be one of the following string literals:
@@ -343,18 +364,18 @@ def nearest_expiry(
           | return the smaller of the two. In the case that they are equal, the
           | date determined by "after" will be used.
 
-    The default argument is "after" because using "before" or "both" can 
-    potentially lead to dangerous behavior for algorithms, as it can return an 
-    expiry which is before the current date of the algorithm. This can cause 
-    options contracts to initialize as expired. Only change the method 
-    argument if you are positive that the returned expiry will be greater 
+    The default argument is "after" because using "before" or "both" can
+    potentially lead to dangerous behavior for algorithms, as it can return an
+    expiry which is before the current date of the algorithm. This can cause
+    options contracts to initialize as expired. Only change the method
+    argument if you are positive that the returned expiry will be greater
     than the algorithm's current date.
 
     Parameters:
         expiry (DatetimeLike):
             The expiry who's closest valid expiry will be determined
 
-        method: 
+        method:
             One of "after", "before", or "both"
 
     Returns:
@@ -392,33 +413,31 @@ def nearest_expiry(
     return expiry
 
 
-def progress_print(to_print: Any, last: list[float] = [0]) -> None:
+def progress_print(to_print: Any, last: list[int] = [0]) -> None:
     """Prints, but returns the carriage to the front of the last print"""
     print("\r" + (" " * last[0]), end="\r", flush=True)  # type: ignore[operator]
     print(to_print, end="", flush=True)
     last[0] = len(str(to_print))
 
 
-def read_timestring(
-    timestring: str, dtype: Union[Type[dict], Type[time]] = time
-) -> Union[time, dict[str, float]]:
+def read_timestring(timestring: str) -> time:
     """
     Given a timestring, returns a datetime.time object representative of the time
 
     This function reads in 'timestrings', which are one of two things:
-        #. | Isoformat times as strings, using 24 hours 
+        #. | Isoformat times as strings, using 24 hours
            | (eg 04:00:00, 18:30, 02:59:59.99, etc)
 
-        #. | Strings based on 12 hour clocks 
+        #. | Strings based on 12 hour clocks
            | (see ag.utils.read_twelve_hour_timestring docs)
 
-    Using this timestring, returns a python datetime.time object corresponding 
-    to the time in the timestring. if dtype is set to dict, a deconstructed 
-    datetime attr dictionary will instead be returned. For more info on 
+    Using this timestring, returns a python datetime.time object corresponding
+    to the time in the timestring. if dtype is set to dict, a deconstructed
+    datetime attr dictionary will instead be returned. For more info on
     dtdicts, read the docs for ag.utils.deconstruct_dt
 
     Parameters:
-        timestring: 
+        timestring:
             string representing the time
 
         dtype:
@@ -427,29 +446,16 @@ def read_timestring(
     Returns:
         The time or dict object corresponding to the time in the timestring
     """
-    t = None
-
     try:
-        t = read_twelve_hour_timestring(timestring)
+        return read_twelve_hour_timestring(timestring)
     except (TypeError, ValueError) as e:
-        t = time.fromisoformat(timestring)
-
-    # Return a time dictionary if the dtype isnt time
-    if dtype is time:
-        return t
-
-    elif dtype is dict:
-        return deconstruct_dt(t)
-
-    raise ValueError(
-        f"Invalid type input for dtype {dtype=}. Please choose dict or time"
-    )
+        return time.fromisoformat(timestring)
 
 
 def read_twelve_hour_timestring(timestring: str) -> time:
     """Reads a timestring based on a 12 hour clock and returns a time
 
-    Given a timestring representing a time on a 12 hour clock, returns the 
+    Given a timestring representing a time on a 12 hour clock, returns the
     appropriate time object
 
     Must be formatted as follows:
@@ -484,10 +490,10 @@ def read_twelve_hour_timestring(timestring: str) -> time:
         The corresponding time object
 
     Raises:
-        TypeError: 
+        TypeError:
             When timestring is not a string. Only str objects can be parsed
 
-        ValueError: 
+        ValueError:
             When the timetring is invalid / improperly formatted.
     """
     # Timestrings must be strs
@@ -540,10 +546,10 @@ def read_twelve_hour_timestring(timestring: str) -> time:
 def set_time(dt: DatetimeLike, t: DateOrTime) -> datetime:
     """Sets the given datetime-like object to the given time
 
-    Given a DatetimeLike object 'dt' and a time-like object 't', returns a 
+    Given a DatetimeLike object 'dt' and a time-like object 't', returns a
     datetime like object that shares the date of dt and the time of t.
 
-    Very similar to datetime.combine, but accepts datetime objects for both 
+    Very similar to datetime.combine, but accepts datetime objects for both
     inputs.
 
     Parameters:
@@ -558,7 +564,8 @@ def set_time(dt: DatetimeLike, t: DateOrTime) -> datetime:
 
     # Reading the necessary time attributes
     if isinstance(t, str):
-        newtime = read_timestring(t, dtype=dict)  # type: ignore[assignment]
+        t = read_timestring(t)
+        newtime = deconstruct_dt(t)
     elif isinstance(t, time):
         newtime = deconstruct_dt(t)
     else:
@@ -571,11 +578,11 @@ def set_time(dt: DatetimeLike, t: DateOrTime) -> datetime:
 def timestring(t: DateOrTime) -> str:
     """Converts a time-like object to a 12-hour-clock timestring
 
-    Given a time-like object t, returns a timestring represented by the 
+    Given a time-like object t, returns a timestring represented by the
     12-hour-clock (eg. 4:30 PM).
 
     Parameters:
-        t (DateOrTime): 
+        t (DateOrTime):
             date or time object to read into a 12-hour-clock-based timestring
 
     Returns:
@@ -598,10 +605,10 @@ def timestring(t: DateOrTime) -> str:
 def to_datetime(dtlike: DatetimeLike) -> datetime:
     """
     Given a datetime-like object, converts it to a python standard datetime
-    
+
     Parameters:
         dtlike (DatetimeLike):
-            Given a datetime-convertable object, returns a python datetime
+            The Datetime-convertable object
 
     Returns:
         The converted python datetime
@@ -609,36 +616,113 @@ def to_datetime(dtlike: DatetimeLike) -> datetime:
     Raises:
         TypeError: Only accepts python-datetime-convertable objects
     """
-    if isinstance(dtlike, str):
-        return datetime.fromisoformat(dtlike)
+    if isinstance(dtlike, datetime):
+        return dtlike
     elif isinstance(dtlike, pd.Timestamp):
         return dtlike.to_pydatetime()
     elif isinstance(dtlike, np.datetime64):
         return pd.Timestamp(dtlike).to_pydatetime()
     elif isinstance(dtlike, date):
         return datetime.combine(dtlike, datetime.min.time())
-    elif isinstance(dtlike, datetime):
-        return dtlike
+    elif isinstance(dtlike, str):
+        return datetime.fromisoformat(dtlike)
 
     raise TypeError(f"Can not convert passed object {dtlike} to python datetime")
+
+
+def to_step(current: datetime, delta: Union[DateOrTime, timedelta, float]) -> timedelta:
+    """
+    Converts an ambiguous delta object to a python timedelta
+
+    Given an amiguous object which can in some way be interpreted as a timedelta
+    relative to some 'current' time, converts that object to an appropriate
+    timedelta object, or 'step' in time.
+
+    Parameters:
+        current:
+            The 'current' time, which determines how to interpret the delta
+
+        delta (Union[DateOrTime, timedelta, float]);
+            The object being passed that may represent a 'step' in time
+
+    Returns:
+        the appropriate timedelta 'step'
+
+    Raises:
+        TypeError:
+            When passed a type that can not be coerced/interpreted
+
+        ValueError:
+            When a type-appropriate object can not be coerced, or is in some way
+            invalid (eg. the step in time is BEFORE the current time)
+    """
+    # Multiple parses must be made on strings to successfully coerce all of them
+    if isinstance(delta, str):
+        try:
+            delta = set_time(current, read_timestring(delta))
+        except ValueError:
+            delta = datetime.fromisoformat(delta)  # type: ignore[arg-type]
+
+    elif isinstance(delta, time):
+        delta = set_time(current, delta)
+
+    elif isinstance(delta, (float, int)):
+        delta = current + timedelta(days=delta)
+
+    elif isinstance(delta, timedelta):
+        delta = current + delta
+
+    # if isinstance(delta, DatetimeLike):
+    else:
+        delta = to_datetime(delta)
+
+    if delta > current:
+        return delta - current
+
+    raise ValueError(
+        f"Passed delta {delta} is prior to current time {current}. Please "
+        "choose a time AFTER the current date."
+    )
+
+
+def to_time(tlike: TimeLike) -> time:
+    """
+    Given a TimeLike object, converts it to a python standard time object
+
+    Parameters:
+        tlike (TimeLike):
+            The time-convertable object
+
+    Returns:
+        The converted python time object
+
+    Raises:
+        TypeError: Only accepts python-time-convertable objects
+    """
+    if isinstance(tlike, str):
+        return read_timestring(tlike)
+    elif isinstance(tlike, time):
+        return tlike
+
+    raise TypeError(f"Can not convert passed object {tlike} to python time")
 
 
 class NullClass:
     """
     A class designed to take the place of other functions, modules, or classes
 
-    This class stands in place of a function, class, or module attached to 
-    another class as an attribute. When an attribute is initialized as a 
-    NullClass, one can safely access it as an attribute, call it, and access 
-    attributes on it. These actions can also be performed recursively; any of 
-    these operations performed on the nullclass will simply return itself, 
+    This class stands in place of a function, class, or module attached to
+    another class as an attribute. When an attribute is initialized as a
+    NullClass, one can safely access it as an attribute, call it, and access
+    attributes on it. These actions can also be performed recursively; any of
+    these operations performed on the nullclass will simply return itself,
     allowing them to be chained infinitely.
 
-    Use this class in place of another function or class in order to safely 
+    Use this class in place of another function or class in order to safely
     use an attribute without making constant checks.
 
-    This is most useful in place of functions/classes that perform 
-    logging/printing, but also makes sense in place of functions that modify 
+    This is most useful in place of functions/classes that perform
+    logging/printing, but also makes sense in place of functions that modify
     things in place or always return None.
 
     Examples:
@@ -692,10 +776,10 @@ class NullClass:
     def __getattr__(self, attr: str) -> NullClass:
         return self
 
-    def __enter__(self) -> NullClass:
+    def __enter__(self, *args, **kwargs) -> NullClass:
         return self
 
-    def __exit__(self) -> None:
+    def __exit__(self, *args, **kwargs) -> None:
         pass
 
     def __bool__(self) -> bool:

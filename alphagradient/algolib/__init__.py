@@ -10,7 +10,4 @@ from ._lib import (
     ThetaGang,
 )
 
-__all__ = [
-    'IndexHold',
-    'ThetaGang'
-]
+__all__ = ["IndexHold", "ThetaGang"]

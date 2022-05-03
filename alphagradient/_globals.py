@@ -20,54 +20,85 @@ import pandas as pd
 
 # Local imports
 from ._finance import (
-                      Portfolio,
-                      Environment,
-                      Universe,
-                      types,
-                      Asset,
-                      Currency,
-                      Call,
-                      Put,
-                      Stock
-                      )
+    Portfolio,
+    Environment,
+    Universe,
+    types,
+    Asset,
+    Currency,
+    Stock,
+)
 from ._finance._standard import Option
 from ._data._datatools import AssetData
 from ._algorithm import Algorithm, Backtest, Performance
 from . import utils
 
+# Typing
+from typing import Union, Any, Optional, Generator
+
+from .utils import DatetimeLike, TimeLike, DateOrTime, PyNumber, Number
+
 GLOBAL_DEFAULT_START = datetime.fromisoformat("2000-01-03")
+"""The global default start date"""
+
 GLOBAL_DEFAULT_END = utils.set_time(datetime.today(), "00:00:00")
+"""The global default end date"""
+
 GLOBAL_DEFAULT_RESOLUTION = timedelta(days=1)
+"""The global default time resolution"""
+
 GLOBAL_DEFAULT_BASE = "USD"
+"""The global default currency base (as a currency code)"""
+
 
 class Globals:
     """A set of global conditions and functions that act on all
     alphagradient objects
 
+    This object is required for initializing alphagradient assets,
+    portfolios, universes, and environments properly, but also contains
+    attributes with instantiated versions of these classes. For this reason,
+    alphagradient dynamically shares attributes of this object with other
+    classes to avoid circular import logic. Other classes may have attributes
+    shared from this object, such as self.date
+
+    This object is not to be instantiated by end users, and only has
+    internal functionality
+
     Attributes:
-        start (datetime): the default beginning for asset initialization
-        end (datetime): the default end for algorithm backtesting
-        resolution (timedelta): the default time difference between each
-            valuation step when using globals.step()
-        base (Currency): The currency object that acts as the base
-            which all asset values are converted to
+        start (datetime):
+            The default beginning for asset initialization
+
+        end (datetime):
+            The default end for algorithm backtesting
+
+        resolution (timedelta):
+            The default time difference between each valuation step when
+            using globals.step()
+
+        base (Currency):
+            The currency object that acts as the base which all asset values
+            are converted to
+
         rfr (Number): The current risk free rate
     """
-    def _mkprop(self, attr):
+
+    # Not sure how to properly type hint a property return value...
+    # TODO: | THIS IS FUNCTIONALITY THAT SHOULD BE ABSTRACTED TO GLOBALS VIA A
+    #      | 'BIND' COMMAND OR SOMETHING SIMILAR
+    def _mkprop(self, attr: str) -> Any:
         return property(lambda this: getattr(self, attr))
 
-    def _shareprop(self, attr, obj, name=None):
+    def _shareprop(self, attr: str, obj: Any, name: str = None) -> None:
         setattr(obj, (name or attr), self._mkprop(attr))
 
-    def __init__(self):
-
+    def __init__(self) -> None:
         # Initializing global attrs
-        self._start = GLOBAL_DEFAULT_START
-        self._end = GLOBAL_DEFAULT_END
         self._resolution = GLOBAL_DEFAULT_RESOLUTION
         self._date = GLOBAL_DEFAULT_START
         self._persistent = self._find_persistent()
 
+        cls: Any  # This is supposed to represent an AG class
         for cls in [Asset, Environment, Algorithm]:
             self._shareprop("start", cls, name="_global_start")
 
@@ -89,34 +120,34 @@ class Globals:
         setattr(Environment, "date", property(date_getter, date_setter))
 
         self._base_code = GLOBAL_DEFAULT_BASE
-        #self._shareprop("_base_code", Currency, name="base")
+        # self._shareprop("_base_code", Currency, name="base")
         self._shareprop("_base_code", Asset, name="_global_base")
 
-        self._path = Path(__file__).parent
+        self._path: Path = Path(__file__).parent
         self._shareprop("path", Asset, name="_basepath")
         self._shareprop("path", Universe, name="_basepath")
 
-        self._base = Currency(Currency.base)
+        self._base: Currency = Currency(Currency.base)
         self._shareprop("base", Environment, name="_global_base")
 
-        self._rfr = self._get_rfr()
+        self._rfr: float = self._get_rfr()
         self._shareprop("rfr", Asset)
 
-        self._benchmark = Stock("SPY")
+        self._benchmark: Asset = Stock("SPY")
         self._shareprop("benchmark", Asset)
         self._shareprop("benchmark", Universe)
 
-    def __str__(self):
-        return str({k[1:]:v for k, v in self.__dict__.items()})
+    def __str__(self) -> str:
+        return str({k[1:]: v for k, v in self.__dict__.items()})
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
     @staticmethod
-    def _get_rfr():
+    def _get_rfr() -> float:
         try:
             search = "https://www.google.com/search?q=3+month+t+bill+rate"
-            data = requests.get(search)
+            data: Any = requests.get(search)
             data = bs(data.text, "lxml")
             data = data.find_all("td", class_="IxZjcf sjsZvd s5aIid OE1use")
             return round(float(data[0].text[:-1]) / 100, 5)
@@ -124,126 +155,58 @@ class Globals:
             return 0.0
 
     @staticmethod
-    def all_assets():
+    def all_assets() -> Generator[Asset, None, None]:
         """Returns all assets currently in memory"""
-        return (asset for t in types if t.c in types.instantiable() for asset in t.instances.values())
+        return (
+            asset
+            for t in types  # type: ignore[attr-defined]
+            if t.c in types.instantiable()
+            for asset in t.instances.values()
+        )
 
     @staticmethod
-    def all_data():
+    def all_data() -> Generator[AssetData, None, None]:
         """Returns all asset datasets"""
-        return (asset.data for t in types if t.c in types.instantiable() for asset in t.instances.values() if asset.data)
-
-    @staticmethod
-    def normalize_date(date):
-        """coerces reasonable inputs into datetimes
-
-        Args:
-            date (str | datetime): the date to coerce
-
-        Returns:
-            date (datetime): The coerced date
-
-        Raises:
-            TypeError: when the date can not be coerced into datetime
-        """
-        if isinstance(date, str):
-            return datetime.fromisoformat(date)
-
-        elif isinstance(date, datetime):
-            return date
-
-        raise TypeError(f"Date input of type {type(date)} could not be"
-                        "normalized")
+        return (
+            asset.data
+            for t in types  # type: ignore[attr-defined]
+            if t.c in types.instantiable()
+            for asset in t.instances.values()
+            if asset.data
+        )
 
     @property
-    def date(self):
+    def date(self) -> datetime:
+        "The date for the global environment"
         return self._date
 
     @date.setter
-    def date(self, dt):
-        if isinstance(dt, datetime):
-            self._date = dt
-
-        elif isinstance(dt, pd.Timestamp):
-            self._date = dt.to_pydatetime()
-
-        elif isinstance(dt, str):
-            self._date = datetime.fromisoformat(dt)
-
-        else:
-            raise TypeError(f"Unable to set global date to {dt}, invalid type {type(dt).__name__}")
+    def date(self, dt: DatetimeLike) -> None:
+        self._date = utils.to_datetime(dt)
 
     @property
-    def start(self):
-        return self._start
-
-    @start.setter
-    def start(self, date=None):
-        date = self.default_start() if not isinstance(date, datetime) else date
-        self._start = date
-        setattr(Asset, "_global_start", self.start)
-
-        for algo in types.algorithm.instances.values():
-            algo.start = max(algo.start, self._start)
-
-    def default_start(self):
-        """The default start if nothing else is provided
-
-        If any assets are instantiated, returns the earliest available
-        date for which data is available in any asset dataset. If no
-        assets are instantiated, returns todays date less 10 years
-
-        Returns:
-            date (datetime): the default start date to be used
-        """
-        data = [data.first for data in self.all_data()]
-
-        if data:
-            start = max(data).to_pydatetime()
-            return utils.set_time(start, "9:30 AM")
-
-        return GLOBAL_DEFAULT_START
+    def start(self) -> datetime:
+        """The default start for the global environment"""
+        data = [dataset.first for dataset in self.all_data()]
+        return min(data) if data else GLOBAL_DEFAULT_START
 
     @property
-    def end(self):
-        return self._end
-
-    @end.setter
-    def end(self, date=None):
-        date = self.default_end() if not isinstance(date, datetime) else date
-        self._end = date
-
-        for algo in types.algorithm.instances.values():
-            algo.end = min(algo.end, self._end)
-
-    def default_end(self):
-        """The default end if nothing else is provided
-
-        If any assets are instantiated, returns the last available
-        date for which data is available in any asset dataset. If no
-        assets are instantiated, returns todays date
-
-        Returns:
-            date (datetime): the default end date to be used
-        """
-        data = [data.last for data in self.all_data()]
-
-        if data:
-            end = min(data).to_pydatetime()
-            return utils.set_time(end, "4:30 PM")
-
-        return GLOBAL_DEFAULT_END
+    def end(self) -> datetime:
+        """The default end for the global environment"""
+        data = [dataset.last for dataset in self.all_data()]
+        return max(data) if data else GLOBAL_DEFAULT_END
 
     @property
-    def resolution(self):
+    def resolution(self) -> timedelta:
+        """The default resolution for the global environment"""
         return self._resolution
 
     @resolution.setter
-    def resolution(self, delta=None):
-        delta = self.default_resolution() if not isinstance(delta, timedelta) else timedelta
+    def resolution(self, delta: timedelta) -> None:
+        delta = self.default_resolution() if not isinstance(delta, timedelta) else delta
         self._resolution = delta
 
-    def default_resolution(self):
+    def default_resolution(self) -> timedelta:
         """The default universal time resolution to be used
 
         If any assets are instantiated, finds the lowest time
@@ -261,11 +224,12 @@ class Globals:
         return GLOBAL_DEFAULT_RESOLUTION
 
     @property
-    def base(self):
+    def base(self) -> Currency:
+        """The base currency for the global environment"""
         return self._base
 
     @base.setter
-    def base(self, code):
+    def base(self, code: str) -> None:
         if Currency.validate_code(code, error=True):
             Currency.base = code
             self._base = Currency(code)
@@ -274,47 +238,57 @@ class Globals:
                 currency._valuate()
 
     @property
-    def rfr(self):
+    def rfr(self) -> float:
         """An alias for the global risk free rate"""
         return self._rfr
 
     @rfr.setter
-    def rfr(self, rate):
+    def rfr(self, rate: float) -> None:
+        """TODO: RFR SHOULD BE SHARED DURING INIT, NO NEED TO UPDATE"""
         setattr(Option, "rfr", rate)
         self._rfr = rate
 
     @property
-    def benchmark(self):
+    def benchmark(self) -> Asset:
+        """The benchmark asset for the global environment, used in calculations
+        of alpha, beta, etc."""
         return self._benchmark
 
     @benchmark.setter
-    def benchmark(self, benchmark):
-        if isinstance(benchmark, Stock):
+    def benchmark(self, benchmark: Union[Asset, str]) -> None:
+        if isinstance(benchmark, Asset):
+            assert benchmark.data is not None
             self._benchmark = benchmark
         elif isinstance(benchmark, str):
             try:
-                self._benchmark = Stock(benchmark)
+                new_benchmark = Stock(benchmark)
+                assert new_benchmark.data is not None
+                self._benchmark = new_benchmark
             except Exception as e:
-                raise RuntimeError(f"Unable to use {benchmark} as a benchmark because the following error occurred during initialization: {e}") from e
+                raise RuntimeError(
+                    f"Unable to use {benchmark} as a benchmark because the "
+                    f"following error occurred during initialization: {e}"
+                ) from e
         else:
-            raise TypeError(f"Benchmark must be a Stock. Received {benchmark.__class__.__name__}")
+            raise TypeError(
+                "Benchmark must be a Stock. Received " f"{benchmark.__class__.__name__}"
+            )
 
     @property
-    def path(self):
+    def path(self) -> Path:
+        """The path to the root directory of this installation of AlphaGradient"""
         return self._path
 
-    def auto(self):
+    def auto(self) -> None:
         """Automatically sets global start, end, and resolution to
         their defaults based on what assets are instantiated
 
         Returns:
             Modifies global variables in place, returns nothing
         """
-        self._start = self.default_start()
-        self._end = self.default_end()
         self._resolution = self.default_resolution()
 
-    def sync(self, date):
+    def sync(self, date: DatetimeLike) -> None:
         """Synchronizes all alphagradient objects globally to the
         given datetime
 
@@ -330,7 +304,7 @@ class Globals:
             modifies all currently instantiated assets and portfolios
             in-place
         """
-        self.date = self.normalize_date(date)
+        self.date = utils.to_datetime(date)
 
         def sync_asset(asset):
             if getattr(asset, "reset", False):
@@ -349,7 +323,7 @@ class Globals:
         if portfolios:
             deque(map(sync_portfolio, portfolios), maxlen=0)
 
-    def autosync(self, t=None):
+    def autosync(self, t: TimeLike = None) -> None:
         """automatically determines best global variables for start, end, and resolution based on
         currently instantiated assets, and syncs them all to an optimal starting period"""
 
@@ -361,7 +335,7 @@ class Globals:
         optimal_date = self.start + optimal_difference
 
         # Setting the optimal date's time to midnight unless specified otherwise
-        t = "00:00:00" if t is None else t
+        t = "00:00:00" if t is None else utils.to_time(t)
         utils.set_time(optimal_date, t)
 
         # Bounding the date to acceptable minimums and maximums
@@ -371,7 +345,7 @@ class Globals:
 
         self.sync(sync_date)
 
-    def step(self, delta=None):
+    def step(self, delta: Union[DateOrTime, timedelta, PyNumber] = None) -> None:
         """Takes a single time step for all assets
 
         Valuates all currently instantiated assets one time step
@@ -379,34 +353,17 @@ class Globals:
         not provided with a delta explicitly, uses the global
         resolution to determine time step magnitude.
 
-        Args:
-            delta (timedelta): The magnitude of the time step taken
-
-        Returns:
-            Modifies assets in place, returns nothing
+        Parameters:
+            delta (Union[DateOrTime, timedelta, float]):
+                The magnitude of the time step taken
         """
-        if isinstance(delta, str):
-            try:
-                delta = datetime.fromisoformat(delta)
-            except ValueError:
-                delta = time.fromisoformat(delta)
-
-        if isinstance(delta, (datetime, pd.Timestamp)):
-            delta = delta - self.date
-
-        elif isinstance(delta, time):
-            if delta >= self.date.time():
-                delta = utils.set_time(self.date, delta)
-            else:
-                delta = utils.set_time(self.date - timedelta(days=1), delta)
-
-        delta = self.resolution if delta is None else self.validate_resolution(delta)
-
-        self.date = self.date + delta
+        self.date += (
+            self.resolution if delta is None else utils.to_step(self.date, delta)
+        )
 
         for asset in self.all_assets():
             asset._valuate()
-            asset._step()
+            asset._step(self.date)
 
         for portfolio in types.portfolio.instances.values():
             portfolio.update_positions()
@@ -415,77 +372,87 @@ class Globals:
         for algo in types.algorithm.instances.values():
             algo.stats._update()
 
-    def refresh(self):
-        pass
+    def refresh(self) -> None:
+        """TODO: Should reinstantiate all persistent ag objects"""
+        return None
 
-    def refresh_local(self):
-        pass
-
-    def refresh_all(self):
-        pass
-
-    def scan(self):
-        pass
+    def scan(self) -> None:
+        """TODO: Should scan a path for ag files and add them to persistent"""
+        return None
 
     @staticmethod
-    def validate_resolution(resolution):
+    def validate_resolution(resolution: Union[timedelta, PyNumber]) -> timedelta:
         """Determines whether or not the input resolution is valid.
         If is is, returns it as a native python timedelta object
 
-        Args:
-            resolution (Number | str | timedelta): The resolution to be
-                validated and converted
+        Parameters:
+            resolution:
+                The resolution to be validated and converted
 
         Returns:
-            resolution (timedelta): The convered, valid resolution
+            The convered, valid resolution
 
         Raises:
             TypeError: When the resolution is inconvertible
         """
         if isinstance(resolution, timedelta):
             return resolution
-        elif isinstance(resolution, int):
+        elif isinstance(resolution, (float, int)):
             return timedelta(days=resolution)
         else:
-            raise TypeError(f"Resolution must be a datetime.timedelta "
-                            "object. Received "
-                            f"{resolution.__class__.__name__} "
-                            f"{resolution}")
+            raise TypeError(
+                f"Resolution must be a datetime.timedelta "
+                "object. Received "
+                f"{resolution.__class__.__name__} "
+                f"{resolution}"
+            )
 
-    def persist(self, path=None):
+    def persist(self, path: Optional[Union[Path, str]] = None) -> None:
         """Allows persistent storage of ag assets
 
-        Directs alphagradient to persist ag asset datasets in memory at the given path, which
-        defaults to the current working directory when none is specified. AlphaGradient will create
-        a directory in the path called "alphagradient.persistent" in which it will store pickles to easily reinstantiate assets
+        Directs alphagradient to persist ag asset datasets in memory at the
+        given path, which defaults to the current working directory when none
+        is specified. AlphaGradient will create a directory in the path called
+        "alphagradient.persistent" in which it will store pickles to easily
+        reinstantiate assets
 
         Parameters:
-            path (path-like): Where to create/use the pickle storage directory.
+            path: Where to create/use the pickle storage directory.
 
         Returns:
             modifies the global instance in place by saving the storage path
         """
-        if path is None:
-            path = self._default_persistent()
-        else:
-            path = path.joinpath("alphagradient.persistent/")
+        # Converting to valid path object
+        def to_path(path: Union[Path, str]) -> Path:
+            if isinstance(path, str):
+                path = Path(path)
+            return path.joinpath("alphagradient.persistent/")
+
+        # Getting the default if none is passed
+        path = self._default_persistent() if path is None else to_path(path)
+
+        # Checking that the dir exists, making it if not
         if not os.path.isdir(path):
             path.mkdir()
+
+        # Setting the global peristent path
         self._persistent = path
 
     @property
-    def persistent(self):
+    def persistent(self) -> Union[Path, None]:
+        """The global environment's persistent path"""
         return self._persistent
 
-    def _find_persistent(self):
+    def _find_persistent(self) -> Union[Path, None]:
+        """Looks for (and sets, if found) a persistent directory"""
         path = self._default_persistent()
         if os.path.isdir(path):
             return path
         return None
 
-    def _default_persistent(self):
+    def _default_persistent(self) -> Path:
+        """Returns the default persistent path (where AG expects to find it)"""
         return Path(os.getcwd()).joinpath("alphagradient.persistent/")
-
 
 
 __globals = Globals()

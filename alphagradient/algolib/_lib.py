@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
-"""AlphaGradient's algorithm library, containing vetted and high
-quality financial algorithms to be used freely.
+"""
+AlphaGradient's algorithm library, containing vetted and high quality financial 
+algorithms to be used freely.
 
-Todo:
-    * NA
+To publish an algorithm to the AlgoLib, please contact 
+nathanheidacker2022@u.northwestern.edu
 """
 
 # Standard Imports
 import os
 import math
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 
 # Third Party imports
 import numpy as np
@@ -17,16 +18,32 @@ import numpy as np
 # Local Imports
 from .. import _proxy as ag
 
+# Typing
+from typing import (
+    Any,
+)
+
+
 class IndexHold(ag.Algorithm):
     """A tutorial algorithm! Buy and Hold!"""
 
-    def setup(self, *args, start, **kwargs):
+    def setup(self, start: datetime, **kwargs: Any) -> ag.Environment:
+        """
+        This algorithm only requires a single index fund to invest in, so it
+        uses the default AG benchmark SPY. No other assets are instantiated.
+        Only a single portfolio ("MAIN") is used.
+
+        Parameters:
+            start:
+                The starting datetime of the backtest is required to properly
+                setup the environment
+        """
         # Our initial balance
         initial = 1_000_000
         spy = ag.Stock("SPY")
 
         # Creating an environment object
-        env = ag.Environment(start=start, assets=spy)
+        env = ag.Environment(assets=[spy])
 
         # identical to env.main.invest(initial)
         env.invest(initial)
@@ -36,7 +53,10 @@ class IndexHold(ag.Algorithm):
 
         return env
 
-    def cycle(self, *args, start, end, **kwargs):
+    def cycle(self, start: datetime, end: datetime, **kwargs: Any) -> None:
+        """
+        The goals of this algorithm are very simple,
+        """
         # Buying at the start...
         if self.date <= datetime.fromisoformat("2010-01-04 16:00:00"):
 
@@ -54,28 +74,37 @@ class IndexHold(ag.Algorithm):
 
 
 class ThetaGang(ag.Algorithm):
-    """An example algorithm in the algorithm library used to demonstrate some of AlphaGradient's
-    standard features and best practices
+    """An example algorithm in the algorithm library used to demonstrate some
+    of AlphaGradient's standard features and best practices
 
-    This is a tutorial algorithm that seeks to demonstrate some of AlphaGradient's features and standard design practices. This algorithm sells the maximum numnber of covered calls on SPY that it can, with a bounded strike price to prevent from selling calls that could lose money when assigned
+    This is a tutorial algorithm that seeks to demonstrate some of
+    AlphaGradient's features and standard design practices. This algorithm
+    sells the maximum numnber of covered calls on SPY that it can, with a
+    bounded strike price to prevent from selling calls that could lose money
+    when assigned
 
     Heres a breakdown:
+        #. | At the beginning of the day, buy as many shares of SPY as we can to
+           | the nearest multiple of 100
 
-        1) At the beginning of the day, buy as many shares of SPY as we can to the nearest multiple of 100
-
-        2) Using SPY shares as collateral, sells 1 DTE covered calls on SPY where the strike is determined by SPY's current value. The algorithm will never sell a call with a strike below it's average cost for the shares it owns. This prevents it from losing money in the case of call assignment.
+        #. | Using SPY shares as collateral, sells 1 DTE covered calls on SPY
+           | where the strike is determined by SPY's current value. The
+           | algorithm will never sell a call with a strike below it's average
+           | cost for the shares it owns. This prevents it from losing money in
+           | the case of call assignment.
     """
-    def __init__(self, *args, bounded=True, **kwargs):
+
+    def __init__(self, *args: Any, bounded: bool = True, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         # Determines whether or not a lower bound should be placed on the strike
         self.bounded = bounded
 
-    def setup(self, *args, start, end, **kwargs):
+    def setup(self, start: datetime, **kwargs: Any) -> ag.Environment:
         """This is the environement setup that is performed before each backtest. Must return an environment object"""
 
         # Creating a basket with the given start parameter
-        env = ag._finance.Environment(start=start)
+        env = ag.Environment()
 
         # Creating SPY stock, attaching it to self (will be referenced frequently)
         # This call to the stock() method both instantiates the stock within the environment, AND returns it
@@ -94,7 +123,7 @@ class ThetaGang(ag.Algorithm):
 
         return env
 
-    def cycle(self, *args, **kwargs):
+    def cycle(self, **kwargs: Any) -> None:
         """The actions to perform at every valuation point"""
 
         # Selling as many covered calls on SPY as we can
@@ -106,7 +135,7 @@ class ThetaGang(ag.Algorithm):
         # Showing the changes at every time step
         self.print(self.stats.change_report())
 
-    def generate_call(self, delta=1):
+    def generate_call(self, delta: float = 1) -> ag.Call:
         """Generates the ideal SPY call to be sold based on current circumstances"""
 
         # Getting our current position in the Asset <STOCK SPY>

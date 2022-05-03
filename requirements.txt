@@ -1,4 +1,5 @@
 p_tqdm
+pyyaml
 tqdm
 bs4
 numpy

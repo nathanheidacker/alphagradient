@@ -7,6 +7,8 @@ Todo:
 """
 
 # Standard imports
+from __future__ import annotations
+
 from datetime import datetime, timedelta
 from abc import ABC, abstractmethod
 from yaml import load, Loader
@@ -22,15 +24,38 @@ import numpy as np
 
 # Local imports
 from ._asset import Asset, types
-from .._data import _datatools
+from .._data import AssetData
 from .. import utils
 
+# Typing
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Union,
+    Iterable,
+    Optional,
+    Type,
+    cast,
+)
+
+from ..utils import DatetimeLike, PyNumber
+
+if TYPE_CHECKING:
+    from ._portfolio import (
+        Portfolio,
+        Position,
+    )
+
+Expiry = Union[DatetimeLike, float]
+"""Acceptable types for an option expiry"""
+
+settings: dict
 with open(Path(__file__).parent.joinpath("standard_asset_settings.yml")) as f:
     settings = load(f, Loader)
 """settings (dict): dictionary of settings for initializing standard asset subclasses"""
 
 
-def _getinfo(base="USD"):
+def _getinfo(base: str = "USD") -> pd.DataFrame:
     """think this function has been replaced by 'currency_info' in datatools, probably needs to be deleted"""
 
     def mapper(code):
@@ -68,50 +93,59 @@ class Currency(Asset, settings=settings["CURRENCY"]):
             base currency instance
 
     """
+
     base = "USD"
     info = pd.read_pickle(Path(__file__).parent.joinpath("currency_info.p"))
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args: Any, **kwargs: Any) -> Currency:
+        modified_args: Iterable
         if not args:
             args = (None,)
         if args[0] is None:
-            args = list(args)
-            args[0] = cls.base
-            args = tuple(args)
-        return super().__new__(cls, *args, **kwargs)
+            modified_args = list(args)
+            modified_args[0] = cls.base
+            args = tuple(modified_args)
+        return cast(Currency, super().__new__(cls, *args, **kwargs))
 
-    def __init__(self, code, **kwargs):
+    def __init__(self, code: str, **kwargs: Any) -> None:
         self.validate_code(code, error=True)
         self.code = code
         self.symbol = self.info[self.info["CODE"] == self.code]["SYMBOL"].item()
         super().__init__(code)
 
-    def __str__(self):
-        return f"<{self.type} {self.symbol}{self.code}: {self.price}>"
+    def __str__(self) -> str:
+        return f"<{self.type} {self.symbol}{self.code}: {self.price}>"  # type: ignore[attr-defined]
 
-    def valuate(self, *args, **kwargs):
+    def valuate(self, *args: Any, **kwargs: Any) -> float:
         """This asset valuates itself by converting its value relative
         to USD to the base's value relative to USD"""
         return self.convert(self.code, self.base)
 
+    def online_data(self, *args: Any, **kwargs: Any) -> Optional[AssetData]:
+        """Online data is available for forex from yfinance
 
-    def online_data(self, *args, **kwargs):
-        """Online data is available for forex from yfinance"""
+        TODO: I dont think this should accept any args
+        """
         if self.is_base:
             return None
         else:
-            data = yf.download(f"{self.code}{self.base}=X", auto_adjust=False, timeout=5, progress=False)
-            return _datatools.AssetData(Currency, data)
+            data = yf.download(
+                f"{self.code}{self.base}=X",
+                auto_adjust=False,
+                timeout=5,
+                progress=False,
+            )
+            return AssetData(Currency, data)
 
     @classmethod
-    def get_symbol(cls, base=None):
+    def get_symbol(cls, base: str = None) -> str:
         """Returns the symbol corresponding to a currency, given that
         currency's international code"""
         base = cls.base if base is None else base
         return cls.info[cls.info["CODE"] == base]["SYMBOL"].item()
 
     @classmethod
-    def validate_code(cls, code, error=False):
+    def validate_code(cls, code: str, error: bool = False) -> bool:
         """Validates a currency code by seeing if it is supported
 
         Args:
@@ -132,7 +166,7 @@ class Currency(Asset, settings=settings["CURRENCY"]):
         return False
 
     @classmethod
-    def code_value(cls, code):
+    def code_value(cls, code: str) -> bool:
         """Returns a currency's value relative to the USD from
         Currency.info
 
@@ -144,7 +178,7 @@ class Currency(Asset, settings=settings["CURRENCY"]):
         """
         return cls.info[cls.info["CODE"] == code]["VALUE"].item()
 
-    def convert(self, target, base=None):
+    def convert(self, target: str, base: str = None) -> float:
         """Converts target currency to base currency
 
         Returns the value of the target currency in units of the base currrency
@@ -154,7 +188,7 @@ class Currency(Asset, settings=settings["CURRENCY"]):
         base = self.code if base is None else base
         return self.code_value(target) / self.code_value(base)
 
-    def rate(self, target, base=None):
+    def rate(self, target: str, base: str = None) -> float:
         """Converts this currency to the target
 
         Returns the value of the base currency in units of the target currency
@@ -164,7 +198,7 @@ class Currency(Asset, settings=settings["CURRENCY"]):
         return 1 / self.convert(target, base)
 
     @property
-    def is_base(self):
+    def is_base(self) -> bool:
         return self.code == self.base
 
 
@@ -177,19 +211,20 @@ class Stock(Asset, settings=settings["STOCK"]):
     Attributes:
         ticker (str): This stock's ticker
     """
-    def valuate(self, *args, **kwargs):
+
+    def valuate(self, *args: Any, **kwargs: Any) -> float:
         return self.value
 
-    def online_data(self):
+    def online_data(self) -> AssetData:
         data = yf.download(self.name, auto_adjust=False, timeout=3, progress=False)
-        return _datatools.AssetData(Stock, data)
+        return AssetData(Stock, data)
 
     @property
-    def ticker(self):
+    def ticker(self) -> str:
         """Alias for name, relevant to stocks"""
         return self.name.upper()
 
-    def call(self, strike, expiry):
+    def call(self, strike: float, expiry: Expiry) -> Call:
         """Creates a call from this stock given the strike and expiry
 
         Args:
@@ -201,7 +236,7 @@ class Stock(Asset, settings=settings["STOCK"]):
         """
         return Call(self, strike, expiry)
 
-    def put(self, strike, expiry):
+    def put(self, strike: float, expiry: Expiry) -> Put:
         """Creates a put from this stock given the strike and expiry
 
         Args:
@@ -229,7 +264,7 @@ class Option(Asset, ABC, settings=settings["OPTION"]):
             reaches maturity, or expires
     """
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args: Any, **kwargs: Any) -> Option:
 
         # Unpacking args and kwargs for underlying, strike, and expiry
         underlying = args[0] if args else kwargs["underlying"]
@@ -246,19 +281,24 @@ class Option(Asset, ABC, settings=settings["OPTION"]):
 
         # Coercion failed
         if not isinstance(expiry, datetime):
-            raise TypeError(f"Invalid input {expiry=} for "
-                            f"initialization of {underlying.name} "
-                            f"{cls.__name__}")
+            raise TypeError(
+                f"Invalid input {expiry=} for "
+                f"initialization of {underlying.name} "
+                f"{cls.__name__}"
+            )
         elif expiry.weekday() > 4:
-            raise ValueError(f"Invalid expiry on {utils.get_weekday(expiry)} for {underlying.name} {cls.__name__}. Valid expiry days are Monday-Friday")
+            raise ValueError(
+                f"Invalid expiry on {utils.get_weekday(expiry)} for {underlying.name} {cls.__name__}. Valid expiry days are Monday-Friday"
+            )
 
         # The name of the contract
         key = f"{underlying.name}{strike}{cls.__name__[0]}{expiry.date().__str__()}"
 
-        return super().__new__(cls, key)
+        return cast(Option, super().__new__(cls, key))
 
-
-    def __init__(self, underlying, strike, expiry, **kwargs):
+    def __init__(
+        self, underlying: Asset, strike: float, expiry: Expiry, **kwargs: Any
+    ) -> None:
 
         # Ensuring that the strike price is always a reasonable value
         # Max of one sig fig
@@ -271,41 +311,47 @@ class Option(Asset, ABC, settings=settings["OPTION"]):
         if isinstance(expiry, str):
             expiry = datetime.fromisoformat(expiry)
         elif isinstance(expiry, int):
-            expiry = underlying.date + timedelta(days=expiry)
+            expiry = underlying.date + timedelta(days=expiry)  # type: ignore[attr-defined]
         elif isinstance(expiry, timedelta):
-            expiry = underlying.date + expiry
+            expiry = underlying.date + expiry  # type: ignore[attr-defined]
 
         # Coercion failed
         if not isinstance(expiry, datetime):
-            raise TypeError(f"Invalid input {expiry=} for "
-                            f"initialization of {underlying.name} "
-                            f"{self.__class__.__name__}")
+            raise TypeError(
+                f"Invalid input {expiry=} for "
+                f"initialization of {underlying.name} "
+                f"{self.__class__.__name__}"
+            )
         else:
-            expiry = utils.set_time(expiry, underlying.market_close)
+            expiry = utils.set_time(expiry, underlying.market_close)  # type: ignore[attr-defined]
 
         # Option-specific Attribute initialization
         self._expiry = expiry
         self.underlying = underlying
         self._mature = False
 
-        super().__init__(self.key, date=underlying.date, base=underlying.base, **kwargs)
+        super().__init__(self.key, date=underlying.date, base=underlying.base, **kwargs)  # type: ignore[attr-defined]
 
     @property
-    def key(self):
-        return f"{self.underlying.name}{self.strike}"\
-               f"{self.__class__.__name__[0]}{self.expiry.date().__str__()}"
+    def key(self) -> str:
+        return (
+            f"{self.underlying.name}{self.strike}"
+            f"{self.__class__.__name__[0]}{self.expiry.date().__str__()}"
+        )
 
     @property
-    def expiry(self):
+    def expiry(self) -> datetime:
         return self._expiry
 
     @staticmethod
-    def cdf(x):
+    def cdf(x) -> float:
         """The standard cumulative distribution functon"""
         return (1.0 + math.erf(x / math.sqrt(2.0))) / 2.0
 
     @staticmethod
-    def _bsbase(spot, strike, rfr, dy, ttm, vol):
+    def _bsbase(
+        spot: float, strike: float, rfr: float, dy: float, ttm: float, vol: float
+    ) -> tuple[float, float]:
         """initialization of black scholes d1 and d2 for option valuation
 
         Returns d1 and d2 components for purposes of black scholes
@@ -322,43 +368,48 @@ class Option(Asset, ABC, settings=settings["OPTION"]):
 
         # Calculation of d1, d2
         ttm = ttm if ttm > 0 else 1
-        d = (vol * math.sqrt(ttm))
-        d1 = (math.log(spot / strike) + ((rfr - dy + ((vol * vol) / 2)) * ttm))
+        d = vol * math.sqrt(ttm)
+        d1 = math.log(spot / strike) + ((rfr - dy + ((vol * vol) / 2)) * ttm)
         d1 /= d
         d2 = d1 - d
 
         # Calculation of d1, d2
-        d1 = (math.log(spot / strike) + ((rfr - dy + ((vol * vol) / 2)) * ttm)) / (vol * math.sqrt(ttm))
+        d1 = (math.log(spot / strike) + ((rfr - dy + ((vol * vol) / 2)) * ttm)) / (
+            vol * math.sqrt(ttm)
+        )
         d2 = d1 - (vol * math.sqrt(ttm))
 
         return d1, d2
 
     @property
-    def expired(self):
-        return self.date >= self.expiry
+    def expired(self) -> bool:
+        return self.date >= self.expiry  # type: ignore[attr-defined]
 
     @staticmethod
-    def exact_days(delta):
-        """Given a timedelta, returns the exact number of days as a float"""
-        spd = 86400
-        if isinstance(delta, timedelta):
-            return delta.total_seconds() / spd
-        raise TypeError(f"{self.__class__.__name__}.exact_days method "
-                        "only accepts timdelta objects. Received "
-                        f"{delta.__class__.__name__} {delta=}")
+    def exact_days(delta: timedelta) -> float:
+        """Given a timedelta, returns the exact number of days as a float
+
+        TODO: THis should probably be a utils function
+        """
+        return delta.total_seconds() / 86400
 
     @property
-    def ttm(self):
-        return max(self.expiry - self.date, timedelta())
+    def ttm(self) -> timedelta:
+        return max(self.expiry - self.date, timedelta())  # type: ignore[attr-defined]
 
     @property
-    def spot(self):
+    def spot(self) -> float:
         return self.underlying.value
 
-    def reset(self):
+    def reset(self) -> None:
         """Resets the option so that it may be valuated again, even if
         past expiry"""
         self._mature = False
+
+    @property
+    def atm(self) -> bool:
+        """Whether or not this call is 'At the money', or within 1% of the spot price"""
+        return abs(self.strike - self.spot) < (self.spot * 0.01)
 
 
 class Call(Option, settings=settings["CALL"]):
@@ -368,7 +419,8 @@ class Call(Option, settings=settings["CALL"]):
         itm (bool): Whether or not this contract is currently in
             the money
     """
-    def valuate(self, date, *args, **kwargs):
+
+    def valuate(self, date: datetime, *args: Any, **kwargs: Any) -> float:
         """Call option valuation"""
 
         # If the option has already reached maturity, the valuation
@@ -392,29 +444,28 @@ class Call(Option, settings=settings["CALL"]):
         else:
             return self.black_scholes(date)
 
-    def black_scholes(self, date):
+    def black_scholes(self, date: datetime) -> float:
         """Returns the black scholes option pricing output for this call"""
         ttm = self.exact_days(self.ttm) / 365
         div_yield = 0.01
 
         d1, d2 = self._bsbase(
-                              spot = self.spot,
-                              strike = self.strike,
-                              rfr = self.rfr,
-                              dy = div_yield,
-                              ttm = ttm,
-                              vol = self.underlying.vol()
-                              )
+            spot=self.spot,
+            strike=self.strike,
+            rfr=self.rfr,  # type: ignore[attr-defined]
+            dy=div_yield,
+            ttm=ttm,
+            vol=self.underlying.vol(),
+        )
 
-        p1 = (self.cdf(d1) * self.spot * math.pow(math.e, -1 * (div_yield * ttm)))
-        p2 = (self.cdf(d2) * self.strike * math.pow(math.e, -1 * (self.rfr * ttm)))
+        p1 = self.cdf(d1) * self.spot * math.pow(math.e, -1 * (div_yield * ttm))
+        p2 = self.cdf(d2) * self.strike * math.pow(math.e, -1 * (self.rfr * ttm))  # type: ignore[attr-defined]
         call_premium = p1 - p2
 
         # Each contract is for 100 shares
         return call_premium * 100
 
-
-    def expire(self, portfolio, position):
+    def expire(self, portfolio: Portfolio, position: Position[Call]) -> None:
         """Expiration behavior for call option positions"""
 
         # Expired call positions are only assigned if they are ITM
@@ -428,7 +479,7 @@ class Call(Option, settings=settings["CALL"]):
         quantity = position.quantity * 100
         cost = quantity * position.asset.strike
         underlying_pos = portfolio._positions.get(key, None)
-        call_pos = position.__class__(underlying, quantity)
+        call_pos = position.__class__(underlying, quantity)  # type: ignore[arg-type]
         call_pos.cost = cost
 
         # Shorts are automatically assigned if itm
@@ -459,8 +510,15 @@ class Call(Option, settings=settings["CALL"]):
                 portfolio.cash += position.value
 
     @property
-    def itm(self):
-        return self.strike < self.underlying.value
+    def itm(self) -> bool:
+        """Whether or not this call is 'in the money'"""
+        return self.strike < self.spot
+
+    @property
+    def otm(self) -> bool:
+        """Whether or not this call is 'out of the money'"""
+        return not self.itm
+
 
 class Put(Option, settings=settings["OPTION"]):
     """An Asset representing a put option contract
@@ -469,7 +527,8 @@ class Put(Option, settings=settings["OPTION"]):
         itm (bool): Whether or not this contract is currently in
             the money
     """
-    def valuate(self, date, *args, **kwargs):
+
+    def valuate(self, date: datetime, *args: Any, **kwargs: Any) -> float:
         """Put option valuation"""
 
         # If the option has already reached maturity, the valuation
@@ -493,29 +552,28 @@ class Put(Option, settings=settings["OPTION"]):
         else:
             return self.black_scholes(date)
 
-    def black_scholes(self, date):
+    def black_scholes(self, date: datetime) -> float:
         """Returns the black scholes option pricing output for this put"""
         ttm = self.exact_days(self.ttm) / 365
         div_yield = 0.01
 
         d1, d2 = self._bsbase(
-                              spot = self.spot,
-                              strike = self.strike,
-                              rfr = self.rfr,
-                              dy = div_yield,
-                              ttm = ttm,
-                              vol = self.underlying.vol()
-                              )
+            spot=self.spot,
+            strike=self.strike,
+            rfr=self.rfr,  # type: ignore[attr-defined]
+            dy=div_yield,
+            ttm=ttm,
+            vol=self.underlying.vol(),
+        )
 
-        p1 = (self.cdf(-1 * d2) * self.strike * math.pow(math.e, -1 * (self.rfr * ttm)))
-        p2 = (self.cdf(-1 * d1) * self.spot * math.pow(math.e, -1 * (div_yield * ttm)))
+        p1 = self.cdf(-1 * d2) * self.strike * math.pow(math.e, -1 * (self.rfr * ttm))  # type: ignore[attr-defined]
+        p2 = self.cdf(-1 * d1) * self.spot * math.pow(math.e, -1 * (div_yield * ttm))
         put_premium = p1 - p2
 
         # Each contract is for 100 shares
         return put_premium * 100
 
-
-    def expire(self, portfolio, position):
+    def expire(self, portfolio: Portfolio, position: Position[Put]) -> None:
         """Expiration behavior for put option positions"""
 
         # Expired put positions are only assigned if they are ITM
@@ -529,7 +587,7 @@ class Put(Option, settings=settings["OPTION"]):
         quantity = position.quantity * 100
         cost = quantity * position.asset.strike
         underlying_pos = portfolio._positions.get(key, None)
-        put_pos = position.__class__(underlying, quantity)
+        put_pos = position.__class__(underlying, quantity)  # type: ignore[arg-type]
         put_pos.cost = cost
 
         # Shorts are automatically assigned if itm
@@ -556,10 +614,14 @@ class Put(Option, settings=settings["OPTION"]):
             else:
                 portfolio.cash += position.value
 
+    @property
+    def itm(self) -> bool:
+        return self.strike > self.underlying.value
 
     @property
-    def itm(self):
-        return self.strike > self.underlying.value
+    def otm(self) -> bool:
+        return not self.itm
+
 
 # BROWNIAN STOCK IMPLEMENTATION BELOW
 
