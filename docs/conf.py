@@ -33,24 +33,25 @@ release = "v0.0.2"
 # ones.
 import jinja2
 import numpydoc.numpydoc
+
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx_autodoc_typehints",
-    #"sphinx.ext.autosummary",
+    # "sphinx.ext.autosummary",
     #'numpydoc',
 ]
 
 # Autodoc Settings
 autodoc_class_signature = "mixed"
 autodoc_member_order = "bysource"
-'''
+"""
 autodoc_type_aliases = {
     "DatetimeLike": "alphagradient.utils.DatetimeLike",
     "TimeLike": "alphagradient.utils.TimeLike",
     "DateOrTime": "alphagradient.utils.DateOrTime"
 }
-'''
+"""
 
 # Autodoc Typehint Settings
 typehints_defaults = "braces"
@@ -86,12 +87,9 @@ html_css_files = [
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-html_logo = "_static/aglogo.png"
+html_logo = "_static/aglogowtext3.png"
 
-html_context = {
-   "pygment_light_style": "monokai",
-   "pygment_dark_style": "monokai"
-}
+html_context = {"pygment_light_style": "monokai", "pygment_dark_style": "monokai"}
 
 pygments_style = "monokai"
 
@@ -107,5 +105,11 @@ html_theme_options = {
             # The type of image to be used
             "type": "fontawesome",
         }
-   ]
+    ]
 }
+
+
+def setup(app):
+    from pygments.lexers.python import PythonConsoleLexer
+
+    app.add_lexer("pycon", PythonConsoleLexer)

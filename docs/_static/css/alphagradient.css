@@ -16,7 +16,9 @@
     --ag-secondary-700: 215, 0, 96;
     --ag-secondary-600: 237, 0, 101;
     --ag-secondary-500: 255, 2, 103;
-    --ag-secondary-400: 255, 59, 127;
+    --ag-secondary-401: 255, 59, 127;
+    --ag-secondary-402: 255, 38, 125;
+    --ag-secondary-400: 255, 56, 136;
     --ag-secondary-300: 255, 98, 151;
     --ag-secondary-200: 255, 144, 181;
     --ag-secondary-100: 255, 188, 211;
@@ -65,9 +67,9 @@
 
     /* --- BODY COLORS --- */
     --pst-color-primary: var(--ag-primary-200);
-    --pst-color-text-base: var(--ag-text-600);
+    --pst-color-text-base: var(--ag-text-800);
     --pst-color-inline-code: var(--ag-secondary-400);
-    --pst-color-paragraph: var(--ag-text-400);
+    --pst-color-paragraph: var(--ag-text-600);
     --pst-color-preformatted-background: var(--ag-bg-code);
 
     /* --- LINK COLORS --- */
@@ -85,7 +87,7 @@
     --pst-color-navbar-link-active: var(--ag-primary-200);
 
     /* --- HEADER COLORS --- */
-    --pst-color-headerlink: var(--ag-primary-200)
+    --pst-color-headerlink: var(--ag-primary-300)
 
     /* --- TOC COLORS --- */
     --pst-color-toc-link: var(--ag-primary-100);
@@ -125,4 +127,8 @@ span.highlighted {
 
 #navbar-icon-links i.fa-github-square:before {
     color: rgba(var(--ag-primary-200), 1) !important;
+}
+
+a:hover {
+    text-decoration: none !important;
 }

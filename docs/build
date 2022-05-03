@@ -1,4 +1,4 @@
-sphinx-apidoc -o ./source ../alphagradient --force
+sphinx-apidoc -o . ../alphagradient --force
 sphinx-autogen -o generated *.rst
 make clean
 make html
