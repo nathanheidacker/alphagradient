@@ -1,4 +1,4 @@
 include alphagradient/_finance/currency_info.p
 include alphagradient/_finance/exchange_info.p
-include alphagradient/_finance/standard_asset_settings.json
+include alphagradient/_finance/standard_asset_settings.yml
 include alphagradient/_data/curreny_info_raw.p

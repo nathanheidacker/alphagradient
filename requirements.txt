@@ -6,3 +6,4 @@ numpy
 pandas
 yfinance
 aenum
+typing_extensions
