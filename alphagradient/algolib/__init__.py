@@ -5,9 +5,6 @@ quality financial algorithms to be used freely.
 Todo:
     * NA
 """
-from ._lib import (
-    IndexHold,
-    ThetaGang,
-)
+from ._lib import IndexHold, ThetaGang, TemplateAlgo
 
-__all__ = ["IndexHold", "ThetaGang"]
+__all__ = ["IndexHold", "ThetaGang", "TemplateAlgo"]

@@ -59,6 +59,34 @@ _currency_info: pd.DataFrame = pd.read_pickle(_currency_info_path)
 """Currency information stored locally"""
 
 
+class Instances(WeakDict):
+    """A weakly referential dictionary of all instances of the
+    subclass to which the enum member corresponds"""
+
+    def __init__(self, name: str) -> None:
+        self.name = name
+        super().__init__()
+
+    def __getattr__(self, attr: str) -> Any:
+        try:
+            return self[attr.upper()]
+        except KeyError:
+            raise AttributeError(f"Asset type '{self.name}' has no instance '{attr}'")
+
+    def __str__(self) -> str:
+        return str(dict(self))
+
+    @property
+    def base(self) -> Currency:
+        """The monetary basis of this asset subclass,
+        represented by a currency code. Only used by Currency
+        subclass"""
+        if self and getattr(list(self.values())[0], "base", False):
+            return [c for c in self.values() if c.is_base][0]
+        else:
+            raise AttributeError(f"Asset type '{self.name}' has no instance 'base'")
+
+
 @unique
 class types(Enum):
     """
@@ -104,7 +132,7 @@ class types(Enum):
         """Determines how new enum members are generated when new asset
         subclasses are created"""
 
-        class Instances(WeakDict):
+        class _Instances(WeakDict):
             """A weakly referential dictionary of all instances of the
             subclass to which the enum member corresponds"""
 
@@ -129,7 +157,7 @@ class types(Enum):
                 else:
                     raise AttributeError(f"Asset type '{self}' has no instance 'base'")
 
-        return (name, Instances())
+        return (name, Instances(name))
 
     # Non-asset types that need to be instantiated manually
     undefined = auto()  # Used when the subclass is hidden
@@ -321,18 +349,6 @@ class Asset(ABC):
     of the asset at that datetime. For Assets that intend to require data for
     valuation, this method can simply return the current value (self.value)
 
-    Example Subclass:
-
-        .. code:: python
-
-            import alphagradient as ag
-
-            # Creating a class which will require a data input
-            class MyAsset(ag.Asset, require_data=True):
-
-                def valuate(self, date):
-                    return self.value
-
     Parameters:
         name:
             The name of the asset. This asset will be accessible through the
@@ -363,58 +379,39 @@ class Asset(ABC):
             global default currency (defaults to USD), use this parameter to
             specify what currency the data is represented in.
 
-    Attributes:
-        name (str):
-            Name of the asset
+    Examples:
 
-        base (str):
-            The base currency of the asset, represented as a currency code.
+        .. code:: python
 
-        data (pd.DataFrame | NoneType):
-            The historical data for this asset, which will determine its value
-            over time when valuated.
+            import alphagradient as ag
+
+            # Creating a class which will require a data input
+            class MyAsset(ag.Asset, require_data=True):
+
+                def valuate(self, date):
+                    return self.value
     """
 
-    open_value: str = "OPEN"
-    """The name of the column to associate with market open prices for this asset type"""
-
-    close_value: str = "CLOSE"
-    """The name of the column to associate with market close prices for this asset type"""
-
-    required: list[str] = [close_value]
-    """A list of required columns for any data input to this asset type"""
-
-    optional: list[str] = [open_value]
-    """A list of optional columns for any data input to this asset type"""
-
-    market_open: time = time.fromisoformat("00:00:00")
-    """The market opening time for this asset type"""
-
-    market_close: time = time.fromisoformat("00:00:00")
-    """The market closing time for this asset type"""
-
-    unit: str = "unit"
-    """How to refer to a single unit of this asset type"""
-
-    units: str = "units"
-    """How to refer to multiple units of this asset type"""
-
-    data_protocol: DataProtocol
-    """The data requirement protocol that this asset type operates under"""
-
-    date: datetime
-    """The date of this asset's most recent valuation, which to which its current value corresponds"""
-
-    benchmark: Asset
-    """The benchmark asset to use in calculations of alpha, beta, etc."""
-
-    rfr: float
-    """The risk free rate used for this asset type"""
-
     _args: dict[str, Any]
+    _base: str
+    _benchmark: Asset
+    _close_value: str = "CLOSE"
+    _data: Optional[AssetData]
+    _data_protocol: DataProtocol = DataProtocol.FLEXIBLE
+    _date: datetime
     _global_base: str
     _global_res: timedelta
     _global_persistent_path: Path
+    _market_close: time = time.fromisoformat("00:00:00")
+    _market_open: time = time.fromisoformat("00:00:00")
+    _name: str
+    _open_value: str = "OPEN"
+    _optional: list[str] = [_open_value]
+    _required: list[str] = [_close_value]
+    _rfr: float
+    _value: float
+    _unit: str = "unit"
+    _units: str = "units"
 
     def __init_subclass__(
         cls,
@@ -442,13 +439,13 @@ class Asset(ABC):
         # Asset subclass (class-level) attribute initialization
         # These will all be coerced to appropriate types later in this function,
         # so this initial assignment is for convenience. MyPy doesnt like it though.
-        cls.required = required  # type: ignore[assignment]
-        cls.optional = optional  # type: ignore[assignment]
-        cls.open_value = open_value  # type: ignore[assignment]
-        cls.close_value = close_value  # type: ignore[assignment]
-        cls.market_open = market_open  # type: ignore[assignment]
-        cls.market_close = market_close  # type: ignore[assignment]
-        cls.unit, cls.units = units if units is not None else (None, None)  # type: ignore[assignment]
+        cls._required = required  # type: ignore[assignment]
+        cls._optional = optional  # type: ignore[assignment]
+        cls._open_value = open_value  # type: ignore[assignment]
+        cls._close_value = close_value  # type: ignore[assignment]
+        cls._market_open = market_open  # type: ignore[assignment]
+        cls._market_close = market_close  # type: ignore[assignment]
+        cls._unit, cls._units = units if units is not None else (None, None)  # type: ignore[assignment]
 
         # Ensuring safe access if nothing is passed
         settings = {} if settings is None else settings
@@ -467,9 +464,9 @@ class Asset(ABC):
                 "market_open",
                 "market_close",
             ]:
-                if not getattr(cls, attr_name, False):
+                if not getattr(cls, "_" + attr_name, False):
                     try:
-                        setattr(cls, attr_name, settings[attr_name])
+                        setattr(cls, "_" + attr_name, settings[attr_name])
                     except KeyError as e:
                         pass
 
@@ -480,19 +477,19 @@ class Asset(ABC):
                 prohibit_data = settings.get("prohibit_data", False)
 
             if settings.get("units", False):
-                cls.unit, cls.units = settings["units"]
+                cls._unit, cls._units = settings["units"]
 
         # Setting the data protocol
         # MyPy
         assert isinstance(require_data, bool) and isinstance(prohibit_data, bool)
-        cls.data_protocol = DataProtocol._get(require_data, prohibit_data)
+        cls._data_protocol = DataProtocol._get(require_data, prohibit_data)
 
         # Setting asset-level market close and open
         for attr_name in ("market_open", "market_close"):
-            attr = getattr(cls, attr_name, None)
+            attr = getattr(cls, "_" + attr_name, None)
             if attr is not None:
                 try:
-                    setattr(cls, attr_name, utils.get_time(attr))
+                    setattr(cls, "_" + attr_name, utils.get_time(attr))
                 except ValueError:
                     raise ValueError(
                         f"Invalid input for {attr_name} during initialization of {cls.__name__} asset subclass. Unable to convert {attr} to a time object."
@@ -533,7 +530,6 @@ class Asset(ABC):
     def __init__(
         self,
         name: str,
-        date: Optional[datetime] = None,
         data: Optional[ValidData] = None,
         columns: Optional[list[str]] = None,
         force: bool = False,
@@ -543,7 +539,7 @@ class Asset(ABC):
         # Standard style guideline for all asset names. Ensures that
         # they are accessible via attribute access through the global env
         # eg. ag.stock.stocknamehere
-        self.initialized = False
+        self._initialized = False
         name = str(name).upper().replace(" ", "_")
 
         # Checks if arguments have changed materially from previous
@@ -574,16 +570,16 @@ class Asset(ABC):
         self.type.instances[name] = self  # type: ignore[attr-defined]
 
         # Attribute Initialization
-        self.name: str = name
+        self._name = name
         valid_bases: list[str] = list(_currency_info["CODE"])
-        self.base: str = base if base in valid_bases else self._global_base
+        self._base: str = base if base in valid_bases else self._global_base
         self._value: float = data if isinstance(data, (int, float)) else 0
         self.close: bool = True
-        self.data: Optional[pd.DataFrame] = None
+        self._data = None
 
         # Data entry is prohibited, data must always be None
-        if self.data_protocol is DataProtocol.PROHIBITED:
-            self.data = None
+        if self.protocol is DataProtocol.PROHIBITED:
+            self._data = None
 
         # Data entry is not prohibited, initialize dataset
         else:
@@ -600,7 +596,7 @@ class Asset(ABC):
                         pass
 
                 # Third attempt to get data from nothing...?
-                if data is None and self.data_protocol is DataProtocol.REQUIRED:
+                if data is None and self.protocol is DataProtocol.REQUIRED:
 
                     # When we need to force the instantiation of an
                     # asset that requires data, but no data is available
@@ -617,7 +613,8 @@ class Asset(ABC):
                             "instantiate with force=True."
                         )
 
-                self.data = data
+                assert isinstance(data, (AssetData, type(None)))
+                self._data = data
 
             # Explicit reinstancing from online data
             elif isinstance(data, str) and data.lower() == "online":
@@ -634,14 +631,14 @@ class Asset(ABC):
                         f'"{self.name}", initialization failed'
                     )
 
-                self.data = data
+                self._data = data
 
             # Data input received, make a new asset dataset
             else:
-                self.data = AssetData(self.__class__, data, columns)
+                self._data = AssetData(self.__class__, data, columns)
 
             # Data verification when required
-            if self.data_protocol is DataProtocol.REQUIRED and not self.data:
+            if self.protocol is DataProtocol.REQUIRED and not self.data:
                 raise ValueError(
                     f"{self.name} {self.type} could not "  # type: ignore[attr-defined]
                     "be initialized without data. If this "
@@ -653,7 +650,7 @@ class Asset(ABC):
 
         # Ensures that the initial price is set properly
         self._valuate()
-        self.initialized = True
+        self._initialized = True
         self._save()
 
     def __str__(self) -> str:
@@ -681,6 +678,47 @@ class Asset(ABC):
         raise AssetDuplicationError(self)
 
     @property
+    def base(self) -> str:
+        """
+        The asset's base currency
+
+        Represented as an international currency code; a string of uppercase
+        alphabetic characters of length 2-5.
+        """
+        return self._base
+
+    @property
+    def benchmark(self) -> Asset:
+        """
+        The benchmark asset to use in calculations of alpha, beta, etc
+        """
+        return self._benchmark
+
+    @property
+    def close_value(self) -> str:
+        """The name of the column to associate with market close prices for this asset type"""
+        return self._close_value
+
+    @property
+    def data(self) -> Optional[AssetData]:
+        """
+        The historical price data for the this asset
+
+        Either None or an instance of AssetData. Depending on their ``protocol``,
+        Assets may either require the presence of historical data (eg. Stocks),
+        forbid it (eg. BrownianStocks), or operate regardless of circumstance. AssetData
+        objects always evaluate as ``True``, so it is safe to evaluate ``self.data``
+        as a boolean, unlike a pandas DataFrame.
+        """
+        return self._data
+
+    @property
+    def date(self) -> datetime:
+        """The date of this asset's most recent valuation, which to which its
+        current value corresponds"""
+        return self._date
+
+    @property
     def expired(self) -> bool:
         """
         Whether or not this asset is expired
@@ -704,6 +742,49 @@ class Asset(ABC):
         return f"{self.type}_{self.name}"  # type: ignore[attr-defined]
 
     @property
+    def market_close(self) -> time:
+        """The market closing time for this asset type"""
+        return self._market_close
+
+    @property
+    def market_open(self) -> time:
+        """The market opening time for this asset type"""
+        return self._market_open
+
+    @property
+    def name(self) -> str:
+        """
+        The name of this asset
+
+        A string of uppercase alphanumeric characters that denotes the name of this
+        asset. Names are unique to assets by type; no two assets of the same type
+        may share the same name (but assets of different types may be named
+        identically). Used to access this asset in the global environment, as well
+        as encode its key for storage in positions.
+
+        Examples:
+
+            .. code:: pycon
+
+                >>> spy = ag.Stock(name="SPY")
+                >>> spy.name
+                SPY
+
+                >>> spy
+                <STOCK SPY: $429.06 /share>
+
+                >>> ag.stock.spy
+                <STOCK SPY: $429.06 /share>
+
+                >>> spy is ag.stock.spy
+                True
+
+                >>> spy.key
+                STOCK_SPY
+        """
+        return self._name
+
+    @property
     def next(self) -> datetime:
         """The next available datetime"""
         if self.data:
@@ -720,6 +801,16 @@ class Asset(ABC):
             if self.market_close != self.market_open
             else True
         )
+
+    @property
+    def open_value(self) -> str:
+        """The name of the column to associate with market open prices for this asset type"""
+        return self._open_value
+
+    @property
+    def optional(self) -> list[str]:
+        """A list of optional columns for any data input to this asset type"""
+        return self._optional
 
     @property
     def price(self) -> str:
@@ -741,6 +832,21 @@ class Asset(ABC):
         return f"{symbol}{price}"
 
     @property
+    def protocol(self) -> DataProtocol:
+        """The data requirement protocol that this asset type operates under"""
+        return self._data_protocol
+
+    @property
+    def required(self) -> list[str]:
+        """A list of required columns for any data input to this asset type"""
+        return self._required
+
+    @property
+    def rfr(self) -> float:
+        """The risk free rate used for this asset type"""
+        return self._rfr
+
+    @property
     def value(self) -> float:
         """This asset's current value"""
         return self._value
@@ -757,6 +863,16 @@ class Asset(ABC):
                 f"{value.__class__.__name__} "
                 f"{value}. Value must be a numnber"
             )
+
+    @property
+    def unit(self) -> str:
+        """How to refer to a single unit of this asset type"""
+        return self._unit
+
+    @property
+    def units(self) -> str:
+        """How to refer to multiple units of this asset type"""
+        return self._units
 
     def _data_valuate(self, date: Optional[DatetimeLike] = None) -> float:
         """
@@ -780,7 +896,7 @@ class Asset(ABC):
         if not math.isnan(value):
             return value
         else:
-            if not self.initialized:
+            if not self._initialized:
                 data = self.data.asof(self.data.index[0])
                 return data[self.close_value]
             else:
@@ -931,16 +1047,16 @@ class Asset(ABC):
         Returns:
             Class-level settings for this asset type
         """
-        require, prohibit = DataProtocol._decompose(cls.data_protocol)
+        require, prohibit = DataProtocol._decompose(cls._data_protocol)
 
         settings = {
             "hidden": cls.type is types.undefined,  # type: ignore[attr-defined]
             "require_data": require,
             "prohibit_data": prohibit,
-            "required": cls.required,
-            "optional": cls.optional,
-            "close_value": cls.close_value,
-            "open_value": cls.open_value,
+            "required": cls._required,
+            "optional": cls._optional,
+            "close_value": cls._close_value,
+            "open_value": cls._open_value,
         }
 
         return list(settings.values()) if unpack else settings

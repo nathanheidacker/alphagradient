@@ -44,7 +44,45 @@ if TYPE_CHECKING:
     from ._collections import Environment
 
 
-class View:
+class PositionView:
+    """
+    A 'view' of a position that allows for storage of necessary attributes for
+    calculation of statistical performance measures, but without holding
+    references to objects that would otherwise be garbage collected.
+
+    Parameters:
+        position:
+            The position to creata a 'view' of
+
+    Attributes:
+        asset (str):
+            The key of the underlying asset for this position
+
+        quantity (float):
+            The quantity of the underlying asset held by this position
+
+        short (bool):
+            Whether or not this position was short
+
+        cost (float):
+            This position's total cost (at the time that the view was created)
+
+        value (float):
+            This position's total value (at the time that the view as created)
+
+        symbol (str):
+            The character that corresponds with this position's base currency
+
+        cash (bool):
+            Whether or not this position is a Cash position (a position in a currency)
+
+        unit (str):
+            How to refer to a single unit of the underlying asset of this position
+
+        units (str):
+            How to refer to multiple units of the underlying asset of this position
+    """
+
     def __init__(self, position: Position) -> None:
         self.asset = position.asset.key
         self.quantity = position.quantity
@@ -55,7 +93,6 @@ class View:
         self.cash = isinstance(position, Cash)
         self.unit = position.asset.unit
         self.units = position.asset.units
-        # self.beta = position.asset.beta()
 
     def __str__(self) -> str:
         if self.cash:
@@ -72,7 +109,7 @@ class View:
         return self.__str__()
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, View):
+        if not isinstance(other, PositionView):
             return NotImplemented
         return self.key == other.key
 
@@ -84,43 +121,80 @@ class View:
 
     @property
     def key(self) -> str:
+        """This position's 'key', which is used to map this position to itself
+        in a portfolio's .positions attribute"""
         short = "SHORT" if self.short else "LONG"
         return f"{self.asset}_{short}"
 
-    def empty(self) -> View:
+    def empty(self) -> PositionView:
+        """
+        Creates an 'empty' position from this position
+
+        Used when creating position difference reports
+        """
         empty = deepcopy(self)
-        empty.quantity, empty.cost = 0, 0
+        empty.quantity, empty.cost, empty.value = 0, 0, 0
         return empty
 
 
 class Position(Generic[Asset_T]):
-    """Object representing a position in a financial asset
+    """
+    Object representing a position in a financial asset
 
     An object representing a financial stake in some underlying asset,
     to be used in portfolios to track holdings. Automatically updates
     value using the value of the underlying asset, and keeps track of
     average cost to enter the position.
 
-    Attributes:
-        asset (Asset): the underyling asset
-        quantity (Number): the quantity of the asset represented by the
-            position
-        short (bool): True if short, False if long
-        cost (Number): The total cost to enter this position
-        value (Number): The current market value of this position
-        average_cost (Number): The cost of this position per unit
-        key (str): A key used for indexing this position in dicts
-        symbol (str): A symbol corresponding to the currency of the
-            asset underlying this position
-        price (str): A rounded version of value with the symbol
-            attached, used for printing purposes
-        expired (bool): Whether or not this position is expired
-        total_return (Number): The total return of this position
-            relative to its cost, represented in the base currency
-            of the underlying asset
-        percent_return (Number): The total return as a percentage
-            of the cost
+    Parameters:
+        asset:
+            The asset underyling this position
 
+        quantity:
+            The quantity of the underlying asset owned or owed by this position
+
+        short:
+            Whether or not the quantity of the position is owned or owed
+
+    Attributes:
+        asset (Asset):
+            The underyling asset
+
+        quantity (float):
+            The quantity of the asset represented by the position
+
+        short (bool):
+            True if short, False if long
+
+        cost (float):
+            The total cost to enter this position
+
+        value (float):
+            The current market value of this position
+
+        average_cost (float):
+            The cost of this position per unit
+
+        key (str):
+            A key used for indexing this position in dicts
+
+        symbol (str):
+            A symbol corresponding to the currency of the asset underlying this
+            position
+
+        price (str):
+            A rounded version of value with the symbol attached, used for
+            printing purposes
+
+        expired (bool):
+            Whether or not this position is expired
+
+        total_return (float):
+            The total return of this position relative to its cost, represented
+            in the base currency of the underlying asset
+
+        percent_return (float):
+            The total return as a percentage of the cost
     """
 
     def __init__(self, asset: Asset_T, quantity: float, short: bool = False) -> None:
@@ -201,6 +275,7 @@ class Position(Generic[Asset_T]):
 
     @property
     def quantity(self) -> float:
+        """The quantity of the underlying asset"""
         return self._quantity
 
     @quantity.setter
@@ -209,19 +284,23 @@ class Position(Generic[Asset_T]):
 
     @property
     def key(self) -> str:
+        """The key used to encode this position within a Portfolio"""
         short = "SHORT" if self.short else "LONG"
         return f"{self.asset.key}_{short}"
 
     @property
     def symbol(self) -> str:
+        """The symbol corresponding to the base currency of the position"""
         return types.currency.instances[self.asset.base].symbol
 
     @property
     def value(self) -> float:
+        """The position's total market value as of the current date"""
         return self.asset.value * self.quantity * (-1 if self.short else 1)
 
     @property
     def price(self) -> str:
+        """The position's price represented in the base currency, as a string"""
         price = abs(self.value)
 
         if price != 0:
@@ -236,41 +315,44 @@ class Position(Generic[Asset_T]):
 
     @property
     def average_cost(self) -> float:
+        """The average cost per unit for this position"""
         return round(self.cost / self.quantity, 2)
 
     @property
     def expired(self) -> bool:
+        """Whether or not the position is expired"""
         return self.quantity <= 0 or self.asset.expired
 
     @property
     def total_return(self) -> float:
+        """The total return of the position represented in its base currency"""
         return self.value - self.cost
 
     @property
     def percent_return(self) -> float:
+        """The total return as a proportion of the cost"""
         return (self.total_return / self.cost) * 100 * (-1 if self.short else 1)
 
     def expire(self, portfolio: Portfolio) -> None:
         """Expires this position within the input portfolio
 
-        Args:
-            portfolio (Portfolio): The portfolio owning this pos
-
-        Returns:
-            None (NoneType): Modifies this position/portfolio inplace
+        Parameters:
+            portfolio:
+                The portfolio owning this pos
         """
         self.asset.expire(portfolio, self)
 
-    def view(self) -> View:
-        """A memory efficient copy of the position
+    def view(self) -> PositionView:
+        """
+        A memory efficient copy of the position
 
         Returns a 'view' of the position in its current state for use
         in portfolio histories.
 
         Returns:
-            view: memory efficient copy of the position
+            Memory efficient copy of the position
         """
-        return View(self)
+        return PositionView(self)
 
     def _history(self) -> pd.DataFrame:
         """A pandas DataFrame of this position's value history
@@ -280,7 +362,7 @@ class Position(Generic[Asset_T]):
         changes in the position or the underlying asset occur
 
         Returns:
-            history (pd.DataFrame): position history
+            A position history
         """
         history = pd.DataFrame(
             [[self.value, self.cost]],
@@ -291,21 +373,34 @@ class Position(Generic[Asset_T]):
         return history
 
     def update_history(self) -> None:
-        """updates the positions history to reflect changes
+        """
+        Updates the positions history to reflect changes
 
         Updates this positions history whenever changes in the position
         occur, either in the size of the position itself or the price
         of the underlying asset
-
-        Returns:
-            updates the history inplace, no return value
         """
         self.history.loc[self.asset.date] = [self.value, self.cost]
 
 
 class Cash(Position[Currency]):
-    """A special type of position representing some quantity of a
-    currency"""
+    """
+    A special type of position representing some quantity of a currency
+
+    A special type of position whose underlying asset is some currency, which
+    defaults to the environment's base currency when not specified otherwise.
+
+    Parameters:
+        quantity:
+            The quantity of the currency the position holds
+
+        code:
+            The currency code of the currency this Cash position represents
+
+    Attributes:
+        code (str):
+            The currency code of the currency underlying this position
+    """
 
     def __init__(self, quantity: float, code: Optional[str] = None) -> None:
         code = Currency.base if code is None else code
@@ -370,30 +465,95 @@ class Cash(Position[Currency]):
         new.history = self.history
         return new
 
+    @property
+    def expired(self) -> Literal[False]:
+        """Always returns false, Cash positions never expire"""
+        return False
+
+    @property
+    def code(self) -> str:
+        """The currency code of this Cash Position's currency"""
+        return self.asset.code
+
     @staticmethod
     def from_position(position: Position) -> Cash:
-        """Returns a cash object representing the value of the asset passed"""
+        """
+        Returns a cash object representing the value of the asset passed
+
+        Parameters:
+            position:
+                The position to transform into a cash object
+
+        Returns:
+            The transformed cash object
+        """
         return Cash(position.value, position.asset.base)
 
     def from_number(self, other: float) -> Cash:
+        """
+        Given a number value, returns a cash object that shares the same
+        underlying currecy as this cash object, whose quantity is the given
+        number
+
+        Parameters:
+            other:
+                The quantity of the cash object to instantiate
+
+        Returns:
+            The cash object
+        """
         return Cash(other, self.asset.code)
 
     def from_cash(self, other: Cash) -> Cash:
+        """
+        Given a cash object, returns a cash object of equivalent value (based
+        on current exchange rates) represented in the currency of this cash
+        object
+
+        Parameters:
+            other:
+                The cash object to convert to units of this cash object's currency
+
+        Returns:
+            The converted cash object
+        """
         quantity = self.asset.rate(other.asset.code) * other.quantity
         return Cash(quantity, self.asset.code)
 
-    def convert(self, code: str, inplace: bool = False) -> Optional[Cash]:
-        """converts this cash asset to another currency"""
+    def convert(self, code: str, inplace: bool = False) -> Cash:
+        """
+        Converts this cash asset to another currency
+
+        Parameters:
+            code:
+                The currency code of the currency to convert to
+
+            inplace:
+                Whether or not to conver this cash position inplace
+
+        Returns:
+            The converted cash object, which is self if inplace=True
+        """
         quantity = self.asset.rate(code) * self.quantity
         new = Cash(quantity, code)
 
-        if not inplace:
-            return new
-
-        self = new
-        return None
+        if inplace:
+            self = new
+        return new
 
     def to_cash(self, obj: Union[Cash, Position, float]) -> Cash:
+        """
+        Given an ambiguous object which could be interpreted as a Cash position,
+        converts that object to a Cash position in the context of the calling
+        cash position and returns it.
+
+        Parameters:
+            obj:
+                The object to be converted to a cash position
+
+        Returns:
+            The converted cash position
+        """
         if isinstance(obj, (int, float)):
             return self.from_number(obj)
         elif isinstance(obj, Cash):
@@ -404,36 +564,50 @@ class Cash(Position[Currency]):
             f"obj type {obj.__class__.__name__} can not be converted to Cash"
         )
 
-    @property
-    def expired(self) -> Literal[False]:
-        """Always returns false, Cash positions never expire"""
-        return False
-
-    @property
-    def code(self) -> str:
-        return self.asset.code
-
 
 class Portfolio:
-    """An object representing a portfolio of financial assets
+    """
+    An object representing a portfolio of financial assets
 
     AlphaGradient portfolios are designed to interact natively with
     AlphaGradient assets, and provide all of the functionality one
     would expect with a normal financial portfolio.
 
+    Parameters:
+        initial:
+            The initial quantity of the base currency held by the Portfolio
+
+        name:
+            The name of this portfolio, used for indexing within environments
+
+        base:
+            The base currency of this portfolio
+
     Attributes:
-        cash (float): How much of the base currency the Portfolio holds
-        date (datetime): the last time this position was altered or
-            valuated
-        positions (dict): A dictionary of all of this Portfolio's
-            current positions
-        longs (dict): A dictionary of all long positions
-        shorts (dict): A dictionary of all short positions
-        base (str): A currency code representing this portfolio's base
-            currency
-        value (Number): The total value of this portfolio, represented
-            in the portfolio's base currency
-        liquid (Number): The sum of all of the portfolio's liquid assets
+        cash (float):
+            How much of the base currency the Portfolio holds
+
+        date (datetime):
+            The last time this position was altered or valuated
+
+        positions (dict):
+            A dictionary of all of this Portfolio's current positions
+
+        longs (dict):
+            A dictionary of all long positions
+
+        shorts (dict):
+            A dictionary of all short positions
+
+        base (str):
+            A currency code representing this portfolio's base currency
+
+        value (float):
+            The total value of this portfolio, represented in the portfolio's
+            base currency
+
+        liquid (float):
+            The sum of all of the portfolio's liquid assets
     """
 
     def __init__(
@@ -471,7 +645,18 @@ class Portfolio:
     def _generate_name(
         self, last: list[int] = [0], environment: Environment = None
     ) -> str:
-        """generates a name for this portfolio"""
+        """
+        Generates a name for this portfolio. Only used when an environment
+        object is passed in for the 'name' parameter during Portfolio
+        initialization
+
+        Parameters:
+            environment:
+                The environment object to generate a portfolio name for
+
+        Returns:
+            A portfolio name appropriate for that environment
+        """
         if environment is None:
             if last[0] == 0 and not self.type.instances:  # type: ignore[attr-defined]
                 return "MAIN"
@@ -487,6 +672,7 @@ class Portfolio:
 
     @property
     def base(self) -> str:
+        """This portfolio's base currency"""
         return self._base
 
     @base.setter
@@ -496,25 +682,12 @@ class Portfolio:
 
     @property
     def base_symbol(self) -> str:
+        """The symbol corresponding to this portfolio's base currency"""
         return self._cash.symbol
 
     @property
-    def positions(self) -> dict[str, Position]:
-        self._positions["CASH"] = self._cash
-        return self._positions
-
-    def update_positions(self) -> None:
-        for expired in [pos for pos in self._positions.values() if pos.asset.expired]:
-            expired.expire(self)
-
-        self._positions = {
-            k: pos for k, pos in self._positions.items() if not pos.expired
-        }
-
-        self._positions["CASH"] = self.cash
-
-    @property
     def cash(self) -> Cash:
+        """This portfolio's currently held quantity of the base currency"""
         return self._cash
 
     @cash.setter
@@ -530,9 +703,25 @@ class Portfolio:
             )
 
     @property
+    def date(self) -> datetime:
+        """This Portfolio's current date"""
+        return self._date  # type: ignore[return-value]
+
+    @property
+    def liquid(self) -> float:
+        """The total liquid value of the portfolio"""
+        return self.cash.quantity
+
+    @property
     def longs(self) -> dict[str, Position]:
         """A dictionary which associates all long positions with their asset keys"""
         return {v.asset.key: v for k, v in self.positions.items() if not v.short}
+
+    @property
+    def positions(self) -> dict[str, Position]:
+        """The financial positions currency held by this portfolio"""
+        self._positions["CASH"] = self._cash
+        return self._positions
 
     @property
     def shorts(self) -> dict[str, Position]:
@@ -544,13 +733,66 @@ class Portfolio:
         """This portfolio's net market value"""
         return sum([position.value for position in self.positions.values()])
 
-    @property
-    def liquid(self) -> float:
-        return self.cash.quantity
+    def update_positions(self) -> None:
+        """
+        Updates the Portfolios positions to removed those that have expired,
+        after calling their expire methods.
+
+        TODO: This should be a private method
+        """
+        for expired in [pos for pos in self._positions.values() if pos.asset.expired]:
+            expired.expire(self)
+
+        self._positions = {
+            k: pos for k, pos in self._positions.items() if not pos.expired
+        }
+
+        # THIS SHOULD BE DONE IN THE CASH SETTER
+        self._positions["CASH"] = self.cash
 
     def validate_transaction(
         self, asset: Asset, quantity: float, short: bool = False
     ) -> bool:
+        """
+        Validates a transaction by determining the this portfolio is
+        capable of performing it.
+
+        All transactions are validated before being performed. When the
+        arguments passed to a transaction are invalid but not cause for alarm,
+        simply returns False, which means that the algorithm runtime will
+        continue without performing the transaction
+
+        In some cases, the validation will trigger a runtime error for
+        transaction inputs that should not be possible or are uninterpretable.
+
+        Parameters:
+            asset:
+                The asset involved in the transaction
+
+            quantity:
+                The transaction quantity of the involved asset
+
+            short:
+                Whether the transaction is short or long (True is short, False
+                is long)
+
+        Returns:
+            A boolean value indicating the validity of the transaction.
+
+        Raises:
+            ValueError:
+                When the transaction quantity is below 0. A transaction quantity
+                is bounded at 0.
+
+            ValueError:
+                When the date of the asset's most recent valuation does not
+                match the current date of the portfolio.
+
+            ValueError:
+                When trying to perform a transaction with an asset whose market
+                is currently closed
+
+        """
         if not short:
             if isinstance(asset, Currency) and asset.is_base:
                 return False
@@ -576,22 +818,30 @@ class Portfolio:
             or asset.date.time() < asset.market_open
         ):
             raise ValueError(
-                f"Unable to complete transaction for {asset=} because the market is closed. Market close is {utils.timestring(asset.market_close)}, time of last valuation is {utils.timestring(asset.date)}"
+                f"Unable to complete transaction for {asset=} because the "
+                "market is closed. Market close is "
+                f"{utils.timestring(asset.market_close)}, time of last "
+                f"valuation is {utils.timestring(asset.date)}"
             )
 
         return True
 
     def buy(self, asset: Asset, quantity: float) -> None:
-        """Buys an asset using this portfolio
+        """
+        Buys an asset using this portfolio
 
-        Creates a long position in the given asset with a purchase volume given by 'quantity'.
+        Creates a long position in the given asset with a purchase volume
+        given by 'quantity'.
 
-        Args:
-            asset (Asset): The asset in which to create a long position
-            quantity (Number): The purchase quantity
+        Parameters:
+            asset:
+                The asset in which to create a long position
+
+            quantity:
+                The purchase quantity
 
         Returns:
-            Modifies this portfolio's positions inplace. No return value
+            TODO: Return the created/altered position
         """
         # Ensure that the transaction can occur
         if not self.validate_transaction(asset, quantity):
@@ -628,13 +878,15 @@ class Portfolio:
         Decrements a long position in the given asset by 'quantity'.
         Maximum sale quantity is the amount owned by the portfolio.
 
-        Args:
-            asset (Asset): The asset of the corresponding decremented
-                position
-            quantity (Number): The sale quantity
+        Parameters:
+            asset:
+                The asset of the corresponding decremented position
+
+            quantity:
+                The sale quantity
 
         Returns:
-            Modifies this portfolio's positions inplace. No return value
+            TODO: Return the modified position
         """
         # Ensure that the transaction can occur
         if not self.validate_transaction(asset, quantity):
@@ -671,16 +923,21 @@ class Portfolio:
         self.update_history()
 
     def short(self, asset: Asset, quantity: float) -> None:
-        """Shorts an asset using this portfolio
+        """
+        Shorts an asset using this portfolio
 
-        Creates a short position in the given asset with a short volume given by 'quantity'.
+        Creates a short position in the given asset with a short volume given
+        by 'quantity'.
 
-        Args:
-            asset (Asset): The asset in which to create a short position
-            quantity (Number): The short sale quantity
+        Parameters:
+            asset:
+                The asset in which to create a short position
+
+            quantity:
+                The short sale quantity
 
         Returns:
-            Modifies this portfolio's positions inplace. No return value
+            TODO: Return the created/altered position
         """
         # Ensure that the transaction can occur
         if not self.validate_transaction(asset, quantity, short=True):
@@ -708,12 +965,15 @@ class Portfolio:
         Covers a short position in the given asset with a cover
         (purchase) volume given by 'quantity'.
 
-        Args:
-            asset (Asset): The asset in which to cover a short position
-            quantity (Number): The cover (purchase) quantity
+        Parameters:
+            asset:
+                The asset in which to cover a short position
+
+            quantity:
+                The cover (purchase) quantity
 
         Returns:
-            Modifies this portfolio's positions inplace. No return value
+            TODO: Return the modified position
         """
         # Ensure that the transaction can occur
         if not self.validate_transaction(asset, quantity, short=True):
@@ -759,14 +1019,15 @@ class Portfolio:
         self.update_history()
 
     def _history(self) -> pd.DataFrame:
-        """A history of this portfolio's positions and value
+        """
+        A history of this portfolio's positions and value
 
         Returns a datetime indexed pandas dataframe of this portfolio's
         positions and total market value. This function is only used
         to initialize it
 
         Returns:
-            history (pd.DataFrame): portfolio position/value history
+            Portfolio position/value history
         """
         positions = [position.view() for position in self.positions.values()]
         return pd.DataFrame(
@@ -776,10 +1037,10 @@ class Portfolio:
         )
 
     def update_history(self) -> None:
-        """updates this portfolio's history
+        """
+        updates this portfolio's history
 
-        Returns:
-            Modifies history in place. Returns nothing
+        TODO: Should be a private method
         """
         positions = [position.view() for position in self.positions.values()]
         data = np.array([positions, self.value], dtype="object")
@@ -790,7 +1051,16 @@ class Portfolio:
         self.history = self._history()
 
     def invest(self, n: float) -> None:
-        """Adds cash to this portfolio"""
+        """
+        Adds cash to this portfolio
+
+        Parameters:
+            n:
+                The quantity of cash (in the portfolio's base currency) to add
+
+        Returns:
+            TODO: Return the modified cash position
+        """
         self.cash += n
 
     def liquidate(self, force: bool = False) -> None:
@@ -821,16 +1091,21 @@ class Portfolio:
         short: bool = False,
         positions: Optional[Iterable[Position]] = None,
     ) -> Optional[Position]:
-        """Gets this portfolio's current position in the given asset
+        """
+        Gets this portfolio's current position in the given asset
 
-        Args:
-            asset (Asset): The asset being searched
-            short (bool): Is the position short or long
-            positions (list(Asset)): The positions to be searched
+        Parameters:
+            asset:
+                The asset being searched
+
+            short:
+                Is the position short or long
+
+            positions:
+                The positions to be searched
 
         Returns:
-            pos (Position): Returns a single position in the asset if
-                found, otherwise None
+            A position in the asset if found, otherwise None
         """
         if positions is None:
             positions = self.shorts.values() if short else self.longs.values()
@@ -845,15 +1120,22 @@ class Portfolio:
         short: bool = False,
         positions: Optional[Iterable[Position]] = None,
     ) -> list[Position]:
-        """Gets this portfolio's current positions in the given asset or related to the asset
+        """
+        Gets this portfolio's current positions in the given asset or related
+        to the asset
 
-        Args:
-            asset (Asset): The asset being searched
-            short (bool): Is the position short or long
-            positions (list(Asset)): The positions to be searched
+        Parameters:
+            asset:
+                The asset being searched
+
+            short:
+                Is the position short or long
+
+            positions:
+                The positions to be searched
 
         Returns:
-            pos (Position): Returns a list of positions that are related to the asset
+            A list of positions that are related to the asset
         """
         if positions is None:
             positions = self.shorts.values() if short else self.longs.values()
@@ -869,24 +1151,33 @@ class Portfolio:
         call: Call,
         quantity: Optional[float] = None,
         limit: Optional[float] = None,
-    ) -> float:
-        """Sells calls in the given quantity, but ensures that they are 'covered' by owning stock equal to the number of shares accounted for by the contracts in the case of assignment
+    ) -> int:
+        """
+        Sells calls in the given quantity, but ensures that they are 'covered'
+        by owning stock equal to the number of shares accounted for by the
+        contracts in the case of assignment
 
-        Args:
-            call (Call): The call to be sold short
-            quantity (Number): The quantity to sell
-            limit (Number): Specifies a maximum amount to sell when
-                quantity is not specified
+        Parameters:
+            call:
+                The call to be sold short
+
+            quantity:
+                The quantity to sell
+
+            limit:
+                Specifies a maximum amount to sell when quantity is not
+                specified
 
         Returns:
-            sold_short (Number): The number of calls sold short
-            The portfolio is also modified in place by selling the given quantity of calls and purchasing the necessary shares
+            The number of calls sold short
         """
         # Getting the current number of owned shares
         current: Any = self.get_position(call.underlying)
         current = current.quantity if current is not None else 0
 
-        # Getting the quantity of shares currently accounted for by calls that have already been sold short (Number of outstanding short sold calls * 100 shares per contract)
+        # Getting the quantity of shares currently accounted for by calls that
+        # have already been sold short (Number of outstanding short sold calls
+        # * 100 shares per contract)
         sold_short: Any = (
             sum(
                 pos.quantity
@@ -897,13 +1188,17 @@ class Portfolio:
             * 100
         )
 
-        # The number of shares that are currently available to stand as collateral for a new covered call (shares owned that are not currently acting as collateral)
+        # The number of shares that are currently available to stand as
+        # collateral for a new covered call (shares owned that are not
+        # currently acting as collateral)
         available = current - sold_short
 
         # Determining the maximum quantity of calls that we can sell
         if quantity is None:
 
-            # If no sale quantity is given, we find the highest possible multiple of 100 based on current liquidity, bounded to 0 (In case of negative liquidity)
+            # If no sale quantity is given, we find the highest possible
+            # multiple of 100 based on current liquidity, bounded to 0 (In case
+            # of negative liquidity)
             quantity = max(
                 math.floor((available + (self.liquid / call.underlying.value)) / 100)
                 * 100,
@@ -922,7 +1217,11 @@ class Portfolio:
             # We lack the necessary liquidity to cover the sale
             if can_purchase < purchase_quantity:
                 raise ValueError(
-                    f"Not enough liquidity to purchase {purchase_quantity} shares of the underyling to cover the short sale of {int(quantity / 100)} {call.name} contracts (requires {self.base_symbol}{round(purchase_quantity * call.underlying.value, 2)}, only have {self.base_symbol}{self.liquid})"
+                    f"Not enough liquidity to purchase {purchase_quantity} "
+                    "shares of the underyling to cover the short sale of "
+                    f"{int(quantity / 100)} {call.name} contracts (requires "
+                    f"{self.base_symbol}{round(purchase_quantity * call.underlying.value, 2)}"
+                    f", only have {self.base_symbol}{self.liquid})"
                 )
 
             # Making the purchase

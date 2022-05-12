@@ -10,3 +10,4 @@ deletethis
 /build
 /dist
 /docs/_build
+**/generated

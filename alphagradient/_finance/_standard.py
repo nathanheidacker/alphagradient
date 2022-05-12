@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
+Standard AlphaGradient Asset type implementations including Stocks, Currency,
+Call and Put Option Contracts, etc.
 
-Todo:
-    * Type Hints
-    * Implement other standard types at the bottom
+TODO: Implement other standard asset types at the bottom
 """
 
 # Standard imports
@@ -78,20 +78,87 @@ def _getinfo(base: str = "USD") -> pd.DataFrame:
 
 
 class Currency(Asset, settings=settings["CURRENCY"]):
-    """Asset object representing a currency
+    """
+    Asset object representing a currency
 
     Controls how the values of other assets correspond to one another
-    if their bases differ.
+    if their bases differ. All Assets, Portfolios, and Environments utilize
+    a base currency object that defines the default representation of prices.
+    Assets and Portfolios may have explicitly specified currency bases that
+    differ from their respective environment, but will default to that of their
+    environment if none is specified during intantiation.
+
+    For Assets, the base currency defines how Asset data is interpreted. For
+    Portfolios, the base currency defines how Positions are created and
+    represented. All financial positions in a portfolio are represented in that
+    portfolio's base currency, even if the asset underlying the position uses
+    a different base currency.
+
+    Currencies are assets just like any other, so their relative values change
+    across time just as they would in real life. The exchange between currencies
+    is performed with the exchange rate the day of the transaction, rather
+    than being constant across time.
+
+    As an example, consider an asset with a base currency 'JPY', or japanese
+    yen. When a Portfolio whose base is 'USD' purchases 100 units of this asset,
+    the position will automatically be converted to USD using the rate **at the
+    current date of the transaction**
+
+    For the sake of clarity in the example below, assume the exchange rate
+    between the Japanese Yen and the United States Dollar is 100:1 (100 Yen for
+    1 USD)
+
+    Examples:
+
+        .. code:: python
+
+            import alphagradient as ag
+
+            class JapaneseAsset(ag.Asset):
+
+                def valuate(date):
+                    return self.value  # does nothing
+
+            # Creating an intance of JapaneseAsset whose value is a constant
+            # 35,000 Yen, which (for the sake of this example) is 350 USD
+            jpyasset = JapaneseAsset(name="TEST", data=35000, base="JPY")
+            portfolio = ag.Portfolio(100_000)
+            portfolio.buy(jpyasset, 200)
+            jpypos = portfolio.get_position(jpyasset)
+
+        .. code:: pycon
+
+            >>> jpyasset
+            <JAPANESEASSET TEST: ¥35000 /unit>
+
+            >>> jpypos
+            <200 JAPANESEASSET_TEST units @ $350 /unit | VALUE: $70000.0 | RETURN: 0.0%>
+
+            >>> jpypos.asset is jpyasset
+            True
+
+            >>> portfolio.cash
+            <CASH: USD $30000>
+
+    Parameters:
+        code:
+            The international currency code of the desired currency to instantiate
 
     Attributes:
-        base (str): A string representing the global base currency
-        info (pd.DataFrame): Information about all supported currencies
-        code (str): The currency code of this currency instance
-        symbol (str): The symbol that represents quantities of this
-            currency
-        is_base (bool): Whether or not this currency instance is the
-            base currency instance
+        base (str):
+            A string representing the global base currency
 
+        info (pd.DataFrame):
+            Information about all supported currencies
+
+        code (str):
+            The currency code of this currency instance
+
+        symbol (str):
+            The symbol that represents quantities of this currency
+
+        is_base (bool):
+            Whether or not this currency instance is the base currency instance
     """
 
     base = "USD"
@@ -116,15 +183,25 @@ class Currency(Asset, settings=settings["CURRENCY"]):
     def __str__(self) -> str:
         return f"<{self.type} {self.symbol}{self.code}: {self.price}>"  # type: ignore[attr-defined]
 
+    @property
+    def is_base(self) -> bool:
+        return self.code == self.base
+
     def valuate(self, *args: Any, **kwargs: Any) -> float:
         """This asset valuates itself by converting its value relative
         to USD to the base's value relative to USD"""
         return self.convert(self.code, self.base)
 
-    def online_data(self, *args: Any, **kwargs: Any) -> Optional[AssetData]:
-        """Online data is available for forex from yfinance
+    def online_data(self) -> Optional[AssetData]:
+        """
+        Online data is available for forex from yfinance
 
-        TODO: I dont think this should accept any args
+        TODO: I dont think this should accept any args, and in the future should
+        provide a directly implementation so that we dont have to rely on
+        yfinance.
+
+        Returns:
+            The appropriate forex data for this currency using yfinance
         """
         if self.is_base:
             return None
@@ -138,26 +215,86 @@ class Currency(Asset, settings=settings["CURRENCY"]):
             return AssetData(Currency, data)
 
     @classmethod
+    def code_value(cls, code: str) -> bool:
+        """
+        Returns a currency's value relative to the USD from Currency.info
+
+        Parameters:
+            code:
+                The international currency code of the currency who's value
+                to return
+
+        Returns:
+            The value of the currency relative to USD
+        """
+        return cls.info[cls.info["CODE"] == code]["VALUE"].item()
+
+    def convert(self, target: str, base: str = None) -> float:
+        """
+        Converts target currency to base currency
+
+        Returns the value of the target currency in units of the base currrency
+
+        Parameters:
+            target:
+                The target currency to convert to
+
+            base:
+                The base currency from which target is being evaluated
+
+        Returns:
+            The target currency's value in base currency
+        """
+        base = self.code if base is None else base
+        return self.code_value(target) / self.code_value(base)
+
+    @classmethod
     def get_symbol(cls, base: str = None) -> str:
         """Returns the symbol corresponding to a currency, given that
         currency's international code"""
         base = cls.base if base is None else base
         return cls.info[cls.info["CODE"] == base]["SYMBOL"].item()
 
-    @classmethod
-    def validate_code(cls, code: str, error: bool = False) -> bool:
-        """Validates a currency code by seeing if it is supported
+    def rate(self, target: str, base: str = None) -> float:
+        """
+        Converts this currency to the target
 
-        Args:
-            code (str): The code to validate
-            error (bool): Whether or not an error should be raised if
-                an invalid code is enountered
+        Returns the value of the base currency in units of the target currency
+
+        Returns the inverse of the convert function.
+
+        Parameters:
+            target:
+                The amount of this currency equal to a single unit of the base
+
+            base:
+                The currency whos going rate is desired
+
 
         Returns:
-            valid (bool): Whether the code is valid or not
+            The going rate for the base currency in the target currency
+        """
+        return 1 / self.convert(target, base)
+
+    @classmethod
+    def validate_code(cls, code: str, error: bool = False) -> bool:
+        """
+        Validates a currency code by seeing if it is supported
+
+        Parameters:
+            code:
+                An international currency code; the code to validate
+
+            error:
+                Whether or not an error should be raised if an invalid code
+                is enountered
+
+        Returns:
+            Whether the code is valid or not
 
         Raises:
-            ValueError: raised when the code is invalid and error=True
+            ValueError:
+                When the code is invalid and error=True
         """
         if code in list(cls.info["CODE"]):
             return True
@@ -165,52 +302,30 @@ class Currency(Asset, settings=settings["CURRENCY"]):
             raise ValueError(f"{code} is not a recognized as a valid currency code")
         return False
 
-    @classmethod
-    def code_value(cls, code: str) -> bool:
-        """Returns a currency's value relative to the USD from
-        Currency.info
-
-        Args:
-            code (str): The code of the currency who's value to return
-
-        Returns:
-            value (Number): The value of the currency
-        """
-        return cls.info[cls.info["CODE"] == code]["VALUE"].item()
-
-    def convert(self, target: str, base: str = None) -> float:
-        """Converts target currency to base currency
-
-        Returns the value of the target currency in units of the base currrency
-
-        Returns:
-            value (Number): target currency value in base currency"""
-        base = self.code if base is None else base
-        return self.code_value(target) / self.code_value(base)
-
-    def rate(self, target: str, base: str = None) -> float:
-        """Converts this currency to the target
-
-        Returns the value of the base currency in units of the target currency
-
-        Returns:
-            value (Number): base currency value in target currency"""
-        return 1 / self.convert(target, base)
-
-    @property
-    def is_base(self) -> bool:
-        return self.code == self.base
-
 
 class Stock(Asset, settings=settings["STOCK"]):
-    """A financial asset representing stock in a publicly traded company
+    """
+    A financial asset representing stock in a publicly traded company
 
     An asset representing a single share of a publicly traded company.
     Supports online data from yahoo finance using yfinance.
 
+    Parameters:
+        ticker:
+            A string of uppercase letters corresponding to the stock's ticker
+
+        data (ValidData):
+            The data input for the stock
+
     Attributes:
-        ticker (str): This stock's ticker
+        ticker (str):
+            This stock's ticker
     """
+
+    @property
+    def ticker(self) -> str:
+        """Alias for name, relevant to stocks"""
+        return self.name.upper()
 
     def valuate(self, *args: Any, **kwargs: Any) -> float:
         return self.value
@@ -219,53 +334,68 @@ class Stock(Asset, settings=settings["STOCK"]):
         data = yf.download(self.name, auto_adjust=False, timeout=3, progress=False)
         return AssetData(Stock, data)
 
-    @property
-    def ticker(self) -> str:
-        """Alias for name, relevant to stocks"""
-        return self.name.upper()
-
     def call(self, strike: float, expiry: Expiry) -> Call:
-        """Creates a call from this stock given the strike and expiry
+        """
+        Creates a call from this stock given the strike and expiry
 
-        Args:
-            strike (Number): The call's strike
-            expiry (datetime): The call's expiry
+        Parameters:
+            strike:
+                The call's strike
+
+            expiry (Expiry):
+                The call's expiry
 
         Returns:
-            call (Call): A call who's underlying is this stock
+            A call who's underlying asset is this stock
         """
         return Call(self, strike, expiry)
 
     def put(self, strike: float, expiry: Expiry) -> Put:
-        """Creates a put from this stock given the strike and expiry
+        """
+        Creates a put from this stock given the strike and expiry
 
-        Args:
-            strike (Number): The put's strike
-            expiry (datetime): The put's expiry
+        Parameters:
+            strike:
+                The put's strike
+
+            expiry (Expiry):
+                The put's expiry
 
         Returns:
-            put (Put): A put who's underlying is this stock
+            A put who's underlying asset is this stock
         """
         return Put(self, strike, expiry)
 
 
 class Option(Asset, ABC, settings=settings["OPTION"]):
-    """An asset representing a option contract for a stock.
+    """
+    An asset representing a option contract for a stock.
 
     An abstract base class representing an option contract. Implements
     black scholes valuation
 
+    Not directly instantiable. Used as a base class for both Call and Put
+    implementations
+
     Attributes:
-        underlying (Stock): A stock that underlies the option contract
-        strike (Number): The strike price of the contract
-        expiry (datetime): The expiration date of the contract
-        spot (Number): The value of the underlying asset
-        ttm (timedelta): The amount of time left until the contract
-            reaches maturity, or expires
+        underlying (Stock):
+            A stock that underlies the option contract
+
+        strike (float):
+            The strike price of the contract
+
+        expiry (datetime):
+            The expiration date of the contract
+
+        spot (float):
+            The value of the underlying asset
+
+        ttm (timedelta):
+            The amount of time left until the contract reaches maturity, or
+            expires
     """
 
     def __new__(cls, *args: Any, **kwargs: Any) -> Option:
-
         # Unpacking args and kwargs for underlying, strike, and expiry
         underlying = args[0] if args else kwargs["underlying"]
         strike = args[1] if args and len(args) > 1 else kwargs["strike"]
@@ -288,7 +418,9 @@ class Option(Asset, ABC, settings=settings["OPTION"]):
             )
         elif expiry.weekday() > 4:
             raise ValueError(
-                f"Invalid expiry on {utils.get_weekday(expiry)} for {underlying.name} {cls.__name__}. Valid expiry days are Monday-Friday"
+                f"Invalid expiry on {utils.get_weekday(expiry)} for "
+                f"{underlying.name} {cls.__name__}. Valid expiry days are "
+                "Monday-Friday"
             )
 
         # The name of the contract
@@ -299,7 +431,6 @@ class Option(Asset, ABC, settings=settings["OPTION"]):
     def __init__(
         self, underlying: Asset, strike: float, expiry: Expiry, **kwargs: Any
     ) -> None:
-
         # Ensuring that the strike price is always a reasonable value
         # Max of one sig fig
         if isinstance(strike, Number):
@@ -330,7 +461,20 @@ class Option(Asset, ABC, settings=settings["OPTION"]):
         self.underlying = underlying
         self._mature = False
 
-        super().__init__(self.key, date=underlying.date, base=underlying.base, **kwargs)  # type: ignore[attr-defined]
+        super().__init__(self.key, base=underlying.base, **kwargs)  # type: ignore[attr-defined]
+
+    @property
+    def atm(self) -> bool:
+        """Whether or not this call is 'At the money', or within 1% of the spot price"""
+        return abs(self.strike - self.spot) < (self.spot * 0.01)
+
+    @property
+    def expired(self) -> bool:
+        return self.date >= self.expiry  # type: ignore[attr-defined]
+
+    @property
+    def expiry(self) -> datetime:
+        return self._expiry
 
     @property
     def key(self) -> str:
@@ -340,38 +484,54 @@ class Option(Asset, ABC, settings=settings["OPTION"]):
         )
 
     @property
-    def expiry(self) -> datetime:
-        return self._expiry
+    def spot(self) -> float:
+        return self.underlying.value
 
-    @staticmethod
-    def cdf(x) -> float:
-        """The standard cumulative distribution functon"""
-        return (1.0 + math.erf(x / math.sqrt(2.0))) / 2.0
+    @property
+    def ttm(self) -> timedelta:
+        return max(self.expiry - self.date, timedelta())  # type: ignore[attr-defined]
 
     @staticmethod
     def _bsbase(
         spot: float, strike: float, rfr: float, dy: float, ttm: float, vol: float
     ) -> tuple[float, float]:
-        """initialization of black scholes d1 and d2 for option valuation
+        """
+        Initialization of black scholes d1 and d2 for option valuation
 
         Returns d1 and d2 components for purposes of black scholes
         options valuation
 
-        Args:
-            spot (Number): The price of the underlying stock
-            strike (Number): This contract's strike price
-            rfr (Number): The global risk-free-rate
-            dy (Number): The underlying stock's dividend yield
-            ttm (Number): The time to maturity in years
-            vol (Number): The underlying stock's historical volatility
+        Parameters:
+            spot:
+                The price of the underlying stock
+
+            strike:
+                This contract's strike price
+
+            rfr:
+                The global risk-free-rate
+
+            dy:
+                The underlying stock's dividend yield
+
+            ttm:
+                The time to maturity in years
+
+            vol:
+                The underlying stock's historical volatility
+
+        Returns:
+            black scholes d1 and d2 parameters
         """
 
-        # Calculation of d1, d2
+        # NEW Calculation of d1, d2
+        """
         ttm = ttm if ttm > 0 else 1
         d = vol * math.sqrt(ttm)
         d1 = math.log(spot / strike) + ((rfr - dy + ((vol * vol) / 2)) * ttm)
         d1 /= d
         d2 = d1 - d
+        """
 
         # Calculation of d1, d2
         d1 = (math.log(spot / strike) + ((rfr - dy + ((vol * vol) / 2)) * ttm)) / (
@@ -381,9 +541,10 @@ class Option(Asset, ABC, settings=settings["OPTION"]):
 
         return d1, d2
 
-    @property
-    def expired(self) -> bool:
-        return self.date >= self.expiry  # type: ignore[attr-defined]
+    @staticmethod
+    def cdf(x) -> float:
+        """The standard cumulative distribution functon"""
+        return (1.0 + math.erf(x / math.sqrt(2.0))) / 2.0
 
     @staticmethod
     def exact_days(delta: timedelta) -> float:
@@ -393,36 +554,49 @@ class Option(Asset, ABC, settings=settings["OPTION"]):
         """
         return delta.total_seconds() / 86400
 
-    @property
-    def ttm(self) -> timedelta:
-        return max(self.expiry - self.date, timedelta())  # type: ignore[attr-defined]
-
-    @property
-    def spot(self) -> float:
-        return self.underlying.value
-
     def reset(self) -> None:
         """Resets the option so that it may be valuated again, even if
         past expiry"""
         self._mature = False
 
-    @property
-    def atm(self) -> bool:
-        """Whether or not this call is 'At the money', or within 1% of the spot price"""
-        return abs(self.strike - self.spot) < (self.spot * 0.01)
-
 
 class Call(Option, settings=settings["CALL"]):
-    """An Asset representing a call option contract
+    """
+    An Asset representing a call option contract
 
     Attributes:
-        itm (bool): Whether or not this contract is currently in
-            the money
+        itm (bool):
+            Whether or not this contract is currently in the money
+
+        atm (bool):
+            Whether or not this contract is currently at the money
+
+        otm (bool):
+            Whether or not this contract is currenct out of the money
     """
 
-    def valuate(self, date: datetime, *args: Any, **kwargs: Any) -> float:
-        """Call option valuation"""
+    @property
+    def itm(self) -> bool:
+        """Whether or not this call is 'in the money'"""
+        return self.strike < self.spot
 
+    @property
+    def otm(self) -> bool:
+        """Whether or not this call is 'out of the money'"""
+        return not self.itm
+
+    def valuate(self, date: datetime, *args: Any, **kwargs: Any) -> float:
+        """
+        Call option valuation using black scholes
+
+        Parameters:
+            date:
+                The datetime to evaluate at
+
+        Returns:
+            The value of this call contract at the specified datetime, using
+            the black scholes option pricing model
+        """
         # If the option has already reached maturity, the valuation
         # should never change
         if self._mature:
@@ -445,7 +619,17 @@ class Call(Option, settings=settings["CALL"]):
             return self.black_scholes(date)
 
     def black_scholes(self, date: datetime) -> float:
-        """Returns the black scholes option pricing output for this call"""
+        """
+        Returns the black scholes option pricing output for this call
+
+        Parameters:
+            date:
+                The date to evaluate at
+
+        Returns:
+            This call contract's value defined by the black scholes option
+            pricing model on the given datetime
+        """
         ttm = self.exact_days(self.ttm) / 365
         div_yield = 0.01
 
@@ -466,8 +650,11 @@ class Call(Option, settings=settings["CALL"]):
         return call_premium * 100
 
     def expire(self, portfolio: Portfolio, position: Position[Call]) -> None:
-        """Expiration behavior for call option positions"""
+        """
+        Expiration behavior for call option positions
 
+        This method is for interal use only and should not be called directly
+        """
         # Expired call positions are only assigned if they are ITM
         if not position.asset.itm:
             return
@@ -509,28 +696,42 @@ class Call(Option, settings=settings["CALL"]):
             else:
                 portfolio.cash += position.value
 
+
+class Put(Option, settings=settings["OPTION"]):
+    """
+    An Asset representing a put option contract
+
+    Attributes:
+        itm (bool):
+            Whether or not this contract is currently in the money
+
+        atm (bool):
+            Whether or not this contract is currently at the money
+
+        otm (bool):
+            Whether or not this contract is currenct out of the money
+    """
+
     @property
     def itm(self) -> bool:
-        """Whether or not this call is 'in the money'"""
-        return self.strike < self.spot
+        return self.strike > self.underlying.value
 
     @property
     def otm(self) -> bool:
-        """Whether or not this call is 'out of the money'"""
         return not self.itm
 
-
-class Put(Option, settings=settings["OPTION"]):
-    """An Asset representing a put option contract
-
-    Attributes:
-        itm (bool): Whether or not this contract is currently in
-            the money
-    """
-
     def valuate(self, date: datetime, *args: Any, **kwargs: Any) -> float:
-        """Put option valuation"""
+        """
+        Put option valuation using black scholes
 
+        Parameters:
+            date:
+                The datetime to evaluate at
+
+        Returns:
+            The value of this put contract at the specified datetime, using
+            the black scholes option pricing model
+        """
         # If the option has already reached maturity, the valuation
         # should never change
         if self._mature:
@@ -553,7 +754,17 @@ class Put(Option, settings=settings["OPTION"]):
             return self.black_scholes(date)
 
     def black_scholes(self, date: datetime) -> float:
-        """Returns the black scholes option pricing output for this put"""
+        """
+        Returns the black scholes option pricing output for this put
+
+        Parameters:
+            date:
+                The date to evaluate at
+
+        Returns:
+            This put contract's value defined by the black scholes option
+            pricing model on the given datetime
+        """
         ttm = self.exact_days(self.ttm) / 365
         div_yield = 0.01
 
@@ -574,7 +785,11 @@ class Put(Option, settings=settings["OPTION"]):
         return put_premium * 100
 
     def expire(self, portfolio: Portfolio, position: Position[Put]) -> None:
-        """Expiration behavior for put option positions"""
+        """
+        Expiration behavior for put option positions
+
+        This method is for internal use only and should not be called directly.
+        """
 
         # Expired put positions are only assigned if they are ITM
         if not position.asset.itm:
@@ -613,14 +828,6 @@ class Put(Option, settings=settings["OPTION"]):
             # Otherwise liquidate the position
             else:
                 portfolio.cash += position.value
-
-    @property
-    def itm(self) -> bool:
-        return self.strike > self.underlying.value
-
-    @property
-    def otm(self) -> bool:
-        return not self.itm
 
 
 # BROWNIAN STOCK IMPLEMENTATION BELOW

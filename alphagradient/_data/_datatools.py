@@ -510,7 +510,7 @@ class AssetData:
         def close_map(close, time_res, open_date):
             """Vectorized mapping function set datetimes to market close if they should be evaluated at market close"""
             if time_res >= np.timedelta64(1, "D"):
-                return utils.set_time(pd.to_datetime(open_date), cls.market_close)
+                return utils.set_time(pd.to_datetime(open_date), cls._market_close)
             return close
 
         index = self._data.index.to_series()
@@ -522,7 +522,7 @@ class AssetData:
 
             # Setting the opening time at each index to the market open time
             self._data["_period_open_"] = self._set_time_vectorized(
-                self._data["_period_open_"], cls.market_open
+                self._data["_period_open_"], cls._market_open
             )
 
             # Setting the closing time at each index to the market close time, only if the delta is >= 1
@@ -556,14 +556,14 @@ class AssetData:
             woops... look to replace later.
         """
         if len(self._data) > 1:
-            shifted = self._data[asset_type.close_value].shift(1)
+            shifted = self._data[asset_type._close_value].shift(1)
             shifted.name = "A"
             shifted[0] = shifted[1]
             shifted = shifted.to_frame()
-            shifted["B"] = self._data[asset_type.close_value]
+            shifted["B"] = self._data[asset_type._close_value]
             shifted = (shifted["B"] / shifted["A"]) - 1
         else:
-            shifted = self._data[asset_type.close_value]
+            shifted = self._data[asset_type._close_value]
 
         self._data["CHANGE"] = shifted
 
@@ -725,7 +725,7 @@ class AssetData:
             when indexing using a slice??? No clue whats happening here.
 
         Parameters:
-            start (DatetimeLike | Number):
+            start (DatetimeLike or float):
                 The beginning of the range to return
 
             end (DatetimeLike | Number):

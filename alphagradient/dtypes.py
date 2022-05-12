@@ -3,7 +3,7 @@
 
 # Standard Imports
 from dataclasses import dataclass
-from datetime import time
+from datetime import date, time, datetime
 from pathlib import Path
 import sys
 
@@ -21,12 +21,10 @@ from ._data._datatools import AssetData
 from ._finance._asset import (
     AssetDuplicationError as AssetDuplicationError,
     DataProtocol,
-    types,
     Asset,
 )
-from ._globals import __globals as Globals
 from ._finance._portfolio import (
-    View,
+    PositionView,
     Position,
     Portfolio,
 )
@@ -51,10 +49,16 @@ from typing import (
     Iterable,
 )
 
-from .utils import (
-    DatetimeLike,
-    TimeLike,
-)
+# UTILS ALIASES
+DatetimeLike = Union[pd.Timestamp, np.datetime64, date, datetime, str]
+"""Objects convertable to python datetimes"""
+
+TimeLike = Union[time, str]
+"""Objects convertable to python time objects"""
+
+DateOrTime = Union[DatetimeLike, time]
+"""Objects that are either DatetimeLike or TimeLike in nature"""
+
 
 # DATATOOLS ALIASES
 ValidData = Union[Path, str, AssetData, pd.DataFrame, np.ndarray, float]
@@ -111,7 +115,7 @@ _alltypes: list[type] = [
     Stats,
     AssetData,
     DataProtocol,
-    View,
+    PositionView,
     Position,
     Option,
 ]
@@ -119,9 +123,12 @@ _alltypes: list[type] = [
 _alltypes_organized: dict[str, list] = {
     "stats": [Performance, Backtest, Stats],
     "data": [AssetData, DataProtocol],
-    "finance": [View, Position],
+    "finance": [PositionView, Position, UniverseView],
     "standard": [Option],
     "typing": [
+        DatetimeLike,
+        TimeLike,
+        DateOrTime,
         ValidData,
         TimeLike_T,
         Bindable,
@@ -135,6 +142,21 @@ _alltypes_organized: dict[str, list] = {
     ],
 }
 
+_autodoc_aliases: list[str] = [
+    "DatetimeLike",
+    "TimeLike",
+    "DateOrTime",
+    "ValidData",
+    "TimeLike_T",
+    "Bindable",
+    "Trackable",
+    "ValidFilter",
+    "Asset_T",
+    "Expiry",
+    "Changes",
+    "ChangesWithInfo",
+]
+
 # These are the types that will show up in the documentation under dtypes
 # Organization of objects in All determines order in the documentation.
 # Please make sure they are ordered correctly when adding new items
@@ -142,6 +164,9 @@ __all__ = [
     # Errors and Exceptions
     "AssetDuplicationError",
     # Typing Types, Type Aliases
+    "DatetimeLike",
+    "TimeLike",
+    "DateOrTime",
     "ValidData",
     "TimeLike_T",
     "Bindable",
@@ -160,10 +185,7 @@ __all__ = [
     "Performance",
     "Position",
     "Stats",
-    "View",
-    # The Global Instance
-    "types",
-    "Globals",
+    "PositionView",
     # Collections
     "UniverseView",
     "Filter",

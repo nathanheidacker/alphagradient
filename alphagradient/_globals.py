@@ -38,10 +38,10 @@ from typing import Union, Any, Optional, Generator
 
 from .utils import DatetimeLike, TimeLike, DateOrTime, PyNumber, Number
 
-GLOBAL_DEFAULT_START = datetime.fromisoformat("2000-01-03")
+GLOBAL_DEFAULT_START = datetime.today().replace(minute=0, second=0, microsecond=0)
 """The global default start date"""
 
-GLOBAL_DEFAULT_END = utils.set_time(datetime.today(), "00:00:00")
+GLOBAL_DEFAULT_END = datetime.today()
 """The global default end date"""
 
 GLOBAL_DEFAULT_RESOLUTION = timedelta(days=1)
@@ -80,7 +80,8 @@ class Globals:
             The currency object that acts as the base which all asset values
             are converted to
 
-        rfr (Number): The current risk free rate
+        rfr (Number):
+            The current risk free rate
     """
 
     # Not sure how to properly type hint a property return value...
@@ -94,7 +95,6 @@ class Globals:
 
     def __init__(self) -> None:
         # Initializing global attrs
-        self._resolution = GLOBAL_DEFAULT_RESOLUTION
         self._date = GLOBAL_DEFAULT_START
         self._persistent = self._find_persistent()
 
@@ -109,7 +109,7 @@ class Globals:
             self._shareprop("resolution", cls, name="_global_res")
 
         for cls in [Asset, Portfolio, Backtest, Performance]:
-            self._shareprop("date", cls)
+            self._shareprop("date", cls, "_date")
 
         for cls in [Asset, Universe, utils]:
             self._shareprop("persistent", cls, name="_global_persistent_path")
@@ -117,7 +117,7 @@ class Globals:
         # Environments must also have the ability to set the global date
         date_getter = lambda this: getattr(self, "date")
         date_setter = lambda this, dt: setattr(self, "date", dt)
-        setattr(Environment, "date", property(date_getter, date_setter))
+        setattr(Environment, "_date", property(date_getter, date_setter))
 
         self._base_code = GLOBAL_DEFAULT_BASE
         # self._shareprop("_base_code", Currency, name="base")
@@ -131,10 +131,10 @@ class Globals:
         self._shareprop("base", Environment, name="_global_base")
 
         self._rfr: float = self._get_rfr()
-        self._shareprop("rfr", Asset)
+        self._shareprop("rfr", Asset, name="_rfr")
 
         self._benchmark: Asset = Stock("SPY")
-        self._shareprop("benchmark", Asset)
+        self._shareprop("benchmark", Asset, name="_benchmark")
         self._shareprop("benchmark", Universe)
 
     def __str__(self) -> str:
@@ -199,29 +199,8 @@ class Globals:
     @property
     def resolution(self) -> timedelta:
         """The default resolution for the global environment"""
-        return self._resolution
-
-    @resolution.setter
-    def resolution(self, delta: timedelta) -> None:
-        delta = self.default_resolution() if not isinstance(delta, timedelta) else delta
-        self._resolution = delta
-
-    def default_resolution(self) -> timedelta:
-        """The default universal time resolution to be used
-
-        If any assets are instantiated, finds the lowest time
-        resolution (timedelta between datetime indexed data) present
-        in any asset dataset. Otherwise, defaults to 1 day
-
-        Returns:
-            delta (timedelta): The default time resolution
-        """
-        data = [data.resolution for data in self.all_data()]
-
-        if data:
-            return min(data)
-
-        return GLOBAL_DEFAULT_RESOLUTION
+        data = [dataset.resolution for dataset in self.all_data()]
+        return min(data) if data else GLOBAL_DEFAULT_RESOLUTION
 
     @property
     def base(self) -> Currency:
@@ -279,23 +258,20 @@ class Globals:
         """The path to the root directory of this installation of AlphaGradient"""
         return self._path
 
-    def auto(self) -> None:
-        """Automatically sets global start, end, and resolution to
-        their defaults based on what assets are instantiated
-
-        Returns:
-            Modifies global variables in place, returns nothing
-        """
-        self._resolution = self.default_resolution()
-
     def sync(self, date: DatetimeLike) -> None:
-        """Synchronizes all alphagradient objects globally to the
-        given datetime
+        """
+        Synchronizes all alphagradient objects globally to the given datetime
 
-        PLEASE NOTE THAT SYNCING TO THE START MAY CAUSE ERRORS WHEN RUNNING ALGORITHMS, AS NO DATA
-        IS AVAILABLE FOR CALCULATIONS THAT REQUIRE CHANGE ACROSS SOME TIME INTERVAL. FOR EXAMPLE.
-        CALCULATIONS OF AN ASSET'S VOLATILITY BECOME IMPOSSIBLE BECAUSE THEY CAN ONLY ACCESS A
-        SINGLE DATA POINT. THIS IS EXPECTED BEHAVIOR
+        .. warning::
+            PLEASE NOTE THAT SYNCING TO THE START MAY CAUSE ERRORS WHEN RUNNING
+            ALGORITHMS, AS NO DATA IS AVAILABLE FOR CALCULATIONS THAT REQUIRE
+            CHANGE ACROSS SOME TIME INTERVAL. FOR EXAMPLE. CALCULATIONS OF AN
+            ASSET'S VOLATILITY BECOME IMPOSSIBLE BECAUSE THEY CAN ONLY ACCESS
+            A SINGLE DATA POINT. THIS IS **EXPECTED** BEHAVIOR
+
+        Optimally, use autosync() to avoid the issues above. At minimum, sync
+        to a date that is one day ahead of the global start date
+        (start = ag.globals.start + timedelta(days=1))
 
         Args:
             date (datetime): The date to synchronize to
@@ -304,7 +280,7 @@ class Globals:
             modifies all currently instantiated assets and portfolios
             in-place
         """
-        self.date = utils.to_datetime(date)
+        self._date = utils.to_datetime(date)
 
         def sync_asset(asset):
             if getattr(asset, "reset", False):
@@ -323,30 +299,27 @@ class Globals:
         if portfolios:
             deque(map(sync_portfolio, portfolios), maxlen=0)
 
-    def autosync(self, t: TimeLike = None) -> None:
-        """automatically determines best global variables for start, end, and resolution based on
-        currently instantiated assets, and syncs them all to an optimal starting period"""
-
-        # Determining absolute start and end of available data
-        self.auto()
-
-        # Determining the optimal start period. To avoid errors, we will not sync to the beginning
-        optimal_difference = (self.end - self.start) / 2
-        optimal_date = self.start + optimal_difference
-
-        # Setting the optimal date's time to midnight unless specified otherwise
-        t = "00:00:00" if t is None else utils.to_time(t)
-        utils.set_time(optimal_date, t)
-
-        # Bounding the date to acceptable minimums and maximums
-        lower_bound = utils.set_time(self.start + timedelta(days=1), t)
-        upper_bound = utils.set_time(self.start + timedelta(days=365), t)
-        sync_date = utils.bounded(optimal_date, lower=lower_bound, upper=upper_bound)
-
+    def autosync(
+        self, end: Optional[DatetimeLike] = None, t: Optional[TimeLike] = None
+    ) -> None:
+        """
+        automatically determines best global variables for start, end, and
+        resolution based on currently instantiated assets, and syncs them all
+        to an optimal starting period
+        """
+        sync_date = self.start
+        data = list(self.all_data())
+        if data:
+            max_start = max([dataset.first for dataset in data])
+            min_end = min([dataset.last for dataset in data])
+            sync_date = utils.optimal_start(
+                start=self.start, max_start=max_start, min_end=min_end, end=end, t=t
+            )
         self.sync(sync_date)
 
     def step(self, delta: Union[DateOrTime, timedelta, PyNumber] = None) -> None:
-        """Takes a single time step for all assets
+        """
+        Takes a single time step for all assets
 
         Valuates all currently instantiated assets one time step
         (of magnitude delta) ahead of their previous valuation. When
@@ -357,7 +330,7 @@ class Globals:
             delta (Union[DateOrTime, timedelta, float]):
                 The magnitude of the time step taken
         """
-        self.date += (
+        self._date += (
             self.resolution if delta is None else utils.to_step(self.date, delta)
         )
 
@@ -380,35 +353,9 @@ class Globals:
         """TODO: Should scan a path for ag files and add them to persistent"""
         return None
 
-    @staticmethod
-    def validate_resolution(resolution: Union[timedelta, PyNumber]) -> timedelta:
-        """Determines whether or not the input resolution is valid.
-        If is is, returns it as a native python timedelta object
-
-        Parameters:
-            resolution:
-                The resolution to be validated and converted
-
-        Returns:
-            The convered, valid resolution
-
-        Raises:
-            TypeError: When the resolution is inconvertible
-        """
-        if isinstance(resolution, timedelta):
-            return resolution
-        elif isinstance(resolution, (float, int)):
-            return timedelta(days=resolution)
-        else:
-            raise TypeError(
-                f"Resolution must be a datetime.timedelta "
-                "object. Received "
-                f"{resolution.__class__.__name__} "
-                f"{resolution}"
-            )
-
     def persist(self, path: Optional[Union[Path, str]] = None) -> None:
-        """Allows persistent storage of ag assets
+        """
+        Allows persistent storage of ag assets
 
         Directs alphagradient to persist ag asset datasets in memory at the
         given path, which defaults to the current working directory when none

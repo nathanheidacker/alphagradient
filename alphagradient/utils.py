@@ -413,6 +413,66 @@ def nearest_expiry(
     return expiry
 
 
+def optimal_start(
+    start: datetime,
+    max_start: datetime,
+    min_end: datetime,
+    end: Optional[DatetimeLike] = None,
+    t: Optional[TimeLike] = None,
+) -> datetime:
+    """
+    Based an Environment's instantiated/tracked assets, returns an optimal datetime
+    for starting a backtest
+
+    Returns a backtest starting datetime that:
+        * Is guaranteed to be within the date range of all intantiated assets
+        * | Is guaranteed to have ample time for calculations of historical
+            | volatility, beta, percent change etc. BEFORE the start date
+        * Automatically adjusts to accomodate shorter ending periods
+
+    Parameters:
+        start:
+            A datetime object indictating the actual starting datetime
+
+        max_start:
+            A datetime object indicating the maximum possible starting datetime
+
+        min_end:
+            A datetime object indicating the minimum possible ending datetime
+
+        end (Optional[DatetimeLike]):
+            The desired endpoint on which to base the optimal start point
+
+        t (Optional[TimeLike]):
+            The returned optimal start's time
+
+    Returns:
+        The optimal starting datetime
+    """
+    end = min_end if end is None else to_datetime(end)
+
+    # If the maximum start date is before the minimum end date, there is
+    # no valid 'optimal start', because there is no date range that allows
+    # backtesting of all available data.
+    if max_start >= end:
+        return start
+
+    # Determining the optimal start period. To avoid errors, we will not sync to the beginning
+    optimal_delta = (end - max_start) / 2
+    optimal_date = max_start + optimal_delta
+
+    # Setting the optimal date's time to market open unless specified otherwise
+    t = "00:00:00" if t is None else to_time(t)
+    set_time(optimal_date, t)
+
+    # Bounding the date to acceptable minimums and maximums
+    lower_bound = set_time(max_start + timedelta(days=1), t)
+    upper_bound = set_time(max_start + timedelta(days=365), t)
+    optimal_start = bounded(optimal_date, lower=lower_bound, upper=upper_bound)
+
+    return optimal_start
+
+
 def progress_print(to_print: Any, last: list[int] = [0]) -> None:
     """Prints, but returns the carriage to the front of the last print"""
     print("\r" + (" " * last[0]), end="\r", flush=True)  # type: ignore[operator]
@@ -690,7 +750,7 @@ def to_time(tlike: TimeLike) -> time:
     Given a TimeLike object, converts it to a python standard time object
 
     Parameters:
-        tlike (TimeLike):
+        tlike:
             The time-convertable object
 
     Returns:

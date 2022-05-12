@@ -101,6 +101,11 @@ class Performance:
         self.symbol: str = portfolio.cash.symbol
 
     @property
+    def date(self) -> datetime:
+        """The date of the tracked portfolio"""
+        return self._date  # type: ignore[attr-defined]
+
+    @property
     def data(self) -> pd.DataFrame:
         """
         A performance's historical data
@@ -482,7 +487,7 @@ class Performance:
         # a reference to the global benchmark
         self.start = self._data.index[0]
         self.end = self._data.index[-1]
-        self.benchmark = Asset.benchmark.fget(1)  # type: ignore[attr-defined]
+        self.benchmark = Asset._benchmark.fget(1)  # type: ignore[attr-defined]
 
         # Calculating the pct change
         if len(self._data) > 1:
@@ -1408,6 +1413,11 @@ class Backtest:
         return self._completion()
 
     @property
+    def date(self) -> datetime:
+        """The current date of the tracked Environment"""
+        return self._date
+
+    @property
     def day(self) -> int:
         """The number of days of difference between the runtime start and the
         current date"""
@@ -1842,7 +1852,7 @@ class Algorithm(ABC):
 
         # Initializing start and end
         start = (
-            self.optimal_start()
+            self.env.optimal_start()
             if start is None
             else max(self.start, utils.to_datetime(start))
         )
@@ -1851,9 +1861,6 @@ class Algorithm(ABC):
             if end is None
             else min(self.end, self.validate_end(end, start=start))
         )
-
-        print(start, end)
-
         # Reset stats for new backtest
         self.stats._reset(self.env, start, end)
 
@@ -1891,14 +1898,14 @@ class Algorithm(ABC):
         try:
             return self.env.start
         except AttributeError:
-            return self._global_start
+            return self._global_start  # type: ignore[attr-defined]
 
     @property
     def end(self) -> datetime:
         try:
             return self.env.end
         except AttributeError:
-            return self._global_end
+            return self._global_end  # type: ignore[attr-defined]
 
     @property
     def date(self) -> datetime:
@@ -2012,7 +2019,7 @@ class Algorithm(ABC):
                 self.env.next()
                 progress.update()
 
-    def intitialize_inputs(self, start: datetime = None, end: datetime = None) -> None:
+    def initialize_inputs(self, start: datetime = None, end: datetime = None) -> None:
         """
         Ensures that start and end parameter inputs are viable
 
@@ -2026,48 +2033,6 @@ class Algorithm(ABC):
                 The backtest end datetime
         """
         start = self.start if start is None else utils.to_datetime(start)
-
-    def optimal_start(self, end: Optional[DatetimeLike] = None) -> datetime:
-        """
-        Based on the current algorithm environment, returns an optimal datetime
-        for starting a backtest
-
-        Returns a backtest starting datetime that:
-            * Is guaranteed to be within the date range of all intantiated assets
-            * | Is guaranteed to have ample time for calculations of historical
-              | volatility, beta, percent change etc. BEFORE the start date
-            * Automatically adjusts to accomodate shorter ending periods
-        """
-        max_start_data = [dataset.first for dataset in self.env.data()]
-        if not max_start_data:
-            return self.start
-
-        max_start = max(max_start_data)
-        min_end = min([dataset.last for dataset in self.env.data()])
-        end = min_end if end is None else utils.to_datetime(end)
-
-        # If the maximum start date is before the minimum end date, there is
-        # no valid 'optimal start', because there is no date range that allows
-        # backtesting of all available data.
-        if max_start >= end:
-            return self.start
-
-        # Determining the optimal start period. To avoid errors, we will not sync to the beginning
-        optimal_delta = (end - max_start) / 2
-        optimal_date = max_start + optimal_delta
-
-        # Setting the optimal date's time to market open unless specified otherwise
-        t = "09:30:00"
-        utils.set_time(optimal_date, t)
-
-        # Bounding the date to acceptable minimums and maximums
-        lower_bound = utils.set_time(max_start + timedelta(days=1), t)
-        upper_bound = utils.set_time(max_start + timedelta(days=365), t)
-        optimal_start = utils.bounded(
-            optimal_date, lower=lower_bound, upper=upper_bound
-        )
-
-        return optimal_start
 
     def validate_end(
         self,
@@ -2090,7 +2055,7 @@ class Algorithm(ABC):
         Returns:
             The validates/converted end datetime.
         """
-        start = self.optimal_start() if start is None else start
+        start = self.env.optimal_start() if start is None else start
 
         # See if the datetime can be validated normally
         try:

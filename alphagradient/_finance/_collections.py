@@ -21,6 +21,7 @@ import io
 import os
 import math
 
+
 # Third Party imports
 from pathos.multiprocessing import ProcessingPool as Pool
 from p_tqdm import p_map
@@ -105,8 +106,31 @@ class Environment:
     portfolio names and values are the respective attribute.
 
     Parameters:
-        start (Optional[DatetimeLike]):
-            The datetime
+        assets:
+            An asset or iterable of assets to be trakced by this environment
+
+        portfolios:
+            A portfolio or iterable of portfolios to be tracked by this
+            environment
+
+        base:
+            Controls the default base currency for all assets and portfolios
+            instantiated in this environment. Defaults to the current global base
+            at the time of instantiation (typically USD)
+
+        time_control:
+            Controls how env.start and env.end properties function. When passed
+            as "any" (default), start and end are the min and max available start
+            and end of all tracked datasets, respectively. When time_control is
+            passed as "all", min and max are flipped (start is the max of all
+            dataset start dates, end is the min of all dataset end dates)
+
+        force:
+            Whether or not to force the creation of new assets when their
+            instantiation fails due to data errors. For example, calling
+            env.Stock("MYSTOCK") will faill if no data is available locally or
+            online for such a ticker. However, force=True will guarantee that
+            the stock instantiated with a fake dataset.
 
     Attributes:
         date (datetime):
@@ -129,9 +153,9 @@ class Environment:
 
         base (str):
             The base currency used by this environment represented as a currency
-             code. All newly tracked/insantiated assets and objects will use
-             this currency as a default base if none are provided during
-             intantiation
+            code. All newly tracked/insantiated assets and objects will use
+            this currency as a default base if none are provided during
+            intantiation
 
         assets (list[Asset]):
             A list of assets currently within or tracked by this environment.
@@ -143,16 +167,91 @@ class Environment:
 
         status (Environment.Status):
             A member of the Status enum which corresponds to how many portfolios
-             this environment is currently tracking. Controls behavior of
-             environment bound methods that facilitate portfolio transactions
-             such as buy, sell, short, and cover.
+            this environment is currently tracking. Controls behavior of
+            environment bound methods that facilitate portfolio transactions
+            such as buy, sell, short, and cover.
     """
 
     class Status(Enum):
-        """Denotes an environment's portfolio status, controlling environment
+        """
+        Denotes an environment's portfolio status, controlling environment
         bound methods for portfolio transactions
 
-        Status indicates how many portfolios belong to this environment. Environments without a portfolio will not be able to perform portfolio bound methods. Environments with a single portfolio will autonatically route all portfolio methods to the bound portoflio. Environments with multiple portfolios require calls to portfolio bound methods to specify the name of the portfolio on which the transaction is to be executed. If no name is specified, attempt to perform the transaction on a portfolio named "MAIN", if one exists."""
+        Status indicates how many portfolios belong to this environment.
+        Environments without a portfolio will not be able to perform portfolio
+        bound methods. Environments with a single portfolio will autonatically
+        route all portfolio methods to the bound portoflio. Environments with
+        multiple portfolios require calls to portfolio bound methods to specify
+        the name of the portfolio on which the transaction is to be executed.
+        If no name is specified, attempt to perform the transaction on a
+        portfolio named "MAIN", if one exists.
+
+        Attributes:
+            NONE:
+                This Environment has NO portfolios, and is therefore incabable
+                of accepting/rerouting calls to portfolios made directly on
+                the environment object. This is a legacy option, as current
+                Environment objects automatically instantiate a portfolio
+                if none are passed.
+
+            SINGLE:
+                This Environment only tracks a single intantiated portfolio,
+                which is bound to the environments 'main' attribute (accessible
+                at env.main). Portfolio calls made on the environment will be
+                automatically redirected to the main portfolio automatically.
+
+            MULTIPLE:
+                This Environment tracks multiple portfolios. When Portfolio
+                calls are made on the environment, they accept a "name="
+                keyword argument that allows the user to specify the tracked
+                portfolio on which they would like to execute the transaction.
+                By default, calls are rerouted to the main portfolio should a
+                name fail to be specified.
+
+        Examples:
+
+            .. code:: python
+
+                # A portfolio with only a single tracked portfolio
+                spy = ag.Stock("SPY")
+                single_env = ag.Environment(assets=[spy])
+
+                # A portfolio with multiple tracked portfolios
+                main_portfolio = ag.Portfolio(1_000_000, name="MAIN", base="USD")
+                alt_portfolio = ag.Portfolio(1_000_000, name="ALT", base="JPY")
+                multiple_env = ag.Environment(
+                    assets=[spy],
+                    portfolios=[main_portfolio, alt_portfolio]
+                )
+
+            .. code:: pycon
+
+                >>> single_env.NONE
+                False
+
+                >>> single_env.SINGLE
+                True
+
+                >>> single_env.MULTIPLE
+                False
+
+                >>> multiple_env.NONE
+                False
+
+                >>> multiple_env.SINGLE
+                False
+
+                >>> multiple_env.MULTIPLE
+                True
+
+                >>> # Buying 10 shares of spy on the main portfolio
+                >>> single_env.buy(spy, 10)
+                >>> multiple_env.buy(spy, 10)
+
+                >>> # Buying 10 shares of spy on the alternate portfolio
+                >>> multiple_env.buy(spy, 10, name="ALT")
+
+        """
 
         NONE = auto()
         SINGLE = auto()
@@ -170,9 +269,28 @@ class Environment:
                 return cls.MULTIPLE
 
     class AssetDict(WeakDict):
-        """A weakref dictionary of assets belonging to one asset
+        """
+        A weakref dictionary of assets belonging to one asset
         subclass. Allows environments attribute access to specific asset
-        classes, as well as asset instantiation"""
+        classes, as well as asset instantiation
+
+        Examples:
+            .. code:: python
+
+                import alphagradient as ag
+
+                env = ag.Environment()
+                for ticker in ["SPY", "DIA", "QQQ"]:
+                    env.stock(ticker)
+
+            .. code:: pycon
+
+                >>> env.stock
+                {'SPY': <STOCK SPY: $146.84 /share>, 'DIA': <STOCK DIA: $114.66 /share>, 'QQQ': <STOCK QQQ: $92.62 /share>}
+
+                >>> env.stock.spy
+                <STOCK SPY: $146.84 /share>
+        """
 
         def __init__(self, cls, env: Environment) -> None:
             self._name = cls.__name__
@@ -187,7 +305,6 @@ class Environment:
                 kwargs.pop("force")
             new = self.c(*args, force=force, **kwargs)
             new._valuate()
-            new.base = self._env.base.code
             self[new.name] = new
             return new
 
@@ -215,14 +332,12 @@ class Environment:
         assets: Optional[Iterable[Asset]] = None,
         portfolios: Optional[Iterable[Portfolio]] = None,
         base: Optional[str] = None,
-        resolution: Optional[timedelta] = None,
+        time_control: Literal["any", "all"] = "any",
         force: bool = False,
     ) -> None:
-        self._resolution: timedelta = (
-            self._global_res
-            if resolution is None
-            else self.validate_resolution(resolution)
-        )
+
+        # Add tracking functionality for portfolios so they can be accepted as
+        # a single argument
         self._assets: list[Asset] = []
         if isinstance(assets, dict):
             assets = list(assets.values())
@@ -234,19 +349,42 @@ class Environment:
                 [portfolios] if isinstance(portfolios, Portfolio) else list(portfolios)
             )
         )
+
+        # Controlling how self.start, self.end, and self.resolution are determined
+        if time_control == "any":
+            self._guarantee_inclusion = False
+        elif time_control == "all":
+            self._guarantee_inclusion = True
+        else:
+            raise ValueError(
+                f"time_control argument must be one of 'any' or 'all', received {time_control}"
+            )
+
+        # Initializing other attributes
         self._base: Currency = (
             self._global_base if not isinstance(base, Currency) else base
         )
         self._times: list[time] = []
         self._time_index: int = 0
         self.force: bool = force
+
+        # Remove this in next update
         self._synced: bool = False
+
+        # Creating the main portfolio if one is not provided.
         if portfolios is None:
             self.main = self.portfolio(0)
         else:
             self.main = self._portfolios[0]
 
     def __getattr__(self, attr: str) -> Any:
+        """
+        TODO: To make Environments' function more analogous to the global
+        environment, we should require that constructor calls are capitalized,
+        similar to instantiating the class normally. env.stock should not be
+        callable, or at the very least, env.Stock should ALSO be callable to
+        instantiate a local instance of the stock.
+        """
         instantiable = {c.__name__.lower(): c for c in types.instantiable()}
         if attr in instantiable:
             assetdict = self.AssetDict(instantiable[attr], self)
@@ -271,24 +409,65 @@ class Environment:
 
     @property
     def start(self) -> datetime:
+        """
+        The starting date of the environment based on all asset datasets
+        currently instantiated and tracked
+
+        When time control is "any" (default), returns the minimum of all asset
+        dataset starting dates, such that the start date is determined by the
+        lowest start date of **any** of the datasets. This means that the start
+        date will potentially precede the available date ranges of other
+        instantiated datasets.
+
+        If "all" is passed in for time_control instead, returns the max of all
+        asset dataset starting dates, such that **all** datasets must have
+        'started' prior to  the start date, and are all included in the data.
+        """
         data = [dataset.first for dataset in self.data()]
-        return min(data) if data else self._global_start
+        method = min if self._guarantee_inclusion else max
+        return method(data) if data else self._global_start
 
     @property
     def end(self) -> datetime:
+        """
+        The ending date of the environment based on all asset datasets currently
+        instantiated and tracked
+
+        When time control is "any" (default), returns the maximum of all asset
+        dataset ending dates, such that the end date is determined by the
+        highest end date of **any** of the datasets. This means that the end
+        date will potentially exceed the available date ranges of other
+        instantiated datasets.
+
+        If "all" is passed in for time_control instead, returns the min of all
+        asset dataset ending dates, such that **all** datasets must have data
+        which meets or exceeds the end date (and are therefore included in the
+        data)
+        """
         data = [dataset.last for dataset in self.data()]
-        return max(data) if data else self._global_end
+        method = max if self._guarantee_inclusion else min
+        return method(data) if data else self._global_end
+
+    @property
+    def date(self) -> datetime:
+        """The environmen's current date"""
+        return self._date
 
     @property
     def resolution(self) -> timedelta:
-        return self._resolution
-
-    @resolution.setter
-    def resolution(self, delta: timedelta) -> None:
-        self._resolution = self.validate_resolution(delta)
+        """
+        The minimum dataset resolution based on all currently instantiated and
+        tracked asset datasets.
+        """
+        data = [dataset.resolution for dataset in self.data()]
+        return min(data) if data else self._global_res
 
     @property
     def base(self) -> Currency:
+        """The default currency for assets/portfolios in this environment. If
+        instantiated without an argument explicitly determining otherwise, new
+        assets and portfolios instantiated in this environment will use this
+        currency as their base."""
         return self._base
 
     @base.setter
@@ -298,29 +477,52 @@ class Environment:
 
     @property
     def assets(self) -> list[Asset]:
+        """A list of assets currently tracked by this environment"""
         return self._assets
 
     @property
     def portfolios(self) -> dict[str, Portfolio]:
+        """A dictionary of portfolios tracked by this environment, with their
+        respective names as keys"""
         return {p.name: p for p in self._portfolios}
 
     @property
     def status(self) -> Environment.Status:
+        """The current portfolio status of this environment. Determines how
+        portfolio calls on the environment are rerouted."""
         return self.Status.get(len(self.portfolios))
 
     @property
     def times(self) -> list[time]:
+        """
+        A list of times that should be evaluated when using this environment
+        In an algorith.
+
+        When empty, algorithms will dynamically determine the next
+        available/best time step **at every time step**. This is VERY
+        computationally expensive. It is therefore recommended that algorithms
+        call env.finalize() during their setup so that this object is properly
+        set before algorithm runtime.
+        """
         return self._times
 
     @property
     def open(self) -> bool:
+        """Whether or not the environment is 'open' (**any** of its tracked
+        assets are available to be traded)"""
         return any(asset.open for asset in self.assets)
 
     @no_type_check
     def track(self, *to_track: Trackable) -> None:
-        """For all assets in *assets, adds them to this environment
+        """
+        For all bindables in * to_track, adds them to this environment
 
         TODO: TYPING FOR THIS IS BUSTED BECAUSE IT CURRENTLY ONLY HANDLES ASSETS
+
+        Parameters:
+            *to_track:
+                A bindable object or iterable of bindable objects, all of which
+                will become bound to this environment object,
         """
         for trackable in to_track:
             assets = [trackable] if isinstance(trackable, Asset) else list(trackable)
@@ -331,18 +533,25 @@ class Environment:
     def portfolio(
         self, initial: float, name: Optional[str] = None, base: Optional[str] = None
     ) -> Portfolio:
-        """Instantiates a portfolio within this environment
+        """
+        Instantiates a portfolio within this environment
 
-        Args:
-            initial (Number): The initial quantity of the base currency
-            name (str): This portfolio's name, used for indexing
-            date (datetime): This portfolio's starting valuation date
-            base (str): A currency code representing this portfolio's
-                base currency
+        Parameters:
+            initial:
+                The initial quantity of the base currency
+
+            name:
+                This portfolio's name, used for indexing and rerouting Portfolio
+                calls made on the environment
+
+            base:
+                A currency code representing this portfolio's base currency.
+                Uses the environments base currency as a default if none is
+                provided.
 
         Returns:
-            new (Portfolio): returns a new portfolio based on the
-                inputs, and adds it to this environment's tracked portfolios
+            Returns a new portfolio based on the inputs, and adds it to this
+            environment's tracked portfolios
         """
         if base is None:
             base = self.base.code
@@ -367,12 +576,14 @@ class Environment:
         OR SOMETHING... FREQUENTLY USED FOR ITERATING THROUGH AVAILABLE DATA.
         COULD EVEN MAKE SENSE AS A GENERATOR...
 
-        Args:
-            dtype (str | type): the dtype of the returned data object
+        Parameters:
+            dtype (str | type):
+                The dtype of the returned data object
 
         Returns:
-            data (dict | list): Returns a list or dict of asset
-                datasets, depending on the dtype input
+            data (dict | list):
+                Returns a list or dict of asset datasets, depending on the
+                dtype input
 
         Raises:
             ValueError: When the dtype input is unrecognized/invalid
@@ -394,11 +605,42 @@ class Environment:
         exclude: Iterable[Type] = None,
         manual: Iterable[TimeLike_T] = None,
     ) -> None:
-        """Vastly improves efficiency of self.next()
+        """
+        Vastly improves efficiency of self.next()
 
-        Improves the efficiency of self.next() by determining a set of relevant times for the currently instantiated assets, and iterating across those for time steps rather than dynamically determing the next time step after each step
+        Improves the efficiency of self.next() by determining a set of relevant
+        times for the currently instantiated assets, and iterating across those
+        for time steps rather than dynamically determing the next time step
+        after each step
 
-        Should only be called after all assets containing new relevant timestamps have been instantiated. Creating assets with novel and necessary valuation points will result in them being ignored by calls to next()
+        Should only be called after all assets containing new relevant
+        timestamps have been instantiated. Creating assets with novel and
+        necessary valuation points will result in them being ignored by calls
+        to next()
+
+        Paramaters:
+            include:
+                A list of asset types to include in the determination of the
+                relevant times. Only assets types included in this list are
+                used to determine what times are 'relvant', and will be added
+                to the environment's 'times' attribute.
+
+            exclude:
+                A list of asset types to exclude in the determination of the
+                relevant times. Asset types included in this list are only
+                used to determine what to exlude if the 'include' parameter
+                has not been specified.
+
+            manual:
+                Automatically overrides include and exlcude arguments. Takes
+                a list of timelike arguments (either as strings or actual python
+                time objets) and uses those as the environment's relevant times.
+                useful for when you want evaluate an algorithm at a different
+                resolution than the data. For examples, passing manual =
+                ["9:30 AM", "4:00 PM"] will ensure that the algorithms using
+                this environment will only valuate at 9:30:00 and 16:00:00 each
+                day, even if the data has a 15m resolution.
+
         """
         if manual:
             self._times = [utils.to_time(t) for t in manual]
@@ -407,50 +649,6 @@ class Environment:
 
         self._times = sorted(set(self._times))
         self._reset_time_index()
-
-    @staticmethod
-    def validate_resolution(resolution: timedelta) -> timedelta:
-        """Determines whether or not the input resolution is valid.
-        If is is, returns it as a native python timedelta object
-
-        Args:
-            resolution (Number | str | timedelta): The resolution to be
-                validated and converted
-
-        Returns:
-            resolution (timedelta): The convered, valid resolution
-
-        Raises:
-            TypeError: When the resolution is inconvertible
-        """
-        if isinstance(resolution, timedelta):
-            return resolution
-        else:
-            raise TypeError(
-                f"Resolution must be a datetime.timedelta "
-                "object. Received "
-                f"{resolution.__class__.__name__} "
-                f"{resolution}"
-            )
-
-    def default_resolution(self) -> timedelta:
-        """Determines the default resolution based on the tracked assets
-
-        Returns the minimum time resolution of all asset datasets
-        currently inside of this environment. If there are none, returns
-        the global resolution
-
-        Returns:
-            resolution (timedelta): the default resolution for this
-                environment
-        """
-        data = [dataset.resolution for dataset in self.data()]
-        return min(data) if data else self._global_res
-
-    def auto(self) -> None:
-        """Automatically sets the start, end, and resolution of this
-        environment to their defaults based on currently tracked assets"""
-        self.resolution = self.default_resolution()
 
     def sync(self, date: Optional[DatetimeLike] = None) -> None:
         """Syncs all alphagradient objects in this environment to the given datetime
@@ -467,9 +665,9 @@ class Environment:
             None (NoneType): Modifies this environment in place
         """
         if date is None:
-            self.date = self.start
+            self._date = self.start
         else:
-            self.date = to_datetime(date)
+            self._date = to_datetime(date)
 
         def sync_asset(asset):
             if getattr(asset, "reset", False):
@@ -487,22 +685,49 @@ class Environment:
 
         self._synced = False
 
-    def autosync(self) -> None:
-        """Combines auto and sync
+    def optimal_start(
+        self, end: Optional[DatetimeLike] = None, t: Optional[TimeLike] = "9:30 AM"
+    ) -> datetime:
+        """
+        Returns the optimal starting time for this environment based on
+        currently instantiated and tracked assets
 
-        Automatically determines appropriate start, end, and resolution,
-        and automatically sync all objects to the newly determined
-        start date
+        Returns a backtest starting datetime that:
+            * Is guaranteed to be within the date range of all intantiated assets
+            * | Is guaranteed to have ample time for calculations of historical
+              | volatility, beta, percent change etc. BEFORE the start date
+            * Automatically adjusts to accomodate shorter ending periods
+
+        Parameters:
+            end (DatetimeLike):
+                The end point which provides context for the optimal start. The
+                optimal starting point for an algorithm will be different
+                depending on when the backtest is ending.
+
+            t (Optional[TimeLike]):
+                The time time of day of the returned optimal start date.
 
         Returns:
-            None (NoneType): Modifies this environment in place
+            An optimal start date for a backtest using this environment.
         """
-        self.auto()
-        # Auto call will set a new self.start, which is then used in the sync
-        self.sync(self.start)
+        data = list(self.data())
+        if not data:
+            return self.start
+
+        max_start = max([dataset.first for dataset in data])
+        min_end = min([dataset.last for dataset in data])
+
+        return utils.optimal_start(
+            start=self.start, max_start=max_start, min_end=min_end, end=end, t=t
+        )
+
+    def autosync(self) -> None:
+        """Automatically syncs this environment to the optimal start time"""
+        self.sync(self.optimal_start())
 
     def step(self, delta: Union[DateOrTime, timedelta, float] = None) -> None:
-        """Takes a single time step in this environment, moving all
+        """
+        Takes a single time step in this environment, moving all
         alphagradient objects forward by the given delta
 
         The function that should be called in algorithms to iterate
@@ -511,15 +736,13 @@ class Environment:
         objects in this environment forward in time by the given delta,
         which defaults to the environment.resolution if none is provided.
 
-        Args:
-            delta (timedelta): The step size
-
-        Returns:
-            None (NoneType): Modifies this environment in place
+        Parameters:
+            delta:
+                The magnitude of the time step taken
         """
 
         # Want to use the default resolution for this environment as a the step size if None
-        self.date += (
+        self._date += (
             self.resolution if delta is None else utils.to_step(self.date, delta)
         )
 
@@ -540,8 +763,28 @@ class Environment:
         # Cleaning out expired assets
         self._assets = [asset for asset in self.assets if not asset.expired]
 
-    def next(self) -> datetime:
-        """Automatically updates this environment and all of its tracked assets to the next point of valuation"""
+    def next(self, make_step: bool = True) -> datetime:
+        """
+        Automatically updates this environment and all of its tracked assets
+        to the next point of valuation
+
+        env.next() automatically determines the next optimal point of valuation
+        by dynamically calculating the next available datapoint for each
+        instantiated asset dataset. If self.times has been defined
+        (self.finalize() has been called), instead uses self.times to determine
+        the next optimal valuation period.
+
+        If make_step is passed as True (default), automatically jumps to the
+        next time period before returning it.
+
+        Parameters:
+            make_step:
+                Whether or not to automatically make the time step (iterate to
+                the next datetime) when called. Defaults to True
+
+        Returns:
+            The next optimal starting date
+        """
 
         nextt = self.date
 
@@ -564,14 +807,17 @@ class Environment:
             # Setting the time of to the time at the new (next) index
             nextt = utils.set_time(nextt, self._times[new_index])
 
+            # Updating the time index
+            self._time_index = new_index
+
         # Dynamically determining the next best valuation time at every time step; very costly
         else:
             nextt = min([asset.next for asset in self.assets])
 
-        # Only update / perform time step if not returning a value
-        if self.times:
-            self._time_index = new_index
-        self.step(nextt)
+        # Perform the step function if requested
+        if make_step:
+            self.step(nextt)
+
         return nextt
 
     def _reset_time_index(self) -> None:
@@ -600,26 +846,28 @@ class Environment:
         specified otherwise.
 
         TODO: ALL OF THESE FUNCTIONS (BUY, SELL, SHORT, COVER) ARE LIKELY
-        SUFFICIENTLY COVERED BY _redirect. SHOULD PROBABLY BE DELETED!
+        SUFFICIENTLY COVERED BY _redirect. SHOULD PROBABLY BE DELETED.
         ALSO, CONSIDER MAKING TRANSACTIONS RETURN THE POSITION THAT THEY
-        CREATE OR ALTER
+        CREATE OR ALTER. EG, return new_position
 
         Creates a long position in the given asset with a purchase
         volume given by 'quantity' within the respective portfolio
 
-        Args:
-            asset (Asset): The asset in which to create a long position
-            quantity (Number): The purchase quantity
-            name (str | None): The name of the Portfolio where the
-                transaction will take place
+        Parameters:
+            asset:
+                The asset in which to create a long position
 
-        Returns:
-            None (NoneType): Modifies this environment in place
+            quantity:
+                The purchase quantity
+
+            name:
+                The name of the Portfolio where the transaction will take place
 
         Raises:
-            ValueError: If environment has no active portfolios, or if name
-            is not specified when there are multiple portfolios none
-            of which are named "MAIN"
+            ValueError:
+                If environment has no active portfolios, or if name
+                is not specified when there are multiple portfolios none
+                of which are named "MAIN"
         """
         # Transactions require a portfolio
         if self.NONE:
@@ -662,24 +910,26 @@ class Environment:
                     )
 
     def sell(self, asset: Asset, quantity: float, name: str = None) -> None:
-        """Sells an asset using this environment's main portfolio, unless
+        """
+        Sells an asset using this environment's main portfolio, unless
         specified otherwise.
 
         Decrements a long position in the given asset by 'quantity'.
         Maximum sale quantity is the amount owned by the portfolio.
 
-        Args:
-            asset (Asset): The asset of the corresponding decremented
-                position
-            quantity (Number): The sale quantity
-            name (str | None): The name of the Portfolio where the
-                transaction will take place
+        Parameters:
+            asset:
+                The asset of the corresponding decremented position
 
-        Returns:
-            None (NoneType): Modifies this environment in place
+            quantity:
+                The sale quantity
+
+            name:
+                The name of the Portfolio where the transaction will take place
 
         Raises:
-            ValueError: If environment has no active portfolios, or if name
+            ValueError:
+                If environment has no active portfolios, or if name
                 is not specified when there are multiple portfolios none
                 of which are named "MAIN"
         """
@@ -724,23 +974,26 @@ class Environment:
                     )
 
     def short(self, asset: Asset, quantity: float, name: str = None) -> None:
-        """Shorts an asset using this environment's main portfolio, unless
+        """
+        Shorts an asset using this environment's main portfolio, unless
         specified otherwise.
 
         Creates a short position in the given asset with a short sale
         volume given by 'quantity' within the respective portfolio
 
-        Args:
-            asset (Asset): The asset in which to create a short position
-            quantity (Number): The short sale quantity
-            name (str | None): The name of the Portfolio where the
-                transaction will take place
+        Paramters:
+            asset:
+                The asset in which to create a short position
 
-        Returns:
-            None (NoneType): Modifies this environment in place
+            quantity:
+                The short sale quantity
+
+            name:
+                The name of the Portfolio where the transaction will take place
 
         Raises:
-            ValueError: If environment has no active portfolios, or if name
+            ValueError:
+                If environment has no active portfolios, or if name
                 is not specified when there are multiple portfolios
                 none of which are named "MAIN"
         """
@@ -785,24 +1038,26 @@ class Environment:
                     )
 
     def cover(self, asset: Asset, quantity: float, name: str = None) -> None:
-        """Covers the short sale of an asset using this environment's main
+        """
+        Covers the short sale of an asset using this environment's main
         portfolio, unless specified otherwise.
 
         Decrements a long position in the given asset by 'quantity'.
         Maximum sale quantity is the amount owned by the portfolio.
 
-        Args:
-            asset (Asset): The asset of the corresponding decremented
-                position
-            quantity (Number): The sale quantity
-            name (str | None): The name of the Portfolio where the
-                transaction will take place
+        Parameters:
+            asset:
+                The asset of the corresponding decremented position
 
-        Returns:
-            None (NoneType): Modifies this environment in place
+            quantity:
+                The sale quantity
+
+            name:
+                The name of the Portfolio where the transaction will take place
 
         Raises:
-            ValueError: If environment has no active portfolios, or if name
+            ValueError:
+                If environment has no active portfolios, or if name
                 is not specified when there are multiple portfolios
                 none of which are named "MAIN"
         """
@@ -847,18 +1102,31 @@ class Environment:
                     )
 
     def _redirect(self, attr: str) -> Any:
-        """Redirects attribute access to a the proper portfolio when
+        """
+        Redirects attribute access to a the proper portfolio when
         user attempts to access portfolio attributes through the
         environment
 
-        Args:
-            attr (str): The attribute being accessed
+        Examples:
+
+            .. code:: pycon
+
+                >>> # Buys 10 shares of spy on the env.main portfolio
+                >>> env.buy(spy, 10)
+
+                >>> # Buys 10 shares of spy on the "ALT" portfolio
+                >>> env.buy(spy, 10, name="ALT")
+
+        Parameters:
+            attr:
+                The attribute being accessed
 
         Returns:
-            attr: The attribute on the respective portfolio
+            The attribute on the respective portfolio
 
         Raises:
-            AttributeError: When the attribute does not exist
+            AttributeError:
+                When the attribute does not exist
         """
 
         # No portfolios are present
@@ -895,12 +1163,6 @@ class Environment:
                     f"AlphaGradient Environment object has no attribute {attr}"
                 )
 
-    def reset(self) -> None:
-        """Resets this environment to its own start date, and syncs all
-        assets back to that start date"""
-        self.date = self.start
-        self.sync()
-
 
 # Using a protected keyword, attr must be set outside of the class
 setattr(Environment, "type", types.environment)
@@ -915,8 +1177,7 @@ def _get_exchange_info() -> pd.DataFrame:
     that are available by default when gathering stock data from the internet
 
     Returns:
-        exchange info (pd.DataFrame): A dataframe of all available stock
-            listings
+        A dataframe of all available stock listings
     """
 
     # Getting updated stock listings
@@ -954,22 +1215,63 @@ def _get_exchange_info() -> pd.DataFrame:
 
 
 class Universe(dict):
-    """A collection of stocks that can be efficiently filtered
+    """
+    A collection of stocks that can be efficiently filtered
 
     Special dictionaries that provide functionality for filtering thousands of
     stocks to meet a set of selection criteria
 
+    Examples:
+
+        .. code:: python
+
+            uni = ag.Universe("all")
+
+            # Selection will contain only Stocks whose beta is positive, and
+            # whose value is more than 100 (of their base currency)
+            selection = uni.filter[uni.beta > 0, uni.value > 100]
+
+    Parameters:
+        tickers:
+            What tickers to include in the Universe's total pool. This can be
+            passed in as a long string of tickers separated by spaces, a list
+            of tickers, a stock object, or a list of stock objects. One can also
+            pass in a float to instantiate a universe of exactly that many
+            tickers, grabbed from a list of supported tickers (sorted
+            alphabetically). Finally, one can pass in literals "local" or
+            "all", which will intantiate ALL available tickers either locally
+            (in persistent storage) or online, respectively.
+
+        refresh:
+            If true, this Universe will reinstantiate all tickers (even those
+            with persistent storage available) from online data, 'refreshing'
+            them.
+
+        verbose:
+            Defaults to True. Outputs Universe initialization performance
+            metrics and progress.
+
     Attributes:
-        verbose (bool): Whether or not universe functions (including
-            initialization) will print their status/progress to stdout
-        refresh (bool): Whether or not the universe will prefer to
-            gather data from onlne, even if it is present locally
-        tickers (list(str)): A list of stock tickers that are currently
-            included in / tracked by this universe
-        coverage (Number): A value indicating the proportion of
-            available stocks that are present in this universe
-        supported (list(str)): A list of stock exhanges which Universes
-            currently support filtering by explicitly during instantiation
+        verbose (bool):
+            Whether or not universe functions (including initialization) will
+            print their status/progress to stdout
+
+        refresh (bool):
+            Whether or not the universe will prefer to gather data from onlne,
+            even if it is present locally
+
+        tickers (list[str]):
+            A list of stock tickers that are currently included in / tracked
+            by this universe
+
+        coverage (float):
+            A value indicating the proportion of available stocks that are
+            present in this universe
+
+        supported (list[str]):
+            A list of stock exhanges which Universes currently support
+            filtering by explicitly during instantiation. Includes literals
+            "NYSE", "NYSEARCA", "NASDAQ" and more.
     """
 
     _exchange_info: pd.DataFrame = pd.DataFrame()
@@ -1029,18 +1331,23 @@ class Universe(dict):
 
     @property
     def tickers(self) -> list[str]:
+        """A list of tickers currently instantiated within this universe"""
         return self._tickers
 
     @property
     def errors(self) -> list[str]:
+        """A list of tickers that have had errors in their instantiation"""
         return self._errors
 
     @property
     def coverage(self) -> float:
+        """The proportion of the Universe's intitial listings that remain. For
+        Universe objects, this is always 1, as they have not yet been filtered"""
         return 1
 
     @property
     def supported(self) -> list[str]:
+        """A list of supported exchanges"""
         return self._exchange_info["Exchange"].unique.to_list()
 
     def add(
@@ -1048,16 +1355,18 @@ class Universe(dict):
         tickers: Union[float, Stock, str, list[str], list[Stock]],
         refresh: bool = None,
     ) -> None:
-        """Adds new stocks/tickers to the universe
+        """
+        Adds new stocks/tickers to the universe.
 
-        Args:
-            tickers (list(str) | list(Stock)): A list of tickers or
-                already instantiated stock objects to be added to the universe
-            refresh (bool): Whether or not to prefer downloading stock
-                data online even when present locally
+        Parameters:
+            tickers (list[str] | list[Stock]):
+                A list of tickers or already instantiated stock objects to be
+                added to the universe
 
-        Returns:
-            None (NoneType): Modifies the universe in place
+            refresh:
+                Whether or not to prefer downloading stock data online even
+                when present locally. Defaults to the universe's general setting
+                when none is provided.
         """
         refresh = self.refresh if refresh is None else refresh
         tickers, stock_input = self._ticker_input(tickers)
@@ -1096,7 +1405,8 @@ class Universe(dict):
             self.local = sorted(list(set(self.local_p + self.local_csv)))
 
     def update_tickers(self) -> None:
-        """Updates the exchange info for this universe object by getting stock listings from the internet"""
+        """Updates the exchange info for this universe object by getting stock
+        listings from the internet"""
         self._exchange_info = _get_exchange_info()
         with open(self._eipath, "wb") as f:
             self._exchange_info.to_pickle(f)
@@ -1132,7 +1442,8 @@ class Universe(dict):
                     ]
                 )[1:-1]
                 raise TypeError(
-                    f"Ticker list inputs must contain only strings or only Stocks. List contained: {invalid}"
+                    "Ticker list inputs must contain only strings or only "
+                    f"Stocks. List contained: {invalid}"
                 )
 
         elif isinstance(tickers, Stock):
@@ -1156,7 +1467,10 @@ class Universe(dict):
 
         else:
             raise TypeError(
-                f"Invalid input type {type(tickers).__name__} for tickers. Tickers must be a list of strings, a list of AlphaGradient Stocks, or the name of an exchange (currently supports NYSE and NASDAQ)"
+                f"Invalid input type {type(tickers).__name__} for tickers. "
+                "Tickers must be a list of strings, a list of AlphaGradient "
+                "Stocks, or the name of an exchange (currently supports NYSE "
+                "and NASDAQ)"
             )
 
         # For mypy
@@ -1165,17 +1479,24 @@ class Universe(dict):
         return tickers, stock_input
 
     def _get_stocks(self, tickers: list[str], refresh: bool = False) -> list[str]:
-        """Given a list of tickers (list(str)), adds all of them as entries to self
+        """
+        Given a list of tickers (list(str)), adds all of them as entries to self
 
-        Takes in a list of normalized tickers (list(str)) and adds them as entries to the dictionary, where keys are tickers and values are the initialized assets
+        Takes in a list of normalized tickers (list(str)) and adds them as
+        entries to the dictionary, where keys are tickers and values are the
+        initialized assets
 
-        Args:
-            tickers (list(str)): A list of stock tickers to be added
-            refresh (bool): Whether to prefer online instead of local
-                data
+        Parameters:
+            tickers:
+                A list of stock tickers to be added
+
+            refresh:
+                Whether to prefer online instead of local data
 
         Returns:
-            None (NoneType): Modifies the universe in place
+            A list of delisted tickers that have been removed from self.tickers
+            because of their failure to initialize, typically from a failure to
+            retrieve the data from yfinance/yahoo finance api
         """
 
         def get_instantiated(tickers: list[str]) -> list[str]:
@@ -1192,7 +1513,8 @@ class Universe(dict):
                 stock_or_stocks = "stock" if len(instantiated) == 1 else "stocks"
                 is_or_are = "is" if len(instantiated) == 1 else "are"
                 self.print(
-                    f"[1]: adding {len(instantiated)} {stock_or_stocks} that {is_or_are} already instantiated"
+                    f"[1]: adding {len(instantiated)} {stock_or_stocks} that "
+                    f"{is_or_are} already instantiated"
                 )
                 for ticker in instantiated:
                     self[ticker] = types.stock[ticker]
@@ -1252,7 +1574,8 @@ class Universe(dict):
                     batch.remove(ticker)
 
                 self.print(
-                    f"Initializing {len(batch)} Stocks from downloaded batch ({len(to_remove)} failures)"
+                    f"Initializing {len(batch)} Stocks from downloaded batch "
+                    f"({len(to_remove)} failures)"
                 )
 
                 if batch:
@@ -1278,7 +1601,8 @@ class Universe(dict):
             size = utils.auto_batch_size(tickers)
             batches: Any = math.ceil(len(tickers) / size)
             self.print(
-                f"[4]: initializing {len(tickers)} stocks from online data ({batches} batches)"
+                f"[4]: initializing {len(tickers)} stocks from online data "
+                f"({batches} batches)"
             )
 
             def get_batch(batch: list[str]) -> tuple[list[Stock], dict[str, list[str]]]:
@@ -1361,7 +1685,9 @@ class Universe(dict):
         timeouts = errors["timeout"][:]
 
         self.print(
-            f"Successfully added {(len(all_tickers) - num_errors)} of {len(all_tickers)} stocks ({len(delisted)} failures, {len(timeouts)} timeouts, {num_errors} total errors))"
+            f"Successfully added {(len(all_tickers) - num_errors)} of "
+            f"{len(all_tickers)} stocks ({len(delisted)} failures, "
+            f"{len(timeouts)} timeouts, {num_errors} total errors))"
         )
 
         previous = []
@@ -1378,7 +1704,9 @@ class Universe(dict):
             n_errors = n_timeout + n_delisted
             n_success = n_attempts - n_errors
             self.print(
-                f"{n_success} / {n_attempts} successful timeout reattempts ({n_delisted} failures, {n_timeout} timeouts, {n_errors} total errors)"
+                f"{n_success} / {n_attempts} successful timeout reattempts "
+                f"({n_delisted} failures, {n_timeout} timeouts, {n_errors} "
+                "total errors)"
             )
 
             delisted += errors["delisted"]
@@ -1415,9 +1743,17 @@ class Universe(dict):
 
 
 class Filter:
-    """A universe's filter object that allows stock filtering
+    """
+    A universe's filter object that allows stock filtering
 
-    A filter object attached to all universe objects that automatically processes filter expressions for its attached universe
+    A filter object attached to all universe objects that automatically
+    processes filter expressions for its attached universe
+
+    Thse objects are not intended to be instantiated by the end user, and only
+    have utility in their attachment to a Universe object.
+
+    Parameters:
+        universe: The universe object to attach to
     """
 
     def __init__(self, universe: Universe) -> None:
@@ -1443,7 +1779,7 @@ class Filter:
         """A multiprocessing version of the filter execution"""
 
         def process_stock(stock):
-            return (stock.name, filterr.exec(stock))
+            return (stock.name, filterr._exec(stock))
 
         filtered: Union[dict[str, Stock], list[Stock]] = []
 
@@ -1454,10 +1790,11 @@ class Filter:
 
     @staticmethod
     def _filter_mp_v2(universe: Universe, filterr: FilterExpression) -> UniverseView:
-        """A multiprocessing version of the filter execution that utilizes automatic batching of the universe's current stocks"""
+        """A multiprocessing version of the filter execution that utilizes
+        automatic batching of the universe's current stocks"""
 
         def process_batch(batch):
-            return [(stock, filterr.exec(stock)) for stock in batch]
+            return [(stock, filterr._exec(stock)) for stock in batch]
 
         batches = list(utils.auto_batch(list(universe.values())))
         filtered = []
@@ -1472,21 +1809,26 @@ class Filter:
     def _filter(universe: Universe, filterr: FilterExpression) -> UniverseView:
         """Executes a filter expression on a universe
 
-        Executes a single filter expression on this filter's universe, returning a universe view that is the result of the filter
+        Executes a single filter expression on this filter's universe,
+        returning a universe view that is the result of the filter
 
-        Args:
-            universe (Universe | UniverseView): The universe to filter
-            filterr (_filterexp): The expression to apply
+        Parameters:
+            universe (Universe | UniverseView):
+                The universe to filter
+
+            filterr (FilterExpression):
+                The expression to apply
 
         Returns:
-            UniverseView: The filtered universe object
+            The filtered universe object
         """
-        filtered = [v for v in universe.values() if filterr.exec(v)]
+        filtered = [v for v in universe.values() if filterr._exec(v)]
         return UniverseView(universe, filtered, filterr)
 
     @staticmethod
     def _validate_filters(filters: Iterable[ValidFilter]) -> list[FilterExpression]:
-        """Validates that all objects in a filter indexing operation are valid filters or filter expressions"""
+        """Validates that all objects in a filter indexing operation are valid
+        filters or filter expressions"""
 
         def validate(filterr):
             if isinstance(filterr, list):
@@ -1512,20 +1854,38 @@ class Filter:
 
 
 class FilterExpression:
-    """An expression compiled inside of a filter indexing operation
+    """
+    An expression compiled inside of a filter indexing operation
 
-    An object produced by performing a boolean operation on a stock attribute, when the attribute is accessed from a universe object. When compiled, filter expressions will always produce a function that takes in a single stock object as an input, and produces a boolean output. Functions passed into a filter indexing operation that operate similarly are also valid filtere expressions.
+    An object produced by performing a boolean operation on a stock attribute,
+    when the attribute is accessed from a universe object. When compiled,
+    filter expressions will always produce a function that takes in a single
+    stock object as an input, and produces a boolean output. Functions passed
+    into a filter indexing operation that operate similarly are also valid
+    filter expressions.
 
-    For the sake of example, let x be a Universe or UniverseView (they operate identically when being filtered). The expression "x.beta() > 1" will produce a filter expression object that, when compiled, will result in a function whose input is a stock object and output is the boolean result of "stock.beta() > 1". Any expression that takes a single stock as an input with a boolean return is a valid expression inside of a filtering operation. For example, the expression "x.value" will return a filter expression whos attached function will evaluate the boolean of conversion of a stock's value -- False if the stock is worthless else True.
+    For the sake of example, let x be a Universe or UniverseView (they operate
+    identically when being filtered). The expression "x.beta() > 1" will
+    produce a filter expression object that, when compiled, will result in a
+    function whose input is a stock object and output is the boolean result of
+    "stock.beta() > 1". Any expression that takes a single stock as an input
+    with a boolean return is a valid expression inside of a filtering operation.
+    For example, the expression "x.value" will return a filter expression whos
+    attached function will evaluate the boolean of conversion of a stock's
+    value -- False if the stock is worthless else True.
 
-    Filter expression objects can only be created by accessing stock attributes on a universe object.
+    Filter expression objects can only be created by accessing stock attributes
+    on a universe object.
 
-    Args:
-        attr (str): The stock attribute to access for each stock
-        special (str): Used when creating nonstandard filter expressions
+    Filter Expressions are only intended to be created by Universe and Filter
+    objects. They should never be instantiated by end users.
 
-    Returns:
-        filterexp: The filter expression
+    Parameters:
+        attr:
+            The stock attribute to access for each stock
+
+        special:
+            Used when creating nonstandard filter expressions
     """
 
     attr: str
@@ -1599,23 +1959,13 @@ class FilterExpression:
         self.called = True
         return self
 
-    def exec(self, *args: Any, **kwargs: Any) -> bool:
-        """Executes the function compiled by this filter"""
-        if self.exp is None:
-            self.exp = self.build_exp()
-        result = self.exp(*args, **kwargs)
-        try:
-            return bool(result)
-        except TypeError as e:
-            raise TypeError(
-                f"Filter expression '{self}' does not return a boolean or boolean-convertible value"
-            ) from e
-
     def __bool__(self) -> bool:
         if self.is_other:
             return True
         raise NotImplementedError(
-            f"Direct boolean conversion not currently supported for filter expressions. If checking for a false value, try '{self.attr_string()} == False'"
+            f"Direct boolean conversion not currently supported for filter "
+            "expressions. If checking for a false value, try "
+            f"'{self.attr_string()} == False'"
         )
 
     def __lt__(self, other: object) -> FilterExpression:
@@ -1706,7 +2056,8 @@ class FilterExpression:
         return called or base
 
     def _build_condition(self) -> Callable[[Stock], Any]:
-        """Builds a function for getting the condition, and accessing the attribute of the condition if it is another stock attr"""
+        """Builds a function for getting the condition, and accessing the
+        attribute of the condition if it is another stock attr"""
         if isinstance(self.condition, FilterExpression):
             base = lambda stock: getattr(stock, self.condition.attr)
             called = None
@@ -1717,7 +2068,7 @@ class FilterExpression:
             return called or base
         return lambda stock: self.condition
 
-    def build_exp(self) -> Callable[[Stock], Any]:
+    def _build_exp(self) -> Callable[[Stock], Any]:
         """Builds the entire function"""
         attr = self._build_attr()
 
@@ -1732,10 +2083,25 @@ class FilterExpression:
 
         return lambda stock: checker(base(stock))
 
+    def _exec(self, *args: Any, **kwargs: Any) -> bool:
+        """Executes the function compiled by this filter"""
+        if self.exp is None:
+            self.exp = self._build_exp()
+        result = self.exp(*args, **kwargs)
+        try:
+            return bool(result)
+        except TypeError as e:
+            raise TypeError(
+                f"Filter expression '{self}' does not return a boolean or "
+                "boolean-convertible value"
+            ) from e
+
     @no_type_check
     @staticmethod
     def from_string(string: str) -> FilterExpression:
-        """Takes in a string of a valid filter expressions and returns it as a filterexpression object
+        """
+        Takes in a string of a valid filter expressions and returns it as a
+        filterexpression object
 
         TODO: This method does not currently function as expected, needs better
         parsing. Do not use for the time being.
@@ -1800,7 +2166,8 @@ class FilterExpression:
 
 
 class UniverseView(Universe):
-    """A Universe with filters applied, with functionality for removing, adding, or changing filters applied"""
+    """A Universe with filters applied, with functionality for removing,
+    adding, or changing filters applied"""
 
     def __init__(
         self,
@@ -1821,10 +2188,13 @@ class UniverseView(Universe):
 
     @property
     def coverage(self) -> float:
+        """The proportion of stocks that remain in this universe compared to
+        its original instance."""
         return len(self) / len(self.universe)
 
     @property
     def history(self) -> str:
+        """A formatted string of this portfolio's filter history"""
         initial = len(self.universe)
         result = f"Universe: {initial} stocks"
         result += "\n" + ("-" * len(result))
