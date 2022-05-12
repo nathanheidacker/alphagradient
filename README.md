@@ -12,7 +12,7 @@
 
 ## Documentation
 
-For now, official documentation is hosted on [nathanheidacker.github.io](nathanheidacker.github.io)
+For now, official documentation is hosted on [nathanheidacker.github.io](https://nathanheidacker.github.io)
 
 ## Introduction
 
