@@ -71,6 +71,7 @@
     --pst-color-inline-code: var(--ag-secondary-400);
     --pst-color-paragraph: var(--ag-text-600);
     --pst-color-preformatted-background: var(--ag-bg-code);
+    --pst-color-preformatted-text: var(--ag-text-600);
 
     /* --- LINK COLORS --- */
     --pst-color-link: var(--ag-primary-100);
@@ -92,7 +93,18 @@
     /* --- TOC COLORS --- */
     --pst-color-toc-link: var(--ag-primary-100);
     --pst-color-toc-link-hover: var(--ag-tertiary-300);
-    --pst-color-toc-link-active: var(--ag-primary-200)
+    --pst-color-toc-link-active: var(--ag-primary-200);
+
+    /* --- SIDEBAR COLORS --- */
+    --pst-color-sidebar-expander-background-hover: var(--ag-bg-input);
+
+    /* --- HEADER LINK COLORS --- */
+    --pst-color-headerlink: var(--ag-secondary-400);
+
+    /* --- SPHINX-DESIGN COLORS --- */
+    --sd-color-primary: rgba(var(--ag-primary-200), 1);
+    --sd-color-secondary: rgba(var(--ag-secondary-500), 1);
+    --sd-color-secondary-highlight: rgba(var(--ag-secondary-300), 1);
 }
 
 body {
@@ -131,4 +143,26 @@ span.highlighted {
 
 a:hover {
     text-decoration: none !important;
+}
+
+.sd-card {
+    background-color: var(--ag-bg-navbar); 
+}
+
+.sd-card-header {
+    background-color: var(--ag-bg-input);
+}
+
+img.icon {
+    filter: invert(81%) sepia(56%) saturate(397%) hue-rotate(339deg) brightness(103%) contrast(104%);
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+#navbar-main-elements {
+    font-weight: 600;
+}
+
+a.current.nav-link {
+    font-weight: 800;
 }

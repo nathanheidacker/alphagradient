@@ -1,5 +1,0 @@
-sphinx-apidoc -o . ../alphagradient --force
-sphinx-autogen -o generated *.rst
-make clean
-make html
-open -a "Google Chrome" ./_build/html/index.html
