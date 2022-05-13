@@ -19,4 +19,10 @@ lint-testing:
 unit-test-standard.py:
   stage: unit
   script:
-    - python3 tests/unit_test.py
+    - python3 test/test_utils.py
+    - python3 test/test_data.py
+    - python3 test/test_asset.py
+    - python3 test/test_portfolio.py
+    - python3 test/test_algorithm.py
+    - python3 test/test_collections.py
+    - python3 test/test_globals.py
