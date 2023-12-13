@@ -13,7 +13,7 @@ jobs:
       - uses: actions/setup-python@v3
       - name: Install dependencies
         run: |
-          pip install alphagradient numpydoc sphinx sphinx_rtd_theme myst_parser
+          pip install alphagradient sphinx_autodoc_typehints numpydoc sphinx sphinx_rtd_theme myst_parser
       - name: Sphinx build
         working-directory: ./docs/source
         run: |
