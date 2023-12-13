@@ -24,8 +24,6 @@ To be able to use AlphaGradient effectively, you must know...
 
 Where other libraries might require you to be a programmer first and and a certified quantitative financial analyst second, AlphaGradient is truly geared towards hobbyist algorithmic traders who want to play around with ideas for financial algorithms. Within minutes, you can have a fully backtestable algorithm using nothing but basic python.
 
-AlphaGradient is to the algorithmic trader as console gaming is to the gamer; it gets the job done and comes at a bargain--batteries included. If you have even a passing interest in finance or algorithmic trading, this package makes it as easy as possible to get involved without having a background in computer science.
-
 ## Installation
 The source code is currently hosted on GitHub at:
 https://github.com/nathanheidacker/alphagradient
