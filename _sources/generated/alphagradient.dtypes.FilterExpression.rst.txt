@@ -1,0 +1,33 @@
+﻿alphagradient.dtypes.FilterExpression
+=====================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoclass:: FilterExpression
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      FilterExpression.__call__
+      FilterExpression.attr_string
+      FilterExpression.from_string
+
+
+
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      FilterExpression.attr
+
+

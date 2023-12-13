@@ -1,0 +1,6 @@
+alphagradient.algolib.IndexHold.date
+====================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. autoproperty:: IndexHold.date

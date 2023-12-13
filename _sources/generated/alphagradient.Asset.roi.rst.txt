@@ -1,0 +1,6 @@
+alphagradient.Asset.roi
+=======================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Asset.roi

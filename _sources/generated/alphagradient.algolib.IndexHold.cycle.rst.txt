@@ -1,0 +1,6 @@
+alphagradient.algolib.IndexHold.cycle
+=====================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. automethod:: IndexHold.cycle

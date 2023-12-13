@@ -1,0 +1,6 @@
+alphagradient.Put.expire
+========================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Put.expire

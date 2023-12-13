@@ -1,0 +1,6 @@
+alphagradient.Currency.close\_value
+===================================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Currency.close_value

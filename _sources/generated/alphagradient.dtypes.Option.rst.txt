@@ -1,0 +1,69 @@
+﻿alphagradient.dtypes.Option
+===========================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoclass:: Option
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Option.alpha
+      Option.beta
+      Option.cagr
+      Option.cdf
+      Option.exact_days
+      Option.expire
+      Option.get_settings
+      Option.ma
+      Option.quote
+      Option.range
+      Option.reset
+      Option.roi
+      Option.valuate
+      Option.vol
+
+
+
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Option.atm
+      Option.base
+      Option.benchmark
+      Option.close_value
+      Option.data
+      Option.date
+      Option.expired
+      Option.expiry
+      Option.key
+      Option.market_close
+      Option.market_open
+      Option.name
+      Option.next
+      Option.open
+      Option.open_value
+      Option.optional
+      Option.price
+      Option.protocol
+      Option.required
+      Option.rfr
+      Option.spot
+      Option.ttm
+      Option.type
+      Option.unit
+      Option.units
+      Option.value
+
+

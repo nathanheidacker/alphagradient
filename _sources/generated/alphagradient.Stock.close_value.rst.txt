@@ -1,0 +1,6 @@
+alphagradient.Stock.close\_value
+================================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Stock.close_value

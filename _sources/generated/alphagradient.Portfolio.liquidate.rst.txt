@@ -1,0 +1,6 @@
+alphagradient.Portfolio.liquidate
+=================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Portfolio.liquidate

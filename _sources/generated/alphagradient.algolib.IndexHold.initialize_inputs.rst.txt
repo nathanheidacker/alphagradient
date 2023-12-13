@@ -1,0 +1,6 @@
+alphagradient.algolib.IndexHold.initialize\_inputs
+==================================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. automethod:: IndexHold.initialize_inputs

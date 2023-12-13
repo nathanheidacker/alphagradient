@@ -1,0 +1,42 @@
+﻿alphagradient.algolib.IndexHold
+===============================
+
+.. currentmodule:: alphagradient.algolib
+
+.. autoclass:: IndexHold
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      IndexHold.__call__
+      IndexHold.cycle
+      IndexHold.default_run
+      IndexHold.initialize_inputs
+      IndexHold.setup
+      IndexHold.validate_end
+      IndexHold.validate_resolution
+
+
+
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      IndexHold.active
+      IndexHold.date
+      IndexHold.end
+      IndexHold.env
+      IndexHold.start
+      IndexHold.type
+
+

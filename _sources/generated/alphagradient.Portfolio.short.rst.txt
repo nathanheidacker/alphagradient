@@ -1,0 +1,6 @@
+alphagradient.Portfolio.short
+=============================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Portfolio.short

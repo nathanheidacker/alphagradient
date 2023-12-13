@@ -1,0 +1,6 @@
+alphagradient.dtypes.Position.total\_return
+===========================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoproperty:: Position.total_return

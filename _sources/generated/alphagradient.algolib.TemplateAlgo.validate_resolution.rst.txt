@@ -1,0 +1,6 @@
+alphagradient.algolib.TemplateAlgo.validate\_resolution
+=======================================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. automethod:: TemplateAlgo.validate_resolution

@@ -1,0 +1,6 @@
+alphagradient.Call.expired
+==========================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Call.expired

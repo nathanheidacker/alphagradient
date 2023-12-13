@@ -1,0 +1,6 @@
+alphagradient.dtypes.AssetData.next
+===================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: AssetData.next

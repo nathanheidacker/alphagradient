@@ -1,0 +1,6 @@
+alphagradient.Currency.protocol
+===============================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Currency.protocol

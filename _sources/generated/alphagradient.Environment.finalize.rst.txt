@@ -1,0 +1,6 @@
+alphagradient.Environment.finalize
+==================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Environment.finalize

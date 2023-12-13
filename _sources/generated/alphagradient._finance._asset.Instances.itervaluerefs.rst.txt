@@ -1,0 +1,6 @@
+alphagradient.\_finance.\_asset.Instances.itervaluerefs
+=======================================================
+
+.. currentmodule:: alphagradient._finance._asset
+
+.. automethod:: Instances.itervaluerefs

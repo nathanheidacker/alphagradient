@@ -1,0 +1,6 @@
+alphagradient.algolib.ThetaGang.type
+====================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. autoattribute:: ThetaGang.type

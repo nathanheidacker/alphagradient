@@ -1,0 +1,72 @@
+﻿alphagradient.Call
+==================
+
+.. currentmodule:: alphagradient
+
+.. autoclass:: Call
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Call.alpha
+      Call.beta
+      Call.black_scholes
+      Call.cagr
+      Call.cdf
+      Call.exact_days
+      Call.expire
+      Call.get_settings
+      Call.ma
+      Call.quote
+      Call.range
+      Call.reset
+      Call.roi
+      Call.valuate
+      Call.vol
+
+
+
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Call.atm
+      Call.base
+      Call.benchmark
+      Call.close_value
+      Call.data
+      Call.date
+      Call.expired
+      Call.expiry
+      Call.itm
+      Call.key
+      Call.market_close
+      Call.market_open
+      Call.name
+      Call.next
+      Call.open
+      Call.open_value
+      Call.optional
+      Call.otm
+      Call.price
+      Call.protocol
+      Call.required
+      Call.rfr
+      Call.spot
+      Call.ttm
+      Call.type
+      Call.unit
+      Call.units
+      Call.value
+
+

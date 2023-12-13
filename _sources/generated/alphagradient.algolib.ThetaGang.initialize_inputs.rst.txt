@@ -1,0 +1,6 @@
+alphagradient.algolib.ThetaGang.initialize\_inputs
+==================================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. automethod:: ThetaGang.initialize_inputs

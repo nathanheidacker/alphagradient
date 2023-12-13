@@ -1,0 +1,6 @@
+alphagradient.Call.range
+========================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Call.range

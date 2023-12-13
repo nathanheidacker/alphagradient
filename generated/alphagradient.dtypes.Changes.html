@@ -1,0 +1,3424 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>alphagradient.dtypes.Changes &#8212; AlphaGradient v0.0.2 documentation</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/alphagradient.css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/design-tabs.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="alphagradient.dtypes.ChangesWithInfo" href="alphagradient.dtypes.ChangesWithInfo.html" />
+    <link rel="prev" title="alphagradient.dtypes.Asset_T" href="alphagradient.dtypes.Asset_T.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+
+<a class="navbar-brand" href="../index.html">
+  <img src="../_static/aglogowtext.png" class="logo" alt="logo">
+</a>
+
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../quickstart/index.html">
+  Quickstart Guide
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../guide/index.html">
+  User Guide
+ </a>
+</li>
+
+<li class="toctree-l1 current active nav-item">
+ <a class="reference internal nav-link" href="../api/index.html">
+  API Reference
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../algolib/index.html">
+  Algorithm Library
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../about.html">
+  About
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/nathanheidacker/alphagradient" rel="noopener" target="_blank" title="GitHub"><span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar">
+              <div class="sidebar-start-items"><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    <p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  API Contents
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../api/asset.html">
+   Assets
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="alphagradient.Asset.html">
+     alphagradient.Asset
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+    <label for="toctree-checkbox-2">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Asset.alpha.html">
+       alphagradient.Asset.alpha
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Asset.beta.html">
+       alphagradient.Asset.beta
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Asset.cagr.html">
+       alphagradient.Asset.cagr
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Asset.expire.html">
+       alphagradient.Asset.expire
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Asset.get_settings.html">
+       alphagradient.Asset.get_settings
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Asset.ma.html">
+       alphagradient.Asset.ma
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Asset.quote.html">
+       alphagradient.Asset.quote
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Asset.range.html">
+       alphagradient.Asset.range
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Asset.roi.html">
+       alphagradient.Asset.roi
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Asset.valuate.html">
+       alphagradient.Asset.valuate
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Asset.vol.html">
+       alphagradient.Asset.vol
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.base.html">
+     alphagradient.Asset.base
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.benchmark.html">
+     alphagradient.Asset.benchmark
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.close_value.html">
+     alphagradient.Asset.close_value
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.data.html">
+     alphagradient.Asset.data
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.date.html">
+     alphagradient.Asset.date
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.expired.html">
+     alphagradient.Asset.expired
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.key.html">
+     alphagradient.Asset.key
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.market_close.html">
+     alphagradient.Asset.market_close
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.market_open.html">
+     alphagradient.Asset.market_open
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.name.html">
+     alphagradient.Asset.name
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.next.html">
+     alphagradient.Asset.next
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.open.html">
+     alphagradient.Asset.open
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.open_value.html">
+     alphagradient.Asset.open_value
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.optional.html">
+     alphagradient.Asset.optional
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.price.html">
+     alphagradient.Asset.price
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.protocol.html">
+     alphagradient.Asset.protocol
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.required.html">
+     alphagradient.Asset.required
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.rfr.html">
+     alphagradient.Asset.rfr
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.value.html">
+     alphagradient.Asset.value
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.unit.html">
+     alphagradient.Asset.unit
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.units.html">
+     alphagradient.Asset.units
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.get_settings.html">
+     alphagradient.Asset.get_settings
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.range.html">
+     alphagradient.Asset.range
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.expire.html">
+     alphagradient.Asset.expire
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.valuate.html">
+     alphagradient.Asset.valuate
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.alpha.html">
+     alphagradient.Asset.alpha
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.beta.html">
+     alphagradient.Asset.beta
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.cagr.html">
+     alphagradient.Asset.cagr
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.ma.html">
+     alphagradient.Asset.ma
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.quote.html">
+     alphagradient.Asset.quote
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.roi.html">
+     alphagradient.Asset.roi
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Asset.vol.html">
+     alphagradient.Asset.vol
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../api/standard/index.html">
+   Standard Asset Types
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/standard/Currency.html">
+     Currencies
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+    <label for="toctree-checkbox-4">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="alphagradient.Currency.html">
+       alphagradient.Currency
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Currency.alpha.html">
+         alphagradient.Currency.alpha
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Currency.beta.html">
+         alphagradient.Currency.beta
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Currency.cagr.html">
+         alphagradient.Currency.cagr
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Currency.code_value.html">
+         alphagradient.Currency.code_value
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Currency.convert.html">
+         alphagradient.Currency.convert
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Currency.expire.html">
+         alphagradient.Currency.expire
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Currency.get_settings.html">
+         alphagradient.Currency.get_settings
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Currency.get_symbol.html">
+         alphagradient.Currency.get_symbol
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Currency.ma.html">
+         alphagradient.Currency.ma
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Currency.online_data.html">
+         alphagradient.Currency.online_data
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Currency.quote.html">
+         alphagradient.Currency.quote
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Currency.range.html">
+         alphagradient.Currency.range
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Currency.rate.html">
+         alphagradient.Currency.rate
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Currency.roi.html">
+         alphagradient.Currency.roi
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Currency.validate_code.html">
+         alphagradient.Currency.validate_code
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Currency.valuate.html">
+         alphagradient.Currency.valuate
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Currency.vol.html">
+         alphagradient.Currency.vol
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.info.html">
+       alphagradient.Currency.info
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.is_base.html">
+       alphagradient.Currency.is_base
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.base.html">
+       alphagradient.Currency.base
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.benchmark.html">
+       alphagradient.Currency.benchmark
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.close_value.html">
+       alphagradient.Currency.close_value
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.data.html">
+       alphagradient.Currency.data
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.date.html">
+       alphagradient.Currency.date
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.expired.html">
+       alphagradient.Currency.expired
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.key.html">
+       alphagradient.Currency.key
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.market_close.html">
+       alphagradient.Currency.market_close
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.market_open.html">
+       alphagradient.Currency.market_open
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.name.html">
+       alphagradient.Currency.name
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.next.html">
+       alphagradient.Currency.next
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.open.html">
+       alphagradient.Currency.open
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.open_value.html">
+       alphagradient.Currency.open_value
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.optional.html">
+       alphagradient.Currency.optional
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.price.html">
+       alphagradient.Currency.price
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.protocol.html">
+       alphagradient.Currency.protocol
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.required.html">
+       alphagradient.Currency.required
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.rfr.html">
+       alphagradient.Currency.rfr
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.type.html">
+       alphagradient.Currency.type
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.value.html">
+       alphagradient.Currency.value
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.unit.html">
+       alphagradient.Currency.unit
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.units.html">
+       alphagradient.Currency.units
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.online_data.html">
+       alphagradient.Currency.online_data
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.valuate.html">
+       alphagradient.Currency.valuate
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.code_value.html">
+       alphagradient.Currency.code_value
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.get_symbol.html">
+       alphagradient.Currency.get_symbol
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.validate_code.html">
+       alphagradient.Currency.validate_code
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.convert.html">
+       alphagradient.Currency.convert
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Currency.rate.html">
+       alphagradient.Currency.rate
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/standard/Stock.html">
+     Stocks
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+    <label for="toctree-checkbox-6">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="alphagradient.Stock.html">
+       alphagradient.Stock
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+      <label for="toctree-checkbox-7">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Stock.alpha.html">
+         alphagradient.Stock.alpha
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Stock.beta.html">
+         alphagradient.Stock.beta
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Stock.cagr.html">
+         alphagradient.Stock.cagr
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Stock.call.html">
+         alphagradient.Stock.call
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Stock.expire.html">
+         alphagradient.Stock.expire
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Stock.get_settings.html">
+         alphagradient.Stock.get_settings
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Stock.ma.html">
+         alphagradient.Stock.ma
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Stock.put.html">
+         alphagradient.Stock.put
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Stock.quote.html">
+         alphagradient.Stock.quote
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Stock.range.html">
+         alphagradient.Stock.range
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Stock.roi.html">
+         alphagradient.Stock.roi
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Stock.valuate.html">
+         alphagradient.Stock.valuate
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Stock.vol.html">
+         alphagradient.Stock.vol
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.ticker.html">
+       alphagradient.Stock.ticker
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.base.html">
+       alphagradient.Stock.base
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.benchmark.html">
+       alphagradient.Stock.benchmark
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.close_value.html">
+       alphagradient.Stock.close_value
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.data.html">
+       alphagradient.Stock.data
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.date.html">
+       alphagradient.Stock.date
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.expired.html">
+       alphagradient.Stock.expired
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.key.html">
+       alphagradient.Stock.key
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.market_close.html">
+       alphagradient.Stock.market_close
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.market_open.html">
+       alphagradient.Stock.market_open
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.name.html">
+       alphagradient.Stock.name
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.next.html">
+       alphagradient.Stock.next
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.open.html">
+       alphagradient.Stock.open
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.open_value.html">
+       alphagradient.Stock.open_value
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.optional.html">
+       alphagradient.Stock.optional
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.price.html">
+       alphagradient.Stock.price
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.protocol.html">
+       alphagradient.Stock.protocol
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.required.html">
+       alphagradient.Stock.required
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.rfr.html">
+       alphagradient.Stock.rfr
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.type.html">
+       alphagradient.Stock.type
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.value.html">
+       alphagradient.Stock.value
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.unit.html">
+       alphagradient.Stock.unit
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.units.html">
+       alphagradient.Stock.units
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.online_data.html">
+       alphagradient.Stock.online_data
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.valuate.html">
+       alphagradient.Stock.valuate
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.call.html">
+       alphagradient.Stock.call
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Stock.put.html">
+       alphagradient.Stock.put
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/standard/Call.html">
+     Call Option Contracts
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/>
+    <label for="toctree-checkbox-8">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="alphagradient.Call.html">
+       alphagradient.Call
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/>
+      <label for="toctree-checkbox-9">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Call.alpha.html">
+         alphagradient.Call.alpha
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Call.beta.html">
+         alphagradient.Call.beta
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Call.black_scholes.html">
+         alphagradient.Call.black_scholes
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Call.cagr.html">
+         alphagradient.Call.cagr
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Call.cdf.html">
+         alphagradient.Call.cdf
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Call.exact_days.html">
+         alphagradient.Call.exact_days
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Call.expire.html">
+         alphagradient.Call.expire
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Call.get_settings.html">
+         alphagradient.Call.get_settings
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Call.ma.html">
+         alphagradient.Call.ma
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Call.quote.html">
+         alphagradient.Call.quote
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Call.range.html">
+         alphagradient.Call.range
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Call.reset.html">
+         alphagradient.Call.reset
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Call.roi.html">
+         alphagradient.Call.roi
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Call.valuate.html">
+         alphagradient.Call.valuate
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Call.vol.html">
+         alphagradient.Call.vol
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.itm.html">
+       alphagradient.Call.itm
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.otm.html">
+       alphagradient.Call.otm
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.atm.html">
+       alphagradient.Call.atm
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.base.html">
+       alphagradient.Call.base
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.benchmark.html">
+       alphagradient.Call.benchmark
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.close_value.html">
+       alphagradient.Call.close_value
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.data.html">
+       alphagradient.Call.data
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.date.html">
+       alphagradient.Call.date
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.expired.html">
+       alphagradient.Call.expired
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.expiry.html">
+       alphagradient.Call.expiry
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.key.html">
+       alphagradient.Call.key
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.market_close.html">
+       alphagradient.Call.market_close
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.market_open.html">
+       alphagradient.Call.market_open
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.name.html">
+       alphagradient.Call.name
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.next.html">
+       alphagradient.Call.next
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.open.html">
+       alphagradient.Call.open
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.open_value.html">
+       alphagradient.Call.open_value
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.optional.html">
+       alphagradient.Call.optional
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.price.html">
+       alphagradient.Call.price
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.protocol.html">
+       alphagradient.Call.protocol
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.required.html">
+       alphagradient.Call.required
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.rfr.html">
+       alphagradient.Call.rfr
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.spot.html">
+       alphagradient.Call.spot
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.ttm.html">
+       alphagradient.Call.ttm
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.type.html">
+       alphagradient.Call.type
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.value.html">
+       alphagradient.Call.value
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.unit.html">
+       alphagradient.Call.unit
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.units.html">
+       alphagradient.Call.units
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.black_scholes.html">
+       alphagradient.Call.black_scholes
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.expire.html">
+       alphagradient.Call.expire
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Call.valuate.html">
+       alphagradient.Call.valuate
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/standard/Put.html">
+     Put Option Contracts
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/>
+    <label for="toctree-checkbox-10">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="alphagradient.Put.html">
+       alphagradient.Put
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/>
+      <label for="toctree-checkbox-11">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Put.alpha.html">
+         alphagradient.Put.alpha
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Put.beta.html">
+         alphagradient.Put.beta
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Put.black_scholes.html">
+         alphagradient.Put.black_scholes
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Put.cagr.html">
+         alphagradient.Put.cagr
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Put.cdf.html">
+         alphagradient.Put.cdf
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Put.exact_days.html">
+         alphagradient.Put.exact_days
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Put.expire.html">
+         alphagradient.Put.expire
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Put.get_settings.html">
+         alphagradient.Put.get_settings
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Put.ma.html">
+         alphagradient.Put.ma
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Put.quote.html">
+         alphagradient.Put.quote
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Put.range.html">
+         alphagradient.Put.range
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Put.reset.html">
+         alphagradient.Put.reset
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Put.roi.html">
+         alphagradient.Put.roi
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Put.valuate.html">
+         alphagradient.Put.valuate
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Put.vol.html">
+         alphagradient.Put.vol
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.itm.html">
+       alphagradient.Put.itm
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.otm.html">
+       alphagradient.Put.otm
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.atm.html">
+       alphagradient.Put.atm
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.base.html">
+       alphagradient.Put.base
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.benchmark.html">
+       alphagradient.Put.benchmark
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.close_value.html">
+       alphagradient.Put.close_value
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.data.html">
+       alphagradient.Put.data
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.date.html">
+       alphagradient.Put.date
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.expired.html">
+       alphagradient.Put.expired
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.expiry.html">
+       alphagradient.Put.expiry
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.key.html">
+       alphagradient.Put.key
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.market_close.html">
+       alphagradient.Put.market_close
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.market_open.html">
+       alphagradient.Put.market_open
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.name.html">
+       alphagradient.Put.name
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.next.html">
+       alphagradient.Put.next
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.open.html">
+       alphagradient.Put.open
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.open_value.html">
+       alphagradient.Put.open_value
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.optional.html">
+       alphagradient.Put.optional
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.price.html">
+       alphagradient.Put.price
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.protocol.html">
+       alphagradient.Put.protocol
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.required.html">
+       alphagradient.Put.required
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.rfr.html">
+       alphagradient.Put.rfr
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.spot.html">
+       alphagradient.Put.spot
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.ttm.html">
+       alphagradient.Put.ttm
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.type.html">
+       alphagradient.Put.type
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.value.html">
+       alphagradient.Put.value
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.unit.html">
+       alphagradient.Put.unit
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.units.html">
+       alphagradient.Put.units
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.black_scholes.html">
+       alphagradient.Put.black_scholes
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.expire.html">
+       alphagradient.Put.expire
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Put.valuate.html">
+       alphagradient.Put.valuate
+      </a>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../api/portfolio.html">
+   Portfolios
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/>
+  <label for="toctree-checkbox-12">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="alphagradient.Portfolio.html">
+     alphagradient.Portfolio
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/>
+    <label for="toctree-checkbox-13">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Portfolio.buy.html">
+       alphagradient.Portfolio.buy
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Portfolio.cover.html">
+       alphagradient.Portfolio.cover
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Portfolio.covered_call.html">
+       alphagradient.Portfolio.covered_call
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Portfolio.get_position.html">
+       alphagradient.Portfolio.get_position
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Portfolio.get_related_positions.html">
+       alphagradient.Portfolio.get_related_positions
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Portfolio.invest.html">
+       alphagradient.Portfolio.invest
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Portfolio.liquidate.html">
+       alphagradient.Portfolio.liquidate
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Portfolio.reset.html">
+       alphagradient.Portfolio.reset
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Portfolio.sell.html">
+       alphagradient.Portfolio.sell
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Portfolio.short.html">
+       alphagradient.Portfolio.short
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Portfolio.update_history.html">
+       alphagradient.Portfolio.update_history
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Portfolio.update_positions.html">
+       alphagradient.Portfolio.update_positions
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Portfolio.validate_transaction.html">
+       alphagradient.Portfolio.validate_transaction
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.base.html">
+     alphagradient.Portfolio.base
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.base_symbol.html">
+     alphagradient.Portfolio.base_symbol
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.cash.html">
+     alphagradient.Portfolio.cash
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.date.html">
+     alphagradient.Portfolio.date
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.liquid.html">
+     alphagradient.Portfolio.liquid
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.longs.html">
+     alphagradient.Portfolio.longs
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.positions.html">
+     alphagradient.Portfolio.positions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.shorts.html">
+     alphagradient.Portfolio.shorts
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.value.html">
+     alphagradient.Portfolio.value
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.type.html">
+     alphagradient.Portfolio.type
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.reset.html">
+     alphagradient.Portfolio.reset
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.validate_transaction.html">
+     alphagradient.Portfolio.validate_transaction
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.update_history.html">
+     alphagradient.Portfolio.update_history
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.update_positions.html">
+     alphagradient.Portfolio.update_positions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.buy.html">
+     alphagradient.Portfolio.buy
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.cover.html">
+     alphagradient.Portfolio.cover
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.covered_call.html">
+     alphagradient.Portfolio.covered_call
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.invest.html">
+     alphagradient.Portfolio.invest
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.liquidate.html">
+     alphagradient.Portfolio.liquidate
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.sell.html">
+     alphagradient.Portfolio.sell
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.short.html">
+     alphagradient.Portfolio.short
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.get_position.html">
+     alphagradient.Portfolio.get_position
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Portfolio.get_related_positions.html">
+     alphagradient.Portfolio.get_related_positions
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../api/universe.html">
+   Universes
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/>
+  <label for="toctree-checkbox-14">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="alphagradient.Universe.html">
+     alphagradient.Universe
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/>
+    <label for="toctree-checkbox-15">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Universe.add.html">
+       alphagradient.Universe.add
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Universe.clear.html">
+       alphagradient.Universe.clear
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Universe.copy.html">
+       alphagradient.Universe.copy
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Universe.fromkeys.html">
+       alphagradient.Universe.fromkeys
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Universe.get.html">
+       alphagradient.Universe.get
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Universe.items.html">
+       alphagradient.Universe.items
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Universe.keys.html">
+       alphagradient.Universe.keys
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Universe.pop.html">
+       alphagradient.Universe.pop
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Universe.popitem.html">
+       alphagradient.Universe.popitem
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Universe.setdefault.html">
+       alphagradient.Universe.setdefault
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Universe.update.html">
+       alphagradient.Universe.update
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Universe.update_local.html">
+       alphagradient.Universe.update_local
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Universe.update_tickers.html">
+       alphagradient.Universe.update_tickers
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Universe.values.html">
+       alphagradient.Universe.values
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Universe.benchmark.html">
+     alphagradient.Universe.benchmark
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Universe.coverage.html">
+     alphagradient.Universe.coverage
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Universe.errors.html">
+     alphagradient.Universe.errors
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Universe.supported.html">
+     alphagradient.Universe.supported
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Universe.tickers.html">
+     alphagradient.Universe.tickers
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Universe.type.html">
+     alphagradient.Universe.type
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Universe.add.html">
+     alphagradient.Universe.add
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Universe.update_local.html">
+     alphagradient.Universe.update_local
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Universe.update_tickers.html">
+     alphagradient.Universe.update_tickers
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../api/environment.html">
+   Environments
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/>
+  <label for="toctree-checkbox-16">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="alphagradient.Environment.html">
+     alphagradient.Environment
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/>
+    <label for="toctree-checkbox-17">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Environment.AssetDict.html">
+       alphagradient.Environment.AssetDict
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Environment.Status.html">
+       alphagradient.Environment.Status
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Environment.autosync.html">
+       alphagradient.Environment.autosync
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Environment.buy.html">
+       alphagradient.Environment.buy
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Environment.cover.html">
+       alphagradient.Environment.cover
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Environment.data.html">
+       alphagradient.Environment.data
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Environment.finalize.html">
+       alphagradient.Environment.finalize
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Environment.next.html">
+       alphagradient.Environment.next
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Environment.optimal_start.html">
+       alphagradient.Environment.optimal_start
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Environment.portfolio.html">
+       alphagradient.Environment.portfolio
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Environment.sell.html">
+       alphagradient.Environment.sell
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Environment.short.html">
+       alphagradient.Environment.short
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Environment.step.html">
+       alphagradient.Environment.step
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Environment.sync.html">
+       alphagradient.Environment.sync
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Environment.track.html">
+       alphagradient.Environment.track
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.assets.html">
+     alphagradient.Environment.assets
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.base.html">
+     alphagradient.Environment.base
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.date.html">
+     alphagradient.Environment.date
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.end.html">
+     alphagradient.Environment.end
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.open.html">
+     alphagradient.Environment.open
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.portfolios.html">
+     alphagradient.Environment.portfolios
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.resolution.html">
+     alphagradient.Environment.resolution
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.start.html">
+     alphagradient.Environment.start
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.status.html">
+     alphagradient.Environment.status
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.times.html">
+     alphagradient.Environment.times
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.type.html">
+     alphagradient.Environment.type
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.finalize.html">
+     alphagradient.Environment.finalize
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.autosync.html">
+     alphagradient.Environment.autosync
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.next.html">
+     alphagradient.Environment.next
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.optimal_start.html">
+     alphagradient.Environment.optimal_start
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.step.html">
+     alphagradient.Environment.step
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.sync.html">
+     alphagradient.Environment.sync
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.data.html">
+     alphagradient.Environment.data
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.track.html">
+     alphagradient.Environment.track
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.portfolio.html">
+     alphagradient.Environment.portfolio
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.buy.html">
+     alphagradient.Environment.buy
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.cover.html">
+     alphagradient.Environment.cover
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.sell.html">
+     alphagradient.Environment.sell
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.short.html">
+     alphagradient.Environment.short
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Environment.AssetDict.html">
+     alphagradient.Environment.AssetDict
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../api/algorithm.html">
+   Algorithms
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/>
+  <label for="toctree-checkbox-18">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="alphagradient.Algorithm.html">
+     alphagradient.Algorithm
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/>
+    <label for="toctree-checkbox-19">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Algorithm.__call__.html">
+       alphagradient.Algorithm.__call__
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Algorithm.cycle.html">
+       alphagradient.Algorithm.cycle
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Algorithm.default_run.html">
+       alphagradient.Algorithm.default_run
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Algorithm.initialize_inputs.html">
+       alphagradient.Algorithm.initialize_inputs
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Algorithm.setup.html">
+       alphagradient.Algorithm.setup
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Algorithm.validate_end.html">
+       alphagradient.Algorithm.validate_end
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.Algorithm.validate_resolution.html">
+       alphagradient.Algorithm.validate_resolution
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Algorithm.__call__.html">
+     alphagradient.Algorithm.__call__
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Algorithm.active.html">
+     alphagradient.Algorithm.active
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Algorithm.date.html">
+     alphagradient.Algorithm.date
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Algorithm.end.html">
+     alphagradient.Algorithm.end
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Algorithm.env.html">
+     alphagradient.Algorithm.env
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Algorithm.start.html">
+     alphagradient.Algorithm.start
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Algorithm.type.html">
+     alphagradient.Algorithm.type
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Algorithm.setup.html">
+     alphagradient.Algorithm.setup
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Algorithm.cycle.html">
+     alphagradient.Algorithm.cycle
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Algorithm.default_run.html">
+     alphagradient.Algorithm.default_run
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Algorithm.initialize_inputs.html">
+     alphagradient.Algorithm.initialize_inputs
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Algorithm.validate_end.html">
+     alphagradient.Algorithm.validate_end
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.Algorithm.validate_resolution.html">
+     alphagradient.Algorithm.validate_resolution
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../api/globals.html">
+   Globals
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/>
+  <label for="toctree-checkbox-20">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.globals.base.html">
+     alphagradient.globals.base
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.globals.benchmark.html">
+     alphagradient.globals.benchmark
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.globals.date.html">
+     alphagradient.globals.date
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.globals.end.html">
+     alphagradient.globals.end
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.globals.path.html">
+     alphagradient.globals.path
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.globals.persistent.html">
+     alphagradient.globals.persistent
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.globals.resolution.html">
+     alphagradient.globals.resolution
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.globals.rfr.html">
+     alphagradient.globals.rfr
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.globals.start.html">
+     alphagradient.globals.start
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.globals.autosync.html">
+     alphagradient.globals.autosync
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.globals.step.html">
+     alphagradient.globals.step
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.globals.sync.html">
+     alphagradient.globals.sync
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.globals.all_assets.html">
+     alphagradient.globals.all_assets
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.globals.all_data.html">
+     alphagradient.globals.all_data
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.globals.persist.html">
+     alphagradient.globals.persist
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.globals.refresh.html">
+     alphagradient.globals.refresh
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.globals.scan.html">
+     alphagradient.globals.scan
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="../api/dtypes/index.html">
+   Data Types
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" type="checkbox"/>
+  <label for="toctree-checkbox-21">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="current">
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/dtypes/Exceptions.html">
+     Errors and Exceptions
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" type="checkbox"/>
+    <label for="toctree-checkbox-22">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.dtypes.AssetDuplicationError.html">
+       alphagradient.dtypes.AssetDuplicationError
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 current active has-children">
+    <a class="reference internal" href="../api/dtypes/Annotations.html">
+     Typing Annotations
+    </a>
+    <input checked="" class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" type="checkbox"/>
+    <label for="toctree-checkbox-23">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul class="current">
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.dtypes.DatetimeLike.html">
+       alphagradient.dtypes.DatetimeLike
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.dtypes.TimeLike.html">
+       alphagradient.dtypes.TimeLike
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.dtypes.DateOrTime.html">
+       alphagradient.dtypes.DateOrTime
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.dtypes.TimeLike_T.html">
+       alphagradient.dtypes.TimeLike_T
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.dtypes.ValidData.html">
+       alphagradient.dtypes.ValidData
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.dtypes.Expiry.html">
+       alphagradient.dtypes.Expiry
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.dtypes.Bindable.html">
+       alphagradient.dtypes.Bindable
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.dtypes.Trackable.html">
+       alphagradient.dtypes.Trackable
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.dtypes.ValidFilter.html">
+       alphagradient.dtypes.ValidFilter
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.dtypes.Asset_T.html">
+       alphagradient.dtypes.Asset_T
+      </a>
+     </li>
+     <li class="toctree-l3 current active">
+      <a class="current reference internal" href="#">
+       alphagradient.dtypes.Changes
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.dtypes.ChangesWithInfo.html">
+       alphagradient.dtypes.ChangesWithInfo
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/dtypes/data/index.html">
+     Data
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" type="checkbox"/>
+    <label for="toctree-checkbox-24">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../api/dtypes/data/AssetData.html">
+       Asset Datasets
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-25" name="toctree-checkbox-25" type="checkbox"/>
+      <label for="toctree-checkbox-25">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.AssetData.html">
+         alphagradient.dtypes.AssetData
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.AssetData.data.html">
+         alphagradient.dtypes.AssetData.data
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.AssetData.first.html">
+         alphagradient.dtypes.AssetData.first
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.AssetData.last.html">
+         alphagradient.dtypes.AssetData.last
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.AssetData.column_format.html">
+         alphagradient.dtypes.AssetData.column_format
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.AssetData.get_index.html">
+         alphagradient.dtypes.AssetData.get_index
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.AssetData.range.html">
+         alphagradient.dtypes.AssetData.range
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.AssetData.valuate.html">
+         alphagradient.dtypes.AssetData.valuate
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.AssetData.get_times.html">
+         alphagradient.dtypes.AssetData.get_times
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.AssetData.next.html">
+         alphagradient.dtypes.AssetData.next
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.AssetData.prev.html">
+         alphagradient.dtypes.AssetData.prev
+        </a>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/dtypes/positions/index.html">
+     Financial Positions
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-26" name="toctree-checkbox-26" type="checkbox"/>
+    <label for="toctree-checkbox-26">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../api/dtypes/positions/Position.html">
+       Positions
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-27" name="toctree-checkbox-27" type="checkbox"/>
+      <label for="toctree-checkbox-27">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Position.html">
+         alphagradient.dtypes.Position
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Position.average_cost.html">
+         alphagradient.dtypes.Position.average_cost
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Position.expired.html">
+         alphagradient.dtypes.Position.expired
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Position.key.html">
+         alphagradient.dtypes.Position.key
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Position.price.html">
+         alphagradient.dtypes.Position.price
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Position.percent_return.html">
+         alphagradient.dtypes.Position.percent_return
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Position.quantity.html">
+         alphagradient.dtypes.Position.quantity
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Position.symbol.html">
+         alphagradient.dtypes.Position.symbol
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Position.total_return.html">
+         alphagradient.dtypes.Position.total_return
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Position.value.html">
+         alphagradient.dtypes.Position.value
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Position.view.html">
+         alphagradient.dtypes.Position.view
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Position.expire.html">
+         alphagradient.dtypes.Position.expire
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Position.update_history.html">
+         alphagradient.dtypes.Position.update_history
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../api/dtypes/positions/Cash.html">
+       Cash Positions
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-28" name="toctree-checkbox-28" type="checkbox"/>
+      <label for="toctree-checkbox-28">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Cash.html">
+         alphagradient.Cash
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Cash.code.html">
+         alphagradient.Cash.code
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Cash.expired.html">
+         alphagradient.Cash.expired
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Cash.average_cost.html">
+         alphagradient.Cash.average_cost
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Cash.key.html">
+         alphagradient.Cash.key
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Cash.percent_return.html">
+         alphagradient.Cash.percent_return
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Cash.price.html">
+         alphagradient.Cash.price
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Cash.quantity.html">
+         alphagradient.Cash.quantity
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Cash.symbol.html">
+         alphagradient.Cash.symbol
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Cash.total_return.html">
+         alphagradient.Cash.total_return
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Cash.value.html">
+         alphagradient.Cash.value
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Cash.from_cash.html">
+         alphagradient.Cash.from_cash
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Cash.from_number.html">
+         alphagradient.Cash.from_number
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Cash.from_position.html">
+         alphagradient.Cash.from_position
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Cash.to_cash.html">
+         alphagradient.Cash.to_cash
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Cash.convert.html">
+         alphagradient.Cash.convert
+        </a>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/dtypes/views/index.html">
+     Views
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-29" name="toctree-checkbox-29" type="checkbox"/>
+    <label for="toctree-checkbox-29">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../api/dtypes/views/PositionView.html">
+       Position Views
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-30" name="toctree-checkbox-30" type="checkbox"/>
+      <label for="toctree-checkbox-30">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.PositionView.html">
+         alphagradient.dtypes.PositionView
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.PositionView.key.html">
+         alphagradient.dtypes.PositionView.key
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.PositionView.empty.html">
+         alphagradient.dtypes.PositionView.empty
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../api/dtypes/views/UniverseView.html">
+       Universe Views
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-31" name="toctree-checkbox-31" type="checkbox"/>
+      <label for="toctree-checkbox-31">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.UniverseView.html">
+         alphagradient.dtypes.UniverseView
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.UniverseView.benchmark.html">
+         alphagradient.dtypes.UniverseView.benchmark
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.UniverseView.errors.html">
+         alphagradient.dtypes.UniverseView.errors
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.UniverseView.coverage.html">
+         alphagradient.dtypes.UniverseView.coverage
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.UniverseView.history.html">
+         alphagradient.dtypes.UniverseView.history
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.UniverseView.supported.html">
+         alphagradient.dtypes.UniverseView.supported
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.UniverseView.tickers.html">
+         alphagradient.dtypes.UniverseView.tickers
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.UniverseView.type.html">
+         alphagradient.dtypes.UniverseView.type
+        </a>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/dtypes/enums/index.html">
+     Enumerations
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-32" name="toctree-checkbox-32" type="checkbox"/>
+    <label for="toctree-checkbox-32">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../api/dtypes/enums/Types.html">
+       The Global Types Enumeration
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-33" name="toctree-checkbox-33" type="checkbox"/>
+      <label for="toctree-checkbox-33">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient._types.html">
+         alphagradient._types
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient._types.instantiable.html">
+         alphagradient._types.instantiable
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient._types.to_list.html">
+         alphagradient._types.to_list
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient._types.algorithm.html">
+         alphagradient._types.algorithm
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient._types.environment.html">
+         alphagradient._types.environment
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient._types.currency.html">
+         alphagradient._types.currency
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient._types.call.html">
+         alphagradient._types.call
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient._types.portfolio.html">
+         alphagradient._types.portfolio
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient._types.put.html">
+         alphagradient._types.put
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient._types.stock.html">
+         alphagradient._types.stock
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient._types.undefined.html">
+         alphagradient._types.undefined
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient._types.universe.html">
+         alphagradient._types.universe
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient._types.instances.html">
+         alphagradient._types.instances
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient._finance._asset.Instances.html">
+         alphagradient._finance._asset.Instances
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient._finance._asset.Instances.base.html">
+         alphagradient._finance._asset.Instances.base
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient._finance._asset.Instances.copy.html">
+         alphagradient._finance._asset.Instances.copy
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../api/dtypes/enums/DataProtocol.html">
+       Data Protocols
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-34" name="toctree-checkbox-34" type="checkbox"/>
+      <label for="toctree-checkbox-34">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.DataProtocol.html">
+         alphagradient.dtypes.DataProtocol
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.DataProtocol.REQUIRED.html">
+         alphagradient.dtypes.DataProtocol.REQUIRED
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.DataProtocol.FLEXIBLE.html">
+         alphagradient.dtypes.DataProtocol.FLEXIBLE
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.DataProtocol.PROHIBITED.html">
+         alphagradient.dtypes.DataProtocol.PROHIBITED
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../api/dtypes/enums/EnvironmentStatus.html">
+       Environment Statuses
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-35" name="toctree-checkbox-35" type="checkbox"/>
+      <label for="toctree-checkbox-35">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Environment.Status.html">
+         alphagradient.Environment.Status
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Environment.Status.NONE.html">
+         alphagradient.Environment.Status.NONE
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Environment.Status.SINGLE.html">
+         alphagradient.Environment.Status.SINGLE
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.Environment.Status.MULTIPLE.html">
+         alphagradient.Environment.Status.MULTIPLE
+        </a>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/dtypes/abstract/index.html">
+     Abstract Asset Types
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-36" name="toctree-checkbox-36" type="checkbox"/>
+    <label for="toctree-checkbox-36">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../api/dtypes/abstract/Option.html">
+       Options
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-37" name="toctree-checkbox-37" type="checkbox"/>
+      <label for="toctree-checkbox-37">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.html">
+         alphagradient.dtypes.Option
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.atm.html">
+         alphagradient.dtypes.Option.atm
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.expired.html">
+         alphagradient.dtypes.Option.expired
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.expiry.html">
+         alphagradient.dtypes.Option.expiry
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.key.html">
+         alphagradient.dtypes.Option.key
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.spot.html">
+         alphagradient.dtypes.Option.spot
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.ttm.html">
+         alphagradient.dtypes.Option.ttm
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.base.html">
+         alphagradient.dtypes.Option.base
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.benchmark.html">
+         alphagradient.dtypes.Option.benchmark
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.close_value.html">
+         alphagradient.dtypes.Option.close_value
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.data.html">
+         alphagradient.dtypes.Option.data
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.date.html">
+         alphagradient.dtypes.Option.date
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.market_close.html">
+         alphagradient.dtypes.Option.market_close
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.market_open.html">
+         alphagradient.dtypes.Option.market_open
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.name.html">
+         alphagradient.dtypes.Option.name
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.next.html">
+         alphagradient.dtypes.Option.next
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.open.html">
+         alphagradient.dtypes.Option.open
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.open_value.html">
+         alphagradient.dtypes.Option.open_value
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.optional.html">
+         alphagradient.dtypes.Option.optional
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.price.html">
+         alphagradient.dtypes.Option.price
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.protocol.html">
+         alphagradient.dtypes.Option.protocol
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.required.html">
+         alphagradient.dtypes.Option.required
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.rfr.html">
+         alphagradient.dtypes.Option.rfr
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.type.html">
+         alphagradient.dtypes.Option.type
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.unit.html">
+         alphagradient.dtypes.Option.unit
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.units.html">
+         alphagradient.dtypes.Option.units
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.value.html">
+         alphagradient.dtypes.Option.value
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option._bsbase.html">
+         alphagradient.dtypes.Option._bsbase
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.cdf.html">
+         alphagradient.dtypes.Option.cdf
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.exact_days.html">
+         alphagradient.dtypes.Option.exact_days
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Option.reset.html">
+         alphagradient.dtypes.Option.reset
+        </a>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/dtypes/metrics/index.html">
+     Peformance Metrics
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-38" name="toctree-checkbox-38" type="checkbox"/>
+    <label for="toctree-checkbox-38">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../api/dtypes/metrics/Performance.html">
+       Portfolio Performances
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-39" name="toctree-checkbox-39" type="checkbox"/>
+      <label for="toctree-checkbox-39">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Performance.html">
+         alphagradient.dtypes.Performance
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Performance.data.html">
+         alphagradient.dtypes.Performance.data
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Performance.date.html">
+         alphagradient.dtypes.Performance.date
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Performance.finalize.html">
+         alphagradient.dtypes.Performance.finalize
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Performance.periods.html">
+         alphagradient.dtypes.Performance.periods
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Performance.index_periods.html">
+         alphagradient.dtypes.Performance.index_periods
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Performance.range.html">
+         alphagradient.dtypes.Performance.range
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Performance.alpha.html">
+         alphagradient.dtypes.Performance.alpha
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Performance.beta.html">
+         alphagradient.dtypes.Performance.beta
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Performance.cagr.html">
+         alphagradient.dtypes.Performance.cagr
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Performance.ma.html">
+         alphagradient.dtypes.Performance.ma
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Performance.quote.html">
+         alphagradient.dtypes.Performance.quote
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Performance.roi.html">
+         alphagradient.dtypes.Performance.roi
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Performance.vol.html">
+         alphagradient.dtypes.Performance.vol
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Performance.changes.html">
+         alphagradient.dtypes.Performance.changes
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Performance.change_report.html">
+         alphagradient.dtypes.Performance.change_report
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../api/dtypes/metrics/Backtest.html">
+       Algorithm Backtests
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-40" name="toctree-checkbox-40" type="checkbox"/>
+      <label for="toctree-checkbox-40">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Backtest.html">
+         alphagradient.dtypes.Backtest
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Backtest.completion.html">
+         alphagradient.dtypes.Backtest.completion
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Backtest.date.html">
+         alphagradient.dtypes.Backtest.date
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Backtest.day.html">
+         alphagradient.dtypes.Backtest.day
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Backtest.finalize.html">
+         alphagradient.dtypes.Backtest.finalize
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Backtest.update.html">
+         alphagradient.dtypes.Backtest.update
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Backtest.completion_report.html">
+         alphagradient.dtypes.Backtest.completion_report
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Backtest.update.html">
+         alphagradient.dtypes.Backtest.update
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../api/dtypes/metrics/Stats.html">
+       Algorithm Realtime Statistics
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-41" name="toctree-checkbox-41" type="checkbox"/>
+      <label for="toctree-checkbox-41">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Stats.html">
+         alphagradient.dtypes.Stats
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Stats.completion.html">
+         alphagradient.dtypes.Stats.completion
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Stats.runs.html">
+         alphagradient.dtypes.Stats.runs
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.Stats.change_report.html">
+         alphagradient.dtypes.Stats.change_report
+        </a>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/dtypes/universe/index.html">
+     Universe Operations
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-42" name="toctree-checkbox-42" type="checkbox"/>
+    <label for="toctree-checkbox-42">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../api/dtypes/universe/FilterExpression.html">
+       Filter Expressions
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-43" name="toctree-checkbox-43" type="checkbox"/>
+      <label for="toctree-checkbox-43">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.FilterExpression.html">
+         alphagradient.dtypes.FilterExpression
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.FilterExpression.from_string.html">
+         alphagradient.dtypes.FilterExpression.from_string
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="alphagradient.dtypes.FilterExpression.attr_string.html">
+         alphagradient.dtypes.FilterExpression.attr_string
+        </a>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../api/utils.html">
+   Utility Functions
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-44" name="toctree-checkbox-44" type="checkbox"/>
+  <label for="toctree-checkbox-44">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.utils.auto_batch.html">
+     alphagradient.utils.auto_batch
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.utils.auto_batch_size.html">
+     alphagradient.utils.auto_batch_size
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.utils.get_batches.html">
+     alphagradient.utils.get_batches
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.utils.get_time.html">
+     alphagradient.utils.get_time
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.utils.read_timestring.html">
+     alphagradient.utils.read_timestring
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.utils.read_twelve_hour_timestring.html">
+     alphagradient.utils.read_twelve_hour_timestring
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.utils.timestring.html">
+     alphagradient.utils.timestring
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.utils.to_datetime.html">
+     alphagradient.utils.to_datetime
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.utils.to_time.html">
+     alphagradient.utils.to_time
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.utils.get_weekday.html">
+     alphagradient.utils.get_weekday
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.utils.nearest_expiry.html">
+     alphagradient.utils.nearest_expiry
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.utils.optimal_start.html">
+     alphagradient.utils.optimal_start
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.utils.set_time.html">
+     alphagradient.utils.set_time
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.utils.to_step.html">
+     alphagradient.utils.to_step
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.utils.is_func.html">
+     alphagradient.utils.is_func
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.utils.bounded.html">
+     alphagradient.utils.bounded
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.utils.progress_print.html">
+     alphagradient.utils.progress_print
+    </a>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="alphagradient.utils.NullClass.html">
+     alphagradient.utils.NullClass
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-45" name="toctree-checkbox-45" type="checkbox"/>
+    <label for="toctree-checkbox-45">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="alphagradient.utils.NullClass.__call__.html">
+       alphagradient.utils.NullClass.__call__
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="alphagradient.utils.deconstruct_dt.html">
+     alphagradient.utils.deconstruct_dt
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+  </div>
+</nav>
+              </div>
+              <div class="sidebar-end-items">
+              </div>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+
+<nav id="bd-toc-nav">
+    
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <section id="alphagradient-dtypes-changes">
+<h1>alphagradient.dtypes.Changes<a class="headerlink" href="#alphagradient-dtypes-changes" title="Permalink to this headline">#</a></h1>
+<dl class="py data">
+<dt class="sig sig-object py" id="alphagradient.dtypes.Changes">
+<span class="sig-prename descclassname"><span class="pre">alphagradient.dtypes.</span></span><span class="sig-name descname"><span class="pre">Changes</span></span><a class="headerlink" href="#alphagradient.dtypes.Changes" title="Permalink to this definition">#</a></dt>
+<dd><p>Changes in a portfolio’s positions across a time period</p>
+<p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]</p>
+</dd></dl>
+
+</section>
+
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="alphagradient.dtypes.Asset_T.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">alphagradient.dtypes.Asset_T</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="alphagradient.dtypes.ChangesWithInfo.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">alphagradient.dtypes.ChangesWithInfo</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2022, Nathan Heidacker.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.5.0.<br>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

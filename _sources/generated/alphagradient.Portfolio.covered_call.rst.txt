@@ -1,0 +1,6 @@
+alphagradient.Portfolio.covered\_call
+=====================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Portfolio.covered_call

@@ -1,0 +1,6 @@
+alphagradient.Stock.type
+========================
+
+.. currentmodule:: alphagradient
+
+.. autoattribute:: Stock.type

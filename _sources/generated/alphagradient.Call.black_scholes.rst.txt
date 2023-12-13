@@ -1,0 +1,6 @@
+alphagradient.Call.black\_scholes
+=================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Call.black_scholes

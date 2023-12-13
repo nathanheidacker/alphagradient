@@ -1,0 +1,6 @@
+alphagradient.dtypes.AssetData.column\_format
+=============================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: AssetData.column_format

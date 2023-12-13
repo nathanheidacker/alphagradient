@@ -1,0 +1,6 @@
+alphagradient.dtypes.Option.date
+================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoproperty:: Option.date

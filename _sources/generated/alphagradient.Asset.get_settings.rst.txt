@@ -1,0 +1,6 @@
+alphagradient.Asset.get\_settings
+=================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Asset.get_settings

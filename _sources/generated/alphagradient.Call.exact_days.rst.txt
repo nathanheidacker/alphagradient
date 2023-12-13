@@ -1,0 +1,6 @@
+alphagradient.Call.exact\_days
+==============================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Call.exact_days

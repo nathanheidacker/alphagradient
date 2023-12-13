@@ -1,0 +1,6 @@
+alphagradient.Currency.info
+===========================
+
+.. currentmodule:: alphagradient
+
+.. autoattribute:: Currency.info

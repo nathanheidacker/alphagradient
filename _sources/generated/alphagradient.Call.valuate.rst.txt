@@ -1,0 +1,6 @@
+alphagradient.Call.valuate
+==========================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Call.valuate

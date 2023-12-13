@@ -1,0 +1,6 @@
+alphagradient.\_types.environment
+=================================
+
+.. currentmodule:: alphagradient
+
+.. autoattribute:: _types.environment

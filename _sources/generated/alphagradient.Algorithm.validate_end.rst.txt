@@ -1,0 +1,6 @@
+alphagradient.Algorithm.validate\_end
+=====================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Algorithm.validate_end

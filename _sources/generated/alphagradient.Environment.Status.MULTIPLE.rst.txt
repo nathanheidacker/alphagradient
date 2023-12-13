@@ -1,0 +1,6 @@
+alphagradient.Environment.Status.MULTIPLE
+=========================================
+
+.. currentmodule:: alphagradient
+
+.. autoattribute:: Environment.Status.MULTIPLE

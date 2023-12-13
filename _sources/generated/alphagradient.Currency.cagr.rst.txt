@@ -1,0 +1,6 @@
+alphagradient.Currency.cagr
+===========================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Currency.cagr

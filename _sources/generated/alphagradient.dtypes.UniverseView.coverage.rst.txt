@@ -1,0 +1,6 @@
+alphagradient.dtypes.UniverseView.coverage
+==========================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoproperty:: UniverseView.coverage

@@ -1,0 +1,6 @@
+alphagradient.Put.close\_value
+==============================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Put.close_value

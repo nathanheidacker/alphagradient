@@ -1,0 +1,6 @@
+alphagradient.dtypes.UniverseView.fromkeys
+==========================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: UniverseView.fromkeys

@@ -1,0 +1,6 @@
+alphagradient.Portfolio.get\_position
+=====================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Portfolio.get_position

@@ -1,0 +1,6 @@
+﻿alphagradient.globals.rfr
+=========================
+
+.. currentmodule:: alphagradient
+
+.. autoattribute:: globals.rfr

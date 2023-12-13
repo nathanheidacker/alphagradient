@@ -1,0 +1,6 @@
+alphagradient.Asset.required
+============================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Asset.required

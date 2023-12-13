@@ -1,0 +1,6 @@
+alphagradient.dtypes.FilterExpression.\_\_call\_\_
+==================================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: FilterExpression.__call__

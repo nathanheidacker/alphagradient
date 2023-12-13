@@ -1,0 +1,6 @@
+alphagradient.Call.optional
+===========================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Call.optional

@@ -1,0 +1,6 @@
+﻿alphagradient.utils.nearest\_expiry
+===================================
+
+.. currentmodule:: alphagradient.utils
+
+.. autofunction:: nearest_expiry

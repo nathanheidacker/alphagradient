@@ -1,0 +1,70 @@
+﻿alphagradient.Currency
+======================
+
+.. currentmodule:: alphagradient
+
+.. autoclass:: Currency
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Currency.alpha
+      Currency.beta
+      Currency.cagr
+      Currency.code_value
+      Currency.convert
+      Currency.expire
+      Currency.get_settings
+      Currency.get_symbol
+      Currency.ma
+      Currency.online_data
+      Currency.quote
+      Currency.range
+      Currency.rate
+      Currency.roi
+      Currency.validate_code
+      Currency.valuate
+      Currency.vol
+
+
+
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Currency.base
+      Currency.benchmark
+      Currency.close_value
+      Currency.data
+      Currency.date
+      Currency.expired
+      Currency.info
+      Currency.is_base
+      Currency.key
+      Currency.market_close
+      Currency.market_open
+      Currency.name
+      Currency.next
+      Currency.open
+      Currency.open_value
+      Currency.optional
+      Currency.price
+      Currency.protocol
+      Currency.required
+      Currency.rfr
+      Currency.type
+      Currency.unit
+      Currency.units
+      Currency.value
+
+

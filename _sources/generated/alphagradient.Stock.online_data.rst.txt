@@ -1,0 +1,6 @@
+alphagradient.Stock.online\_data
+================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Stock.online_data

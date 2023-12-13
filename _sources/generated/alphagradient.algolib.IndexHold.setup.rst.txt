@@ -1,0 +1,6 @@
+alphagradient.algolib.IndexHold.setup
+=====================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. automethod:: IndexHold.setup

@@ -1,0 +1,6 @@
+alphagradient.Stock.open
+========================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Stock.open

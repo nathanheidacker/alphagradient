@@ -1,0 +1,6 @@
+alphagradient.Call.ttm
+======================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Call.ttm

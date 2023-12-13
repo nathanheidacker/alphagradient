@@ -1,0 +1,6 @@
+alphagradient.dtypes.FilterExpression.attr\_string
+==================================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: FilterExpression.attr_string

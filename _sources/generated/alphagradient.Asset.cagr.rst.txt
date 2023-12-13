@@ -1,0 +1,6 @@
+alphagradient.Asset.cagr
+========================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Asset.cagr

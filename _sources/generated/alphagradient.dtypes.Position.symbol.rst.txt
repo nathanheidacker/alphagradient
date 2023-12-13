@@ -1,0 +1,6 @@
+alphagradient.dtypes.Position.symbol
+====================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoproperty:: Position.symbol

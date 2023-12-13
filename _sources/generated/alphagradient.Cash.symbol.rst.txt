@@ -1,0 +1,6 @@
+alphagradient.Cash.symbol
+=========================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Cash.symbol

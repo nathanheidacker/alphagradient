@@ -1,0 +1,6 @@
+alphagradient.dtypes.Option.spot
+================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoproperty:: Option.spot

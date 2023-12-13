@@ -1,0 +1,6 @@
+alphagradient.Call.market\_close
+================================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Call.market_close

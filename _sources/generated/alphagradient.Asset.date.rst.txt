@@ -1,0 +1,6 @@
+alphagradient.Asset.date
+========================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Asset.date

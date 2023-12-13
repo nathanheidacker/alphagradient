@@ -1,0 +1,6 @@
+alphagradient.dtypes.Position.quantity
+======================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoproperty:: Position.quantity

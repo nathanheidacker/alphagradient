@@ -1,0 +1,6 @@
+alphagradient.dtypes.Option.ttm
+===============================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoproperty:: Option.ttm

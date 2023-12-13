@@ -1,0 +1,6 @@
+﻿alphagradient.utils.read\_twelve\_hour\_timestring
+==================================================
+
+.. currentmodule:: alphagradient.utils
+
+.. autofunction:: read_twelve_hour_timestring

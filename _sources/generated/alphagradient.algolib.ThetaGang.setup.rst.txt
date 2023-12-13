@@ -1,0 +1,6 @@
+alphagradient.algolib.ThetaGang.setup
+=====================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. automethod:: ThetaGang.setup

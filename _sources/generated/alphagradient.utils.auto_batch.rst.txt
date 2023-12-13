@@ -1,0 +1,6 @@
+﻿alphagradient.utils.auto\_batch
+===============================
+
+.. currentmodule:: alphagradient.utils
+
+.. autofunction:: auto_batch

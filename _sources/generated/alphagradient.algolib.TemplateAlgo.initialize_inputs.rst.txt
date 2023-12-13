@@ -1,0 +1,6 @@
+alphagradient.algolib.TemplateAlgo.initialize\_inputs
+=====================================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. automethod:: TemplateAlgo.initialize_inputs

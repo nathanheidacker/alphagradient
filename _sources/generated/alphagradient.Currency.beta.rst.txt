@@ -1,0 +1,6 @@
+alphagradient.Currency.beta
+===========================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Currency.beta

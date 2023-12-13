@@ -1,0 +1,6 @@
+﻿alphagradient.utils.auto\_batch\_size
+=====================================
+
+.. currentmodule:: alphagradient.utils
+
+.. autofunction:: auto_batch_size

@@ -1,0 +1,6 @@
+alphagradient.Put.open
+======================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Put.open

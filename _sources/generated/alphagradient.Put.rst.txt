@@ -1,0 +1,72 @@
+﻿alphagradient.Put
+=================
+
+.. currentmodule:: alphagradient
+
+.. autoclass:: Put
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Put.alpha
+      Put.beta
+      Put.black_scholes
+      Put.cagr
+      Put.cdf
+      Put.exact_days
+      Put.expire
+      Put.get_settings
+      Put.ma
+      Put.quote
+      Put.range
+      Put.reset
+      Put.roi
+      Put.valuate
+      Put.vol
+
+
+
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Put.atm
+      Put.base
+      Put.benchmark
+      Put.close_value
+      Put.data
+      Put.date
+      Put.expired
+      Put.expiry
+      Put.itm
+      Put.key
+      Put.market_close
+      Put.market_open
+      Put.name
+      Put.next
+      Put.open
+      Put.open_value
+      Put.optional
+      Put.otm
+      Put.price
+      Put.protocol
+      Put.required
+      Put.rfr
+      Put.spot
+      Put.ttm
+      Put.type
+      Put.unit
+      Put.units
+      Put.value
+
+

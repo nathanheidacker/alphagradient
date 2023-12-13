@@ -1,0 +1,6 @@
+alphagradient.Call.cdf
+======================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Call.cdf

@@ -1,0 +1,6 @@
+﻿alphagradient.utils.read\_timestring
+====================================
+
+.. currentmodule:: alphagradient.utils
+
+.. autofunction:: read_timestring

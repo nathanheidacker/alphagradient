@@ -1,0 +1,49 @@
+﻿alphagradient.Universe
+======================
+
+.. currentmodule:: alphagradient
+
+.. autoclass:: Universe
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Universe.add
+      Universe.clear
+      Universe.copy
+      Universe.fromkeys
+      Universe.get
+      Universe.items
+      Universe.keys
+      Universe.pop
+      Universe.popitem
+      Universe.setdefault
+      Universe.update
+      Universe.update_local
+      Universe.update_tickers
+      Universe.values
+
+
+
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Universe.benchmark
+      Universe.coverage
+      Universe.errors
+      Universe.supported
+      Universe.tickers
+      Universe.type
+
+

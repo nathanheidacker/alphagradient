@@ -1,0 +1,6 @@
+alphagradient.dtypes.DataProtocol.PROHIBITED
+============================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoattribute:: DataProtocol.PROHIBITED

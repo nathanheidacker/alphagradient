@@ -1,0 +1,6 @@
+alphagradient.algolib.ThetaGang.date
+====================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. autoproperty:: ThetaGang.date

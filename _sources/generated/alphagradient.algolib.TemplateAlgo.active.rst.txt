@@ -1,0 +1,6 @@
+alphagradient.algolib.TemplateAlgo.active
+=========================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. autoproperty:: TemplateAlgo.active

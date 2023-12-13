@@ -1,0 +1,6 @@
+alphagradient.dtypes.AssetData.range
+====================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: AssetData.range

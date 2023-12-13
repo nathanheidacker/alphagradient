@@ -1,0 +1,6 @@
+alphagradient.Universe.type
+===========================
+
+.. currentmodule:: alphagradient
+
+.. autoattribute:: Universe.type

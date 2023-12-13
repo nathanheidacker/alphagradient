@@ -1,0 +1,6 @@
+alphagradient.Portfolio.date
+============================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Portfolio.date

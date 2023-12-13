@@ -1,0 +1,6 @@
+alphagradient.dtypes.Option.vol
+===============================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: Option.vol

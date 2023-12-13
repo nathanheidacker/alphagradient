@@ -1,0 +1,50 @@
+﻿alphagradient.dtypes.UniverseView
+=================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoclass:: UniverseView
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      UniverseView.add
+      UniverseView.clear
+      UniverseView.copy
+      UniverseView.fromkeys
+      UniverseView.get
+      UniverseView.items
+      UniverseView.keys
+      UniverseView.pop
+      UniverseView.popitem
+      UniverseView.setdefault
+      UniverseView.update
+      UniverseView.update_local
+      UniverseView.update_tickers
+      UniverseView.values
+
+
+
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      UniverseView.benchmark
+      UniverseView.coverage
+      UniverseView.errors
+      UniverseView.history
+      UniverseView.supported
+      UniverseView.tickers
+      UniverseView.type
+
+

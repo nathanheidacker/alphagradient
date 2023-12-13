@@ -1,0 +1,6 @@
+alphagradient.Algorithm.active
+==============================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Algorithm.active

@@ -1,0 +1,6 @@
+alphagradient.dtypes.Position.update\_history
+=============================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: Position.update_history

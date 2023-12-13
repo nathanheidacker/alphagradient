@@ -1,0 +1,6 @@
+alphagradient.Portfolio.base\_symbol
+====================================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Portfolio.base_symbol

@@ -1,0 +1,6 @@
+alphagradient.dtypes.Option.exact\_days
+=======================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: Option.exact_days

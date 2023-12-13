@@ -1,0 +1,6 @@
+alphagradient.algolib.ThetaGang.active
+======================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. autoproperty:: ThetaGang.active

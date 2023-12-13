@@ -1,0 +1,6 @@
+alphagradient.Call.rfr
+======================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Call.rfr

@@ -1,0 +1,6 @@
+alphagradient.Universe.benchmark
+================================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Universe.benchmark

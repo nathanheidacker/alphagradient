@@ -1,0 +1,6 @@
+alphagradient.algolib.ThetaGang.generate\_call
+==============================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. automethod:: ThetaGang.generate_call

@@ -1,0 +1,6 @@
+alphagradient.Put.required
+==========================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Put.required

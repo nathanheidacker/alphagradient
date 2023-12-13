@@ -1,0 +1,6 @@
+alphagradient.Stock.roi
+=======================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Stock.roi

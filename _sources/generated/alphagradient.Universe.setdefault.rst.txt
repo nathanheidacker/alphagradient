@@ -1,0 +1,6 @@
+alphagradient.Universe.setdefault
+=================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Universe.setdefault

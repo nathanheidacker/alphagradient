@@ -1,0 +1,6 @@
+alphagradient.Algorithm.default\_run
+====================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Algorithm.default_run

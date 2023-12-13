@@ -1,0 +1,6 @@
+alphagradient.Put.black\_scholes
+================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Put.black_scholes

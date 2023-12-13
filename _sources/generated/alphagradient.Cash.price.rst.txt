@@ -1,0 +1,6 @@
+alphagradient.Cash.price
+========================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Cash.price

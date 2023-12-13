@@ -1,0 +1,6 @@
+alphagradient.dtypes.Backtest.day
+=================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoproperty:: Backtest.day

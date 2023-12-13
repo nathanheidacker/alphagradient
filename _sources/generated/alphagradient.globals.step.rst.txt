@@ -1,0 +1,6 @@
+﻿alphagradient.globals.step
+==========================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: globals.step

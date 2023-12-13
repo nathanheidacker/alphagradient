@@ -1,0 +1,6 @@
+alphagradient.Currency.code\_value
+==================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Currency.code_value

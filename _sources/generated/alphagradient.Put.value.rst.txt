@@ -1,0 +1,6 @@
+alphagradient.Put.value
+=======================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Put.value

@@ -1,0 +1,6 @@
+alphagradient.Currency.open
+===========================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Currency.open

@@ -1,0 +1,6 @@
+﻿alphagradient.utils.timestring
+==============================
+
+.. currentmodule:: alphagradient.utils
+
+.. autofunction:: timestring

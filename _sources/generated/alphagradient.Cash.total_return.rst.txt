@@ -1,0 +1,6 @@
+alphagradient.Cash.total\_return
+================================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Cash.total_return

@@ -1,0 +1,6 @@
+alphagradient.Asset.next
+========================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Asset.next

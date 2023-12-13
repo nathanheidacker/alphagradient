@@ -1,0 +1,6 @@
+alphagradient.Stock.benchmark
+=============================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Stock.benchmark

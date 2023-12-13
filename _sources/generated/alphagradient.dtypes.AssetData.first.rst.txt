@@ -1,0 +1,6 @@
+alphagradient.dtypes.AssetData.first
+====================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoproperty:: AssetData.first

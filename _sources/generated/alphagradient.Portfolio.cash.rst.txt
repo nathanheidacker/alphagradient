@@ -1,0 +1,6 @@
+alphagradient.Portfolio.cash
+============================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Portfolio.cash

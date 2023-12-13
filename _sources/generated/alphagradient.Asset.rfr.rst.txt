@@ -1,0 +1,6 @@
+alphagradient.Asset.rfr
+=======================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Asset.rfr

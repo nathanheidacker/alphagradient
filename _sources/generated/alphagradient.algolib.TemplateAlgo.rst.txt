@@ -1,0 +1,45 @@
+﻿alphagradient.algolib.TemplateAlgo
+==================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. autoclass:: TemplateAlgo
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      TemplateAlgo.__call__
+      TemplateAlgo.cycle
+      TemplateAlgo.default_run
+      TemplateAlgo.initialize_inputs
+      TemplateAlgo.run
+      TemplateAlgo.setup
+      TemplateAlgo.template_method
+      TemplateAlgo.validate_end
+      TemplateAlgo.validate_resolution
+
+
+
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      TemplateAlgo.active
+      TemplateAlgo.date
+      TemplateAlgo.end
+      TemplateAlgo.env
+      TemplateAlgo.start
+      TemplateAlgo.template_property
+      TemplateAlgo.type
+
+

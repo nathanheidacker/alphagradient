@@ -1,0 +1,6 @@
+alphagradient.Stock.put
+=======================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Stock.put

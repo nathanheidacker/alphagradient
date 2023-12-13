@@ -1,0 +1,6 @@
+alphagradient.Stock.expired
+===========================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Stock.expired

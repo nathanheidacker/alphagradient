@@ -1,0 +1,6 @@
+alphagradient.Call.protocol
+===========================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Call.protocol

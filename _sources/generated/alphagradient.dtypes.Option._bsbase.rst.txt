@@ -1,0 +1,6 @@
+﻿alphagradient.dtypes.Option.\_bsbase
+====================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: Option._bsbase

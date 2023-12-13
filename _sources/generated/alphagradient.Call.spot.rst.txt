@@ -1,0 +1,6 @@
+alphagradient.Call.spot
+=======================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Call.spot

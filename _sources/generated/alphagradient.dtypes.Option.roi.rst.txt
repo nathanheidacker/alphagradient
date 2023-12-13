@@ -1,0 +1,6 @@
+alphagradient.dtypes.Option.roi
+===============================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: Option.roi

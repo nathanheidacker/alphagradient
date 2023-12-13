@@ -1,0 +1,6 @@
+alphagradient.Asset.market\_open
+================================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Asset.market_open

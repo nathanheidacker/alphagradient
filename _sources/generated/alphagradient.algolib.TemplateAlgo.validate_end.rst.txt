@@ -1,0 +1,6 @@
+alphagradient.algolib.TemplateAlgo.validate\_end
+================================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. automethod:: TemplateAlgo.validate_end

@@ -1,0 +1,6 @@
+alphagradient.dtypes.UniverseView.history
+=========================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoproperty:: UniverseView.history

@@ -1,0 +1,6 @@
+alphagradient.dtypes.Option.value
+=================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoproperty:: Option.value

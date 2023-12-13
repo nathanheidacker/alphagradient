@@ -1,0 +1,6 @@
+alphagradient.algolib.IndexHold.type
+====================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. autoattribute:: IndexHold.type

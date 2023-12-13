@@ -1,0 +1,6 @@
+alphagradient.dtypes.Option.beta
+================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: Option.beta

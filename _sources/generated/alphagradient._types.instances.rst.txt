@@ -1,0 +1,6 @@
+alphagradient.\_types.instances
+===============================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: _types.instances

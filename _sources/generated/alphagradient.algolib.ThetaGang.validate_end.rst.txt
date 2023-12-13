@@ -1,0 +1,6 @@
+alphagradient.algolib.ThetaGang.validate\_end
+=============================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. automethod:: ThetaGang.validate_end

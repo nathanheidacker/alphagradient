@@ -1,0 +1,52 @@
+﻿alphagradient.Portfolio
+=======================
+
+.. currentmodule:: alphagradient
+
+.. autoclass:: Portfolio
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Portfolio.buy
+      Portfolio.cover
+      Portfolio.covered_call
+      Portfolio.get_position
+      Portfolio.get_related_positions
+      Portfolio.invest
+      Portfolio.liquidate
+      Portfolio.reset
+      Portfolio.sell
+      Portfolio.short
+      Portfolio.update_history
+      Portfolio.update_positions
+      Portfolio.validate_transaction
+
+
+
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Portfolio.base
+      Portfolio.base_symbol
+      Portfolio.cash
+      Portfolio.date
+      Portfolio.liquid
+      Portfolio.longs
+      Portfolio.positions
+      Portfolio.shorts
+      Portfolio.type
+      Portfolio.value
+
+

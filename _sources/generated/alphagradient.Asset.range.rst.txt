@@ -1,0 +1,6 @@
+alphagradient.Asset.range
+=========================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Asset.range

@@ -1,0 +1,6 @@
+﻿alphagradient.globals.path
+==========================
+
+.. currentmodule:: alphagradient
+
+.. autoattribute:: globals.path

@@ -1,0 +1,6 @@
+alphagradient.Call.ma
+=====================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Call.ma

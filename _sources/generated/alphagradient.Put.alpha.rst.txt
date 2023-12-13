@@ -1,0 +1,6 @@
+alphagradient.Put.alpha
+=======================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Put.alpha

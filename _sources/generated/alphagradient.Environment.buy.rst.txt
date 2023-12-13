@@ -1,0 +1,6 @@
+alphagradient.Environment.buy
+=============================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Environment.buy

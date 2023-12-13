@@ -1,0 +1,6 @@
+alphagradient.\_types.undefined
+===============================
+
+.. currentmodule:: alphagradient
+
+.. autoattribute:: _types.undefined

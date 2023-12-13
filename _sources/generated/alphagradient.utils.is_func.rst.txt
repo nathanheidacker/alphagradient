@@ -1,0 +1,6 @@
+﻿alphagradient.utils.is\_func
+============================
+
+.. currentmodule:: alphagradient.utils
+
+.. autofunction:: is_func

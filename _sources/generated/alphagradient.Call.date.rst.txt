@@ -1,0 +1,6 @@
+alphagradient.Call.date
+=======================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Call.date

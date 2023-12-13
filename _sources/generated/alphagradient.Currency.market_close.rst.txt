@@ -1,0 +1,6 @@
+alphagradient.Currency.market\_close
+====================================
+
+.. currentmodule:: alphagradient
+
+.. autoattribute:: Currency.market_close

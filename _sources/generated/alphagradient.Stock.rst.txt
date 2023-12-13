@@ -1,0 +1,66 @@
+﻿alphagradient.Stock
+===================
+
+.. currentmodule:: alphagradient
+
+.. autoclass:: Stock
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Stock.alpha
+      Stock.beta
+      Stock.cagr
+      Stock.call
+      Stock.expire
+      Stock.get_settings
+      Stock.ma
+      Stock.online_data
+      Stock.put
+      Stock.quote
+      Stock.range
+      Stock.roi
+      Stock.valuate
+      Stock.vol
+
+
+
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Stock.base
+      Stock.benchmark
+      Stock.close_value
+      Stock.data
+      Stock.date
+      Stock.expired
+      Stock.key
+      Stock.market_close
+      Stock.market_open
+      Stock.name
+      Stock.next
+      Stock.open
+      Stock.open_value
+      Stock.optional
+      Stock.price
+      Stock.protocol
+      Stock.required
+      Stock.rfr
+      Stock.ticker
+      Stock.type
+      Stock.unit
+      Stock.units
+      Stock.value
+
+

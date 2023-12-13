@@ -1,0 +1,6 @@
+﻿alphagradient.utils.to\_step
+============================
+
+.. currentmodule:: alphagradient.utils
+
+.. autofunction:: to_step

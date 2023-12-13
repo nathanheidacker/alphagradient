@@ -1,0 +1,6 @@
+alphagradient.\_types.instantiable
+==================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: _types.instantiable

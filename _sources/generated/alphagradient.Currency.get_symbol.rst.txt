@@ -1,0 +1,6 @@
+alphagradient.Currency.get\_symbol
+==================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Currency.get_symbol

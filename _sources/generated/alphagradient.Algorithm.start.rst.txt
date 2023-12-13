@@ -1,0 +1,6 @@
+alphagradient.Algorithm.start
+=============================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Algorithm.start

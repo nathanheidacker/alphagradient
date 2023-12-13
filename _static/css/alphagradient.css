@@ -1,0 +1,168 @@
+:root {
+    /* --- AG COLORS --- */
+    --ag-primary-900: 254, 104, 6;
+    --ag-primary-800: 254, 137, 3;
+    --ag-primary-700: 255, 154, 0;
+    --ag-primary-600: 255, 173, 0;
+    --ag-primary-500: 255, 187, 0;
+    --ag-primary-400: 255, 197, 37;
+    --ag-primary-300: 255, 208, 76;
+    --ag-primary-200: 255, 221, 128;
+    --ag-primary-100: 255, 234, 178;
+    --ag-primary-050: 255, 247, 224;
+
+    --ag-secondary-900: 158, 0, 87;
+    --ag-secondary-800: 194, 0, 93;
+    --ag-secondary-700: 215, 0, 96;
+    --ag-secondary-600: 237, 0, 101;
+    --ag-secondary-500: 255, 2, 103;
+    --ag-secondary-401: 255, 59, 127;
+    --ag-secondary-402: 255, 38, 125;
+    --ag-secondary-400: 255, 56, 136;
+    --ag-secondary-300: 255, 98, 151;
+    --ag-secondary-200: 255, 144, 181;
+    --ag-secondary-100: 255, 188, 211;
+    --ag-secondary-050: 255, 229, 237;
+
+    --ag-tertiary-900: 0, 146, 89;
+    --ag-tertiary-800: 0, 178, 123;
+    --ag-tertiary-700: 0, 195, 138;
+    --ag-tertiary-600: 0, 215, 158;
+    --ag-tertiary-500: 0, 231, 174;
+    --ag-tertiary-400: 0, 240, 188;
+    --ag-tertiary-300: 0, 249, 202;
+    --ag-tertiary-200: 2, 255, 219;
+    --ag-tertiary-100: 154, 255, 233;
+    --ag-tertiary-050: 216, 255, 248;
+
+    --ag-bg: rgb(15, 16, 18);
+    --ag-bg-input: rgb(25, 26, 28);
+    --ag-bg-navbar: rgb(32, 34, 37);
+    --ag-bg-code: rgb(50, 40, 40);
+
+    --ag-text-900: 255, 255, 255;
+    --ag-text-800: 245, 245, 245;
+    --ag-text-700: 235, 235, 235;
+    --ag-text-600: 225, 225, 225;
+    --ag-text-500: 215, 215, 215;
+    --ag-text-400: 205, 205, 205;
+    --ag-text-300: 195, 195, 195;
+    --ag-text-200: 185, 185, 185;
+    --ag-text-100: 175, 175, 175;
+    --ag-text-050: 165, 165, 165;
+    --ag-text-040: 155, 155, 155;
+    --ag-text-030: 145, 145, 145;
+    --ag-text-020: 135, 135, 135;
+    --ag-text-010: 125, 125, 125;
+    --ag-text-009: 115, 115, 115;
+    --ag-text-008: 105, 105, 105;
+    --ag-text-007: 95, 95, 95;
+    --ag-text-006: 85, 85, 85;
+    --ag-text-005: 75, 75, 75;
+    --ag-text-004: 65, 65, 65;
+    --ag-text-003: 55, 55, 55;
+    --ag-text-002: 45, 45, 45;
+    --ag-text-001: 35, 35, 35;
+    --ag-text-000: 20, 20, 20;
+
+    /* --- BODY COLORS --- */
+    --pst-color-primary: var(--ag-primary-200);
+    --pst-color-text-base: var(--ag-text-800);
+    --pst-color-inline-code: var(--ag-secondary-400);
+    --pst-color-paragraph: var(--ag-text-600);
+    --pst-color-preformatted-background: var(--ag-bg-code);
+    --pst-color-preformatted-text: var(--ag-text-600);
+
+    /* --- LINK COLORS --- */
+    --pst-color-link: var(--ag-primary-100);
+    --pst-color-link-hover: var(--ag-tertiary-300);
+
+    /* --- SIDEBAR COLORS --- */
+    --pst-color-sidebar-link: var(--ag-primary-100);
+    --pst-color-sidebar-link-hover: var(--ag-tertiary-300);
+    --pst-color-sidebar-link-active: var(--ag-primary-200);
+
+    /* --- NAVBAR COLORS --- */
+    --pst-color-navbar-link: var(--ag-primary-100);
+    --pst-color-navbar-link-hover: var(--ag-tertiary-300);
+    --pst-color-navbar-link-active: var(--ag-primary-200);
+
+    /* --- HEADER COLORS --- */
+    --pst-color-headerlink: var(--ag-primary-300)
+
+    /* --- TOC COLORS --- */
+    --pst-color-toc-link: var(--ag-primary-100);
+    --pst-color-toc-link-hover: var(--ag-tertiary-300);
+    --pst-color-toc-link-active: var(--ag-primary-200);
+
+    /* --- SIDEBAR COLORS --- */
+    --pst-color-sidebar-expander-background-hover: var(--ag-bg-input);
+
+    /* --- HEADER LINK COLORS --- */
+    --pst-color-headerlink: var(--ag-secondary-400);
+
+    /* --- SPHINX-DESIGN COLORS --- */
+    --sd-color-primary: rgba(var(--ag-primary-200), 1);
+    --sd-color-secondary: rgba(var(--ag-secondary-500), 1);
+    --sd-color-secondary-highlight: rgba(var(--ag-secondary-300), 1);
+}
+
+body {
+    background-color: var(--ag-bg);
+}
+
+table {
+    border: rgba(var(--ag-text-002), 1)
+}
+
+.prev-next-area a {
+    color: var(--ag-primary-200)
+}
+
+#navbar-main {
+    background-color: var(--ag-bg-navbar) !important;
+}
+
+input {
+    background-color: var(--ag-bg-input) !important;
+    color: rgba(var(--ag-text-500), 1) !important;
+    border: rgba(var(--ag-text-002), 1) !important;
+}
+
+:target {
+    background-color: transparent !important;
+}
+
+span.highlighted {
+    background-color: transparent !important;
+}
+
+#navbar-icon-links i.fa-github-square:before {
+    color: rgba(var(--ag-primary-200), 1) !important;
+}
+
+a:hover {
+    text-decoration: none !important;
+}
+
+.sd-card {
+    background-color: var(--ag-bg-navbar); 
+}
+
+.sd-card-header {
+    background-color: var(--ag-bg-input);
+}
+
+img.icon {
+    filter: invert(81%) sepia(56%) saturate(397%) hue-rotate(339deg) brightness(103%) contrast(104%);
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+#navbar-main-elements {
+    font-weight: 600;
+}
+
+a.current.nav-link {
+    font-weight: 800;
+}

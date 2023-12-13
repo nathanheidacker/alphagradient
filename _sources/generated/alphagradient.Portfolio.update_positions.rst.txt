@@ -1,0 +1,6 @@
+alphagradient.Portfolio.update\_positions
+=========================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Portfolio.update_positions

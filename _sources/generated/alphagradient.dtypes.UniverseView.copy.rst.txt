@@ -1,0 +1,6 @@
+alphagradient.dtypes.UniverseView.copy
+======================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: UniverseView.copy

@@ -1,0 +1,6 @@
+alphagradient.algolib.IndexHold.start
+=====================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. autoproperty:: IndexHold.start

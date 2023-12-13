@@ -1,0 +1,6 @@
+alphagradient.Cash.average\_cost
+================================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Cash.average_cost

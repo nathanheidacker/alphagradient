@@ -1,0 +1,6 @@
+alphagradient.\_types.put
+=========================
+
+.. currentmodule:: alphagradient
+
+.. autoattribute:: _types.put

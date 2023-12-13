@@ -1,0 +1,6 @@
+alphagradient.\_finance.\_asset.Instances.base
+==============================================
+
+.. currentmodule:: alphagradient._finance._asset
+
+.. autoproperty:: Instances.base

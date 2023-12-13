@@ -1,0 +1,586 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>ThetaGang &#8212; AlphaGradient v0.0.2 documentation</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/alphagradient.css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/design-tabs.js"></script>
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="alphagradient.algolib.ThetaGang" href="../../generated/alphagradient.algolib.ThetaGang.html" />
+    <link rel="prev" title="alphagradient.algolib.IndexHold.validate_resolution" href="../../generated/alphagradient.algolib.IndexHold.validate_resolution.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+
+<a class="navbar-brand" href="../../index.html">
+  <img src="../../_static/aglogowtext.png" class="logo" alt="logo">
+</a>
+
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../quickstart/index.html">
+  Quickstart Guide
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../guide/index.html">
+  User Guide
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../api/index.html">
+  API Reference
+ </a>
+</li>
+
+<li class="toctree-l1 current active nav-item">
+ <a class="reference internal nav-link" href="../index.html">
+  Algorithm Library
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../about.html">
+  About
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/nathanheidacker/alphagradient" rel="noopener" target="_blank" title="GitHub"><span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar">
+              <div class="sidebar-start-items"><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    <ul class="nav bd-sidenav">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../standard/index.html">
+   Standard Algorithms
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="simple">
+  </ul>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../nonstandard/index.html">
+   Non-Standard Algorithms
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="simple">
+  </ul>
+ </li>
+</ul>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="index.html">
+   Tutorial Algorithms
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="current">
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="IndexHold.html">
+     IndexHold
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+    <label for="toctree-checkbox-4">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../../generated/alphagradient.algolib.IndexHold.html">
+       alphagradient.algolib.IndexHold
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../generated/alphagradient.algolib.IndexHold.__call__.html">
+         alphagradient.algolib.IndexHold.__call__
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../generated/alphagradient.algolib.IndexHold.cycle.html">
+         alphagradient.algolib.IndexHold.cycle
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../generated/alphagradient.algolib.IndexHold.default_run.html">
+         alphagradient.algolib.IndexHold.default_run
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../generated/alphagradient.algolib.IndexHold.initialize_inputs.html">
+         alphagradient.algolib.IndexHold.initialize_inputs
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../generated/alphagradient.algolib.IndexHold.setup.html">
+         alphagradient.algolib.IndexHold.setup
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../generated/alphagradient.algolib.IndexHold.validate_end.html">
+         alphagradient.algolib.IndexHold.validate_end
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../generated/alphagradient.algolib.IndexHold.validate_resolution.html">
+         alphagradient.algolib.IndexHold.validate_resolution
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/alphagradient.algolib.IndexHold.setup.html">
+       alphagradient.algolib.IndexHold.setup
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/alphagradient.algolib.IndexHold.cycle.html">
+       alphagradient.algolib.IndexHold.cycle
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 current active has-children">
+    <a class="current reference internal" href="#">
+     ThetaGang
+    </a>
+    <input checked="" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+    <label for="toctree-checkbox-6">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../../generated/alphagradient.algolib.ThetaGang.html">
+       alphagradient.algolib.ThetaGang
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+      <label for="toctree-checkbox-7">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../generated/alphagradient.algolib.ThetaGang.__call__.html">
+         alphagradient.algolib.ThetaGang.__call__
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../generated/alphagradient.algolib.ThetaGang.cycle.html">
+         alphagradient.algolib.ThetaGang.cycle
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../generated/alphagradient.algolib.ThetaGang.default_run.html">
+         alphagradient.algolib.ThetaGang.default_run
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../generated/alphagradient.algolib.ThetaGang.generate_call.html">
+         alphagradient.algolib.ThetaGang.generate_call
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../generated/alphagradient.algolib.ThetaGang.initialize_inputs.html">
+         alphagradient.algolib.ThetaGang.initialize_inputs
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../generated/alphagradient.algolib.ThetaGang.setup.html">
+         alphagradient.algolib.ThetaGang.setup
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../generated/alphagradient.algolib.ThetaGang.validate_end.html">
+         alphagradient.algolib.ThetaGang.validate_end
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../generated/alphagradient.algolib.ThetaGang.validate_resolution.html">
+         alphagradient.algolib.ThetaGang.validate_resolution
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/alphagradient.algolib.ThetaGang.setup.html">
+       alphagradient.algolib.ThetaGang.setup
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/alphagradient.algolib.ThetaGang.cycle.html">
+       alphagradient.algolib.ThetaGang.cycle
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/alphagradient.algolib.ThetaGang.generate_call.html">
+       alphagradient.algolib.ThetaGang.generate_call
+      </a>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../publishing.html">
+   Publishing an Algorithm
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../TemplateAlgo.html">
+   Template
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/>
+  <label for="toctree-checkbox-8">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../../generated/alphagradient.algolib.TemplateAlgo.html">
+     alphagradient.algolib.TemplateAlgo
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/>
+    <label for="toctree-checkbox-9">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/alphagradient.algolib.TemplateAlgo.__call__.html">
+       alphagradient.algolib.TemplateAlgo.__call__
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/alphagradient.algolib.TemplateAlgo.cycle.html">
+       alphagradient.algolib.TemplateAlgo.cycle
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/alphagradient.algolib.TemplateAlgo.default_run.html">
+       alphagradient.algolib.TemplateAlgo.default_run
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/alphagradient.algolib.TemplateAlgo.initialize_inputs.html">
+       alphagradient.algolib.TemplateAlgo.initialize_inputs
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/alphagradient.algolib.TemplateAlgo.run.html">
+       alphagradient.algolib.TemplateAlgo.run
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/alphagradient.algolib.TemplateAlgo.setup.html">
+       alphagradient.algolib.TemplateAlgo.setup
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/alphagradient.algolib.TemplateAlgo.template_method.html">
+       alphagradient.algolib.TemplateAlgo.template_method
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/alphagradient.algolib.TemplateAlgo.validate_end.html">
+       alphagradient.algolib.TemplateAlgo.validate_end
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/alphagradient.algolib.TemplateAlgo.validate_resolution.html">
+       alphagradient.algolib.TemplateAlgo.validate_resolution
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../generated/alphagradient.algolib.TemplateAlgo.setup.html">
+     alphagradient.algolib.TemplateAlgo.setup
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../generated/alphagradient.algolib.TemplateAlgo.cycle.html">
+     alphagradient.algolib.TemplateAlgo.cycle
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../generated/alphagradient.algolib.TemplateAlgo.run.html">
+     alphagradient.algolib.TemplateAlgo.run
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../generated/alphagradient.algolib.TemplateAlgo.template_property.html">
+     alphagradient.algolib.TemplateAlgo.template_property
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../generated/alphagradient.algolib.TemplateAlgo.template_method.html">
+     alphagradient.algolib.TemplateAlgo.template_method
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+  </div>
+</nav>
+              </div>
+              <div class="sidebar-end-items">
+              </div>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+<div class="tocsection onthispage mt-5 pt-1 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
+
+<nav id="bd-toc-nav">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#constructor">
+   Constructor
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#implementation">
+   Implementation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#internal-methods">
+   Internal Methods
+  </a>
+ </li>
+</ul>
+
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <section id="thetagang">
+<span id="algolib-tutorials-thetagang"></span><h1>ThetaGang<a class="headerlink" href="#thetagang" title="Permalink to this headline">#</a></h1>
+<section id="constructor">
+<h2>Constructor<a class="headerlink" href="#constructor" title="Permalink to this headline">#</a></h2>
+<table class="autosummary longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../generated/alphagradient.algolib.ThetaGang.html#alphagradient.algolib.ThetaGang" title="alphagradient.algolib.ThetaGang"><code class="xref py py-obj docutils literal notranslate"><span class="pre">algolib.ThetaGang</span></code></a>(*args[, bounded])</p></td>
+<td><p>An example algorithm in the algorithm library used to demonstrate some of AlphaGradient's standard features and best practices</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">#</a></h2>
+<table class="autosummary longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../generated/alphagradient.algolib.ThetaGang.setup.html#alphagradient.algolib.ThetaGang.setup" title="alphagradient.algolib.ThetaGang.setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">algolib.ThetaGang.setup</span></code></a>(start, **kwargs)</p></td>
+<td><p>This is the environement setup that is performed before each backtest.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../generated/alphagradient.algolib.ThetaGang.cycle.html#alphagradient.algolib.ThetaGang.cycle" title="alphagradient.algolib.ThetaGang.cycle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">algolib.ThetaGang.cycle</span></code></a>(**kwargs)</p></td>
+<td><p>The actions to perform at every valuation point</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="internal-methods">
+<h2>Internal Methods<a class="headerlink" href="#internal-methods" title="Permalink to this headline">#</a></h2>
+<table class="autosummary longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../generated/alphagradient.algolib.ThetaGang.generate_call.html#alphagradient.algolib.ThetaGang.generate_call" title="alphagradient.algolib.ThetaGang.generate_call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">algolib.ThetaGang.generate_call</span></code></a>([delta])</p></td>
+<td><p>Generates the ideal SPY call to be sold based on current circumstances</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="../../generated/alphagradient.algolib.IndexHold.validate_resolution.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">alphagradient.algolib.IndexHold.validate_resolution</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="../../generated/alphagradient.algolib.ThetaGang.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">alphagradient.algolib.ThetaGang</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2022, Nathan Heidacker.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.5.0.<br>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

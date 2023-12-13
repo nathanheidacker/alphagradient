@@ -1,0 +1,6 @@
+alphagradient.dtypes.Performance.range
+======================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: Performance.range

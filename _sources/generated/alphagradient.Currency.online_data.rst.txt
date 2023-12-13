@@ -1,0 +1,6 @@
+alphagradient.Currency.online\_data
+===================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Currency.online_data

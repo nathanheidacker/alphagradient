@@ -1,0 +1,6 @@
+alphagradient.dtypes.Performance.changes
+========================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: Performance.changes

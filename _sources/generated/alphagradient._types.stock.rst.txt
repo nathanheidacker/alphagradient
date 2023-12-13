@@ -1,0 +1,6 @@
+alphagradient.\_types.stock
+===========================
+
+.. currentmodule:: alphagradient
+
+.. autoattribute:: _types.stock

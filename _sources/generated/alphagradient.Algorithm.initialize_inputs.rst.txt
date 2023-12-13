@@ -1,0 +1,6 @@
+alphagradient.Algorithm.initialize\_inputs
+==========================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Algorithm.initialize_inputs

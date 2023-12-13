@@ -1,0 +1,6 @@
+alphagradient.Asset.beta
+========================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Asset.beta

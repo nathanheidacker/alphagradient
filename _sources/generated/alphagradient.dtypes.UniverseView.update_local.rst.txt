@@ -1,0 +1,6 @@
+alphagradient.dtypes.UniverseView.update\_local
+===============================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: UniverseView.update_local

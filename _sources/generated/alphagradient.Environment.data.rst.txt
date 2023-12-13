@@ -1,0 +1,6 @@
+alphagradient.Environment.data
+==============================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Environment.data

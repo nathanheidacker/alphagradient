@@ -1,0 +1,6 @@
+alphagradient.dtypes.Option.market\_open
+========================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoproperty:: Option.market_open

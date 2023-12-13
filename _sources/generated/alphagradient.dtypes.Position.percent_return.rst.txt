@@ -1,0 +1,6 @@
+alphagradient.dtypes.Position.percent\_return
+=============================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoproperty:: Position.percent_return

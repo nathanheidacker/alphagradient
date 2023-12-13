@@ -1,0 +1,6 @@
+alphagradient.algolib.TemplateAlgo.\_\_call\_\_
+===============================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. automethod:: TemplateAlgo.__call__

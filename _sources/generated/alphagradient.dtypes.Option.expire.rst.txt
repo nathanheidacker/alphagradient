@@ -1,0 +1,6 @@
+alphagradient.dtypes.Option.expire
+==================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: Option.expire

@@ -1,0 +1,6 @@
+alphagradient.Stock.beta
+========================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Stock.beta

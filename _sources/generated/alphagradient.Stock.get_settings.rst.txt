@@ -1,0 +1,6 @@
+alphagradient.Stock.get\_settings
+=================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Stock.get_settings

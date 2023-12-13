@@ -1,0 +1,6 @@
+alphagradient.Stock.range
+=========================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Stock.range

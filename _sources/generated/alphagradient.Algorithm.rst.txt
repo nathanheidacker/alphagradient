@@ -1,0 +1,42 @@
+﻿alphagradient.Algorithm
+=======================
+
+.. currentmodule:: alphagradient
+
+.. autoclass:: Algorithm
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Algorithm.__call__
+      Algorithm.cycle
+      Algorithm.default_run
+      Algorithm.initialize_inputs
+      Algorithm.setup
+      Algorithm.validate_end
+      Algorithm.validate_resolution
+
+
+
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Algorithm.active
+      Algorithm.date
+      Algorithm.end
+      Algorithm.env
+      Algorithm.start
+      Algorithm.type
+
+

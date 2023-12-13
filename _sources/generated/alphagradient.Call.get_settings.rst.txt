@@ -1,0 +1,6 @@
+alphagradient.Call.get\_settings
+================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Call.get_settings

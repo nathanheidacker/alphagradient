@@ -1,0 +1,6 @@
+alphagradient.utils.NullClass.\_\_call\_\_
+==========================================
+
+.. currentmodule:: alphagradient.utils
+
+.. automethod:: NullClass.__call__

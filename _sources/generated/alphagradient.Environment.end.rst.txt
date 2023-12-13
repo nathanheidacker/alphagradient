@@ -1,0 +1,6 @@
+alphagradient.Environment.end
+=============================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Environment.end

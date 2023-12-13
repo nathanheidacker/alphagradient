@@ -1,0 +1,6 @@
+alphagradient.dtypes.Option.close\_value
+========================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoproperty:: Option.close_value

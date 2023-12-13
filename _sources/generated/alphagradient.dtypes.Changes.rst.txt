@@ -1,0 +1,6 @@
+﻿alphagradient.dtypes.Changes
+============================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autodata:: Changes

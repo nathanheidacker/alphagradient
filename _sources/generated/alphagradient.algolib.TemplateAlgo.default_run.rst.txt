@@ -1,0 +1,6 @@
+alphagradient.algolib.TemplateAlgo.default\_run
+===============================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. automethod:: TemplateAlgo.default_run

@@ -1,0 +1,6 @@
+alphagradient.Environment.short
+===============================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Environment.short

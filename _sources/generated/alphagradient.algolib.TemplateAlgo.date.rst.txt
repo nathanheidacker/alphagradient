@@ -1,0 +1,6 @@
+alphagradient.algolib.TemplateAlgo.date
+=======================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. autoproperty:: TemplateAlgo.date

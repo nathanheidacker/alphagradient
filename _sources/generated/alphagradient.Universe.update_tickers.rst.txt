@@ -1,0 +1,6 @@
+alphagradient.Universe.update\_tickers
+======================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Universe.update_tickers

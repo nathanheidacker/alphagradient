@@ -1,0 +1,6 @@
+alphagradient.dtypes.Performance.index\_periods
+===============================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: Performance.index_periods

@@ -1,0 +1,6 @@
+alphagradient.\_finance.\_asset.Instances.pop
+=============================================
+
+.. currentmodule:: alphagradient._finance._asset
+
+.. automethod:: Instances.pop

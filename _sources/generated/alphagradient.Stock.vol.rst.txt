@@ -1,0 +1,6 @@
+alphagradient.Stock.vol
+=======================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Stock.vol

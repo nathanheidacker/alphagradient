@@ -1,0 +1,6 @@
+alphagradient.\_finance.\_asset.Instances.setdefault
+====================================================
+
+.. currentmodule:: alphagradient._finance._asset
+
+.. automethod:: Instances.setdefault

@@ -1,0 +1,6 @@
+alphagradient.dtypes.Performance.cagr
+=====================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: Performance.cagr

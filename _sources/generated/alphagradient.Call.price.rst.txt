@@ -1,0 +1,6 @@
+alphagradient.Call.price
+========================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Call.price

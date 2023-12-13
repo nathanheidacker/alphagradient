@@ -1,0 +1,6 @@
+alphagradient.dtypes.Backtest.finalize
+======================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: Backtest.finalize

@@ -1,0 +1,6 @@
+alphagradient.dtypes.AssetData.get\_index
+=========================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: AssetData.get_index

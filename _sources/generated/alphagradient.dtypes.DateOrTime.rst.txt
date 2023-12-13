@@ -1,0 +1,6 @@
+﻿alphagradient.dtypes.DateOrTime
+===============================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autodata:: DateOrTime

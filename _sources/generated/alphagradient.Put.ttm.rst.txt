@@ -1,0 +1,6 @@
+alphagradient.Put.ttm
+=====================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Put.ttm

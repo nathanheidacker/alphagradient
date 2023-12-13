@@ -1,0 +1,6 @@
+alphagradient.Asset.expire
+==========================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Asset.expire

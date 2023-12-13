@@ -1,0 +1,379 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>About &#8212; AlphaGradient v0.0.2 documentation</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    <link rel="stylesheet" type="text/css" href="_static/css/alphagradient.css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/design-tabs.js"></script>
+    <link rel="author" title="About these documents" href="#" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="alphagradient.algolib.TemplateAlgo.template_property" href="generated/alphagradient.algolib.TemplateAlgo.template_property.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+
+<a class="navbar-brand" href="index.html">
+  <img src="_static/aglogowtext.png" class="logo" alt="logo">
+</a>
+
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="quickstart/index.html">
+  Quickstart Guide
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="guide/index.html">
+  User Guide
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="api/index.html">
+  API Reference
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="algolib/index.html">
+  Algorithm Library
+ </a>
+</li>
+
+<li class="toctree-l1 current active nav-item">
+ <a class="current reference internal nav-link" href="#">
+  About
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/nathanheidacker/alphagradient" rel="noopener" target="_blank" title="GitHub"><span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar">
+              <div class="sidebar-start-items"><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    
+  </div>
+</nav>
+              </div>
+              <div class="sidebar-end-items">
+              </div>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+<div class="tocsection onthispage mt-5 pt-1 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
+
+<nav id="bd-toc-nav">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#design-and-intended-audience">
+   Design and Intended Audience
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#the-road-ahead">
+   The Road Ahead
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#performance-analytics">
+     Performance Analytics
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#data-sourcing">
+     Data Sourcing
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#expanding-the-standard-asset-library">
+     Expanding the Standard Asset Library
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#algorithm-improvements">
+     Algorithm Improvements
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#simplifying-assumptions">
+       Simplifying Assumptions
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#asynchronous-algorithms">
+       Asynchronous Algorithms
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#machine-learning">
+     Machine Learning
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#about-me">
+   About Me
+  </a>
+ </li>
+</ul>
+
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <section id="about">
+<span id="id1"></span><h1>About<a class="headerlink" href="#about" title="Permalink to this headline">#</a></h1>
+<section id="design-and-intended-audience">
+<h2>Design and Intended Audience<a class="headerlink" href="#design-and-intended-audience" title="Permalink to this headline">#</a></h2>
+<p>AlphaGradient was built with an intention to open the world of algorithmic trading to anyone with an interest in finance. From the beginning, AlphaGradient’s API was designed with user experience at the forefront, such that users of <strong>any</strong> programming skill level could take up the library and start building real financial algorithms within a single session.</p>
+<p>In it’s current state, the library is far from offering all of the functionality that it ultimately intends–but the backbone is there. Unlike other engines and trading platforms which are specialized to accomodate real-world economies, AlphaGradient is built on a set of more robust abstract principles; it can model essentially any system of economic transactions (see the User Guide for examples).</p>
+<p>Ultimately, AlphaGradient is built for anyone that wants to use it. To successfully implement algorithms, some elementary knowledge of both finance and python are required, but nothing to the extent that anyone would be ruled out. If you have an understanding of how securities are traded or have ever used a brokerage account, you can use AlphaGradient.</p>
+</section>
+<section id="the-road-ahead">
+<h2>The Road Ahead<a class="headerlink" href="#the-road-ahead" title="Permalink to this headline">#</a></h2>
+<p>Of course, this is still just an extremely early look at what AlphaGradient eventually hopes to become. Current features and functionality for most of the primitive financial objects implemented by AlphaGradient are sparse at best, so one of the most immediate goals is to flesh those tools out as the library matures into a more respectable, robust finance toolkit. Namely, we’re in the process of developing far more advanced analytical tools for these primitive objects.</p>
+<section id="performance-analytics">
+<h3>Performance Analytics<a class="headerlink" href="#performance-analytics" title="Permalink to this headline">#</a></h3>
+<p>Most importantly, <code class="xref py py-class docutils literal notranslate"><span class="pre">Backtest</span></code> objects will provide a framework for extremely detailed and customizable performance analytics reporting, as well as tools for natively outputting these reports to human readable (and hopefully aesthetically pleasing!) output formats, like interactive HTML.</p>
+<p>We’re also considering developing complete third party tools for creating viewing, and interacting with algorithm backtest reports. We find that the use of a modern, minimalist GUI is dramatically more attractive for the average potential user–especially non-programmers.</p>
+<p>In the future, these more concrete applications can even be used to implement a visual scripting interface for algorithm development, not disimilar to Unreal Engine’s ‘blueprint’ system. While we don’t want to walk away from the accessibility and open-source nature of the python identity, ultimately the goal is to bring effortless and easy-to-understand algorithmic trading to the largest audience possible.</p>
+</section>
+<section id="data-sourcing">
+<h3>Data Sourcing<a class="headerlink" href="#data-sourcing" title="Permalink to this headline">#</a></h3>
+<p>As of right now, AlphaGradient makes no guarantee to provide data for the Assets that it instantiates–the responsbility to provide data useful to the outcome of algorithm backtests lies largely with the user. However, for certain asset classes, AlphaGradient does make an effort to provide data automatically where convenient, such as it currently does with stocks, currencies, and options.</p>
+<p>However, this data is of limited quality, owing to the fact that it uses public APIs that offer data of limited resolution and limited history. Data sourcing for assets classes whose nature permits automatic sourcing could definitely be improved–not just by the implementation of new features and functionality for customizing the type of data with which those assets are automatically instantiated, but by the implementation of new data sources themselves. There are a host of other APIs that offer similar kinds of data that may be more powerful used collectively than independently.</p>
+<p>Data sources for other kinds of assets which do not currently support automatic data at time of instantiation may also exist, which, if implemented, may allow AlphaGradient to eventually handle everything behind the scenes automatically, dramatically reducing the burden of the user to supply anything on their own.</p>
+<p>If the community grows large enough, AlphaGradient may eventually choose to support a paid tier of data sourcing by partnering with various data sources, the use of which would automatically be integrated with AlphaGradient via the use of a private API key.</p>
+</section>
+<section id="expanding-the-standard-asset-library">
+<h3>Expanding the Standard Asset Library<a class="headerlink" href="#expanding-the-standard-asset-library" title="Permalink to this headline">#</a></h3>
+<p>The current standard library is very limited in scope. While the AlphaGradient asset base class is designed to be very easily extendable, it would likely be to the benefit of users to offer a much larger variety of basic asset classes. The first official release of AlphaGradient is guaranteed to include at least the following.</p>
+<dl class="simple">
+<dt>New Concrete Asset Types:</dt><dd><ul class="simple">
+<li><p>Bonds</p></li>
+<li><p>Commodities</p></li>
+<li><p>Cryptocurrencies</p></li>
+<li><p>Futures</p></li>
+<li><p>Swaps</p></li>
+<li><p>Loans</p></li>
+</ul>
+</dd>
+<dt>New Abstract Asset Types:</dt><dd><ul class="simple">
+<li><p>Virtual Assets</p></li>
+<li><p>Unique Assets (one of a kind, or extremely limited quantity)</p></li>
+<li><p>Stochastics</p></li>
+</ul>
+</dd>
+</dl>
+<p>Stochastic assets are must larger implementation because they will allow for the creation of entire synthetic datasets whos statistical characteristics model those of real economies when taken as a whole. This will allow algorithms to test the robustness of their theory; does it only work in historical data, or does it work any (resonably conceived) data? Initially, AlphaGradient will ship with only a single Stochastic asset type: <code class="docutils literal notranslate"><span class="pre">BrownianStock</span></code>. These assets will operate in exactly the same way as normal <a class="reference internal" href="generated/alphagradient.Stock.html#alphagradient.Stock" title="alphagradient.Stock"><code class="xref py py-class docutils literal notranslate"><span class="pre">Stock</span></code></a> objects already do, but their data will be generated by underlying processes of geometric brownian motion.</p>
+</section>
+<section id="algorithm-improvements">
+<h3>Algorithm Improvements<a class="headerlink" href="#algorithm-improvements" title="Permalink to this headline">#</a></h3>
+<p>Being the star of the show, its important that <a class="reference internal" href="generated/alphagradient.Algorithm.html#alphagradient.Algorithm" title="alphagradient.Algorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">Algorithms</span></code></a> are feature-complete. As of right now, there are a few limitations of their use that prevents them from being nearly as powerful as they could be.</p>
+<section id="simplifying-assumptions">
+<h4>Simplifying Assumptions<a class="headerlink" href="#simplifying-assumptions" title="Permalink to this headline">#</a></h4>
+<p>In their current form, algorithms make some pretty large assumptions in order to create a simplified ‘perfect world’. While this world of perfect assumptions makes the process of creating algorithms and understanding their outputs far easier, it also makes their outputs significantly less realistic and sometimes even impossible. Below are just a few of the simplifying assumptions made by algorithms that do not accurately reflect real world trading circumstances.</p>
+<dl>
+<dt>Simplifying Assumptions:</dt><dd><ul>
+<li><p>All assets have infinite volume and infinite liquidity</p></li>
+<li><div class="line-block">
+<div class="line">Consequently, no transaction has the capacity to affect any change in</div>
+<div class="line">price of the asset involved in the transaction.</div>
+</div>
+</li>
+<li><p>Trades occur instantly</p></li>
+<li><p>Assets have absolute prices, rather than bid ask spreads</p></li>
+</ul>
+</dd>
+</dl>
+<p>While these assumptions make things extremely simple for beginners, power users may find themselves disappointed by the lack of realism when dealing with algorithms that operate with extremely high frequencies, transaction quantities, or both. The first official release of AlphaGradient will include a suite of toggle-able options that allow users to change what assumptions are made at algorithm runtime.</p>
+</section>
+<section id="asynchronous-algorithms">
+<h4>Asynchronous Algorithms<a class="headerlink" href="#asynchronous-algorithms" title="Permalink to this headline">#</a></h4>
+<p>The current standard algorithm implementation runs synchronously; it evaluates everything at every time step before moving to the next. While this format of operation is certainly the most intuitive, it is extremely suboptimal in regard to computational efficiency, especially for use in a machine learning context where thousands of backtest results need to be generated to build effective datasets.</p>
+<p>Next on the to-do list for algorithms is the implementation of the <code class="docutils literal notranslate"><span class="pre">AsyncAlgorithm</span></code>, which operates with similar, but slightly modified functionality to allow it to perform valuations at different points in time in a vastly more optimized asynchronous fashion. Async algos will require the user to define a function that, when given a far more limited set of data, outputs a set of actions to be performed rather than modifying an Environment object in place. These action sets can then be compiled and valuated in parllalel, allowing for algorithms with an order of magnitude (or more) improvement in backtest speed.</p>
+</section>
+</section>
+<section id="machine-learning">
+<h3>Machine Learning<a class="headerlink" href="#machine-learning" title="Permalink to this headline">#</a></h3>
+<p>The first official v1.0.0 release of AlphaGradient will be marked by the completion of its machine learning module, <code class="docutils literal notranslate"><span class="pre">alphagradient.ml</span></code>. This is the <strong>Gradient</strong> in Alpha<strong>Gradient</strong>. <code class="docutils literal notranslate"><span class="pre">ml</span></code> will implement a host of features for intuitively using AlphaGradient primitives with the most popular ml libraries, such as PyTorch, Tensorflow, and Keras.</p>
+<dl>
+<dt>Planned Features:</dt><dd><ul>
+<li><p>Asset metadata profiles for use in training</p></li>
+<li><div class="line-block">
+<div class="line">Asset Dataloaders which automatically generate properly formatted</div>
+<div class="line">historical asset data for use in training.</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">Pipelines for combining loaders with models and automatically</div>
+<div class="line">interpretting and formatting ouputs</div>
+</div>
+</li>
+<li><p>Pre-tuned models which can be selectively trained on any asset</p></li>
+<li><p>Pre-trained models for asset price prediction</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+</section>
+<section id="about-me">
+<h2>About Me<a class="headerlink" href="#about-me" title="Permalink to this headline">#</a></h2>
+<p>Hi, I’m Nathan, and this library is something of a passion project of mine. I’m a recent graduate of Northwestern University (Go Cats!) with a bachelors in cognitive science and artificial intelligence. If any of my work interests you feel free to reach out at <a class="reference external" href="mailto:nathanheidacker2022&#37;&#52;&#48;u&#46;northwestern&#46;edu">this email</a>.</p>
+</section>
+</section>
+
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="generated/alphagradient.algolib.TemplateAlgo.template_property.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">alphagradient.algolib.TemplateAlgo.template_property</p>
+        </div>
+    </a>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2022, Nathan Heidacker.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.5.0.<br>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

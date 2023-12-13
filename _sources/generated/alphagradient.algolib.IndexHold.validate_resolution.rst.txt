@@ -1,0 +1,6 @@
+alphagradient.algolib.IndexHold.validate\_resolution
+====================================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. automethod:: IndexHold.validate_resolution

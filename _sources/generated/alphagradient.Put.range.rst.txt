@@ -1,0 +1,6 @@
+alphagradient.Put.range
+=======================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Put.range

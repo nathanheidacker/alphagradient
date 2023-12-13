@@ -1,0 +1,6 @@
+alphagradient.dtypes.Option.rfr
+===============================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoproperty:: Option.rfr

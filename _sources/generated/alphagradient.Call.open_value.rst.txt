@@ -1,0 +1,6 @@
+alphagradient.Call.open\_value
+==============================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Call.open_value

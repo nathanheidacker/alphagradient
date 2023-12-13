@@ -1,0 +1,6 @@
+alphagradient.Currency.is\_base
+===============================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Currency.is_base

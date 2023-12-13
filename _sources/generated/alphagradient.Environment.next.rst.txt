@@ -1,0 +1,6 @@
+alphagradient.Environment.next
+==============================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Environment.next

@@ -1,0 +1,6 @@
+alphagradient.Universe.add
+==========================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Universe.add

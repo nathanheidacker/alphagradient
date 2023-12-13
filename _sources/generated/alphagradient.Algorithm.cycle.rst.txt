@@ -1,0 +1,6 @@
+alphagradient.Algorithm.cycle
+=============================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Algorithm.cycle

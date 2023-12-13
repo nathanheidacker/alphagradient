@@ -1,0 +1,6 @@
+alphagradient.dtypes.Performance.roi
+====================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: Performance.roi

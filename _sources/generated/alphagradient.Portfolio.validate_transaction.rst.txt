@@ -1,0 +1,6 @@
+alphagradient.Portfolio.validate\_transaction
+=============================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Portfolio.validate_transaction

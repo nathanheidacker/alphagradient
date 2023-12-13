@@ -1,0 +1,6 @@
+alphagradient.Put.get\_settings
+===============================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Put.get_settings

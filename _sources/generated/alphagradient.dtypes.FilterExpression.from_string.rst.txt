@@ -1,0 +1,6 @@
+alphagradient.dtypes.FilterExpression.from\_string
+==================================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: FilterExpression.from_string

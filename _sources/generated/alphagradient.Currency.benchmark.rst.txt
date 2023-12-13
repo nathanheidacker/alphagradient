@@ -1,0 +1,6 @@
+alphagradient.Currency.benchmark
+================================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Currency.benchmark

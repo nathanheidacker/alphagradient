@@ -1,0 +1,43 @@
+﻿alphagradient.algolib.ThetaGang
+===============================
+
+.. currentmodule:: alphagradient.algolib
+
+.. autoclass:: ThetaGang
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      ThetaGang.__call__
+      ThetaGang.cycle
+      ThetaGang.default_run
+      ThetaGang.generate_call
+      ThetaGang.initialize_inputs
+      ThetaGang.setup
+      ThetaGang.validate_end
+      ThetaGang.validate_resolution
+
+
+
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      ThetaGang.active
+      ThetaGang.date
+      ThetaGang.end
+      ThetaGang.env
+      ThetaGang.start
+      ThetaGang.type
+
+

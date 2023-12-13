@@ -1,0 +1,53 @@
+﻿alphagradient.Environment
+=========================
+
+.. currentmodule:: alphagradient
+
+.. autoclass:: Environment
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Environment.autosync
+      Environment.buy
+      Environment.cover
+      Environment.data
+      Environment.finalize
+      Environment.next
+      Environment.optimal_start
+      Environment.portfolio
+      Environment.sell
+      Environment.short
+      Environment.step
+      Environment.sync
+      Environment.track
+
+
+
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Environment.assets
+      Environment.base
+      Environment.date
+      Environment.end
+      Environment.open
+      Environment.portfolios
+      Environment.resolution
+      Environment.start
+      Environment.status
+      Environment.times
+      Environment.type
+
+

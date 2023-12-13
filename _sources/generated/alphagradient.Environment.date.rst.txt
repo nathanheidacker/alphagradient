@@ -1,0 +1,6 @@
+alphagradient.Environment.date
+==============================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Environment.date

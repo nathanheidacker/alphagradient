@@ -1,0 +1,6 @@
+alphagradient.dtypes.Option.atm
+===============================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoproperty:: Option.atm

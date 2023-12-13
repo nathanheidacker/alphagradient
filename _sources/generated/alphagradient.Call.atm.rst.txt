@@ -1,0 +1,6 @@
+alphagradient.Call.atm
+======================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Call.atm

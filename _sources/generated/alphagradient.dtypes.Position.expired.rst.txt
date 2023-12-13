@@ -1,0 +1,6 @@
+alphagradient.dtypes.Position.expired
+=====================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoproperty:: Position.expired

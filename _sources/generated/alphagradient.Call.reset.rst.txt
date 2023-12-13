@@ -1,0 +1,6 @@
+alphagradient.Call.reset
+========================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Call.reset

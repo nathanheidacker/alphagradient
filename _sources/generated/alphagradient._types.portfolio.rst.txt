@@ -1,0 +1,6 @@
+alphagradient.\_types.portfolio
+===============================
+
+.. currentmodule:: alphagradient
+
+.. autoattribute:: _types.portfolio

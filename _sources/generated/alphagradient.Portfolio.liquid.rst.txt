@@ -1,0 +1,6 @@
+alphagradient.Portfolio.liquid
+==============================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Portfolio.liquid

@@ -1,0 +1,6 @@
+alphagradient.dtypes.Performance.date
+=====================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoproperty:: Performance.date

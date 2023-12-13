@@ -1,0 +1,6 @@
+alphagradient.Portfolio.get\_related\_positions
+===============================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Portfolio.get_related_positions

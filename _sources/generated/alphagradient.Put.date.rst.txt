@@ -1,0 +1,6 @@
+alphagradient.Put.date
+======================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Put.date

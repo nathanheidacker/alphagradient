@@ -1,0 +1,39 @@
+﻿alphagradient.dtypes.AssetData
+==============================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoclass:: AssetData
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      AssetData.column_format
+      AssetData.get_index
+      AssetData.get_times
+      AssetData.next
+      AssetData.prev
+      AssetData.range
+      AssetData.valuate
+
+
+
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      AssetData.data
+      AssetData.first
+      AssetData.last
+
+

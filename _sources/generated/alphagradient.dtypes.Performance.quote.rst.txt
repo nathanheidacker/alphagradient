@@ -1,0 +1,6 @@
+alphagradient.dtypes.Performance.quote
+======================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: Performance.quote

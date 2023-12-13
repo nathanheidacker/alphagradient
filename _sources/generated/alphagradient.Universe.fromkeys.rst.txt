@@ -1,0 +1,6 @@
+alphagradient.Universe.fromkeys
+===============================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Universe.fromkeys

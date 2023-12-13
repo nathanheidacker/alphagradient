@@ -1,0 +1,61 @@
+﻿alphagradient.Asset
+===================
+
+.. currentmodule:: alphagradient
+
+.. autoclass:: Asset
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Asset.alpha
+      Asset.beta
+      Asset.cagr
+      Asset.expire
+      Asset.get_settings
+      Asset.ma
+      Asset.quote
+      Asset.range
+      Asset.roi
+      Asset.valuate
+      Asset.vol
+
+
+
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Asset.base
+      Asset.benchmark
+      Asset.close_value
+      Asset.data
+      Asset.date
+      Asset.expired
+      Asset.key
+      Asset.market_close
+      Asset.market_open
+      Asset.name
+      Asset.next
+      Asset.open
+      Asset.open_value
+      Asset.optional
+      Asset.price
+      Asset.protocol
+      Asset.required
+      Asset.rfr
+      Asset.unit
+      Asset.units
+      Asset.value
+
+

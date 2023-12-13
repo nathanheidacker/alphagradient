@@ -1,0 +1,689 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Template &#8212; AlphaGradient v0.0.2 documentation</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/alphagradient.css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/design-tabs.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="alphagradient.algolib.TemplateAlgo" href="../generated/alphagradient.algolib.TemplateAlgo.html" />
+    <link rel="prev" title="Publishing an Algorithm" href="publishing.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+
+<a class="navbar-brand" href="../index.html">
+  <img src="../_static/aglogowtext.png" class="logo" alt="logo">
+</a>
+
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../quickstart/index.html">
+  Quickstart Guide
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../guide/index.html">
+  User Guide
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../api/index.html">
+  API Reference
+ </a>
+</li>
+
+<li class="toctree-l1 current active nav-item">
+ <a class="reference internal nav-link" href="index.html">
+  Algorithm Library
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../about.html">
+  About
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/nathanheidacker/alphagradient" rel="noopener" target="_blank" title="GitHub"><span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar">
+              <div class="sidebar-start-items"><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    <ul class="nav bd-sidenav">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="standard/index.html">
+   Standard Algorithms
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="simple">
+  </ul>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="nonstandard/index.html">
+   Non-Standard Algorithms
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="simple">
+  </ul>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="tutorials/index.html">
+   Tutorial Algorithms
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="tutorials/IndexHold.html">
+     IndexHold
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+    <label for="toctree-checkbox-4">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../generated/alphagradient.algolib.IndexHold.html">
+       alphagradient.algolib.IndexHold
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../generated/alphagradient.algolib.IndexHold.__call__.html">
+         alphagradient.algolib.IndexHold.__call__
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../generated/alphagradient.algolib.IndexHold.cycle.html">
+         alphagradient.algolib.IndexHold.cycle
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../generated/alphagradient.algolib.IndexHold.default_run.html">
+         alphagradient.algolib.IndexHold.default_run
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../generated/alphagradient.algolib.IndexHold.initialize_inputs.html">
+         alphagradient.algolib.IndexHold.initialize_inputs
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../generated/alphagradient.algolib.IndexHold.setup.html">
+         alphagradient.algolib.IndexHold.setup
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../generated/alphagradient.algolib.IndexHold.validate_end.html">
+         alphagradient.algolib.IndexHold.validate_end
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../generated/alphagradient.algolib.IndexHold.validate_resolution.html">
+         alphagradient.algolib.IndexHold.validate_resolution
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../generated/alphagradient.algolib.IndexHold.setup.html">
+       alphagradient.algolib.IndexHold.setup
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../generated/alphagradient.algolib.IndexHold.cycle.html">
+       alphagradient.algolib.IndexHold.cycle
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="tutorials/ThetaGang.html">
+     ThetaGang
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+    <label for="toctree-checkbox-6">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../generated/alphagradient.algolib.ThetaGang.html">
+       alphagradient.algolib.ThetaGang
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+      <label for="toctree-checkbox-7">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../generated/alphagradient.algolib.ThetaGang.__call__.html">
+         alphagradient.algolib.ThetaGang.__call__
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../generated/alphagradient.algolib.ThetaGang.cycle.html">
+         alphagradient.algolib.ThetaGang.cycle
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../generated/alphagradient.algolib.ThetaGang.default_run.html">
+         alphagradient.algolib.ThetaGang.default_run
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../generated/alphagradient.algolib.ThetaGang.generate_call.html">
+         alphagradient.algolib.ThetaGang.generate_call
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../generated/alphagradient.algolib.ThetaGang.initialize_inputs.html">
+         alphagradient.algolib.ThetaGang.initialize_inputs
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../generated/alphagradient.algolib.ThetaGang.setup.html">
+         alphagradient.algolib.ThetaGang.setup
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../generated/alphagradient.algolib.ThetaGang.validate_end.html">
+         alphagradient.algolib.ThetaGang.validate_end
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../generated/alphagradient.algolib.ThetaGang.validate_resolution.html">
+         alphagradient.algolib.ThetaGang.validate_resolution
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../generated/alphagradient.algolib.ThetaGang.setup.html">
+       alphagradient.algolib.ThetaGang.setup
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../generated/alphagradient.algolib.ThetaGang.cycle.html">
+       alphagradient.algolib.ThetaGang.cycle
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../generated/alphagradient.algolib.ThetaGang.generate_call.html">
+       alphagradient.algolib.ThetaGang.generate_call
+      </a>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+</ul>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="publishing.html">
+   Publishing an Algorithm
+  </a>
+ </li>
+ <li class="toctree-l1 current active has-children">
+  <a class="current reference internal" href="#">
+   Template
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/>
+  <label for="toctree-checkbox-8">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../generated/alphagradient.algolib.TemplateAlgo.html">
+     alphagradient.algolib.TemplateAlgo
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/>
+    <label for="toctree-checkbox-9">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../generated/alphagradient.algolib.TemplateAlgo.__call__.html">
+       alphagradient.algolib.TemplateAlgo.__call__
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../generated/alphagradient.algolib.TemplateAlgo.cycle.html">
+       alphagradient.algolib.TemplateAlgo.cycle
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../generated/alphagradient.algolib.TemplateAlgo.default_run.html">
+       alphagradient.algolib.TemplateAlgo.default_run
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../generated/alphagradient.algolib.TemplateAlgo.initialize_inputs.html">
+       alphagradient.algolib.TemplateAlgo.initialize_inputs
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../generated/alphagradient.algolib.TemplateAlgo.run.html">
+       alphagradient.algolib.TemplateAlgo.run
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../generated/alphagradient.algolib.TemplateAlgo.setup.html">
+       alphagradient.algolib.TemplateAlgo.setup
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../generated/alphagradient.algolib.TemplateAlgo.template_method.html">
+       alphagradient.algolib.TemplateAlgo.template_method
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../generated/alphagradient.algolib.TemplateAlgo.validate_end.html">
+       alphagradient.algolib.TemplateAlgo.validate_end
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../generated/alphagradient.algolib.TemplateAlgo.validate_resolution.html">
+       alphagradient.algolib.TemplateAlgo.validate_resolution
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../generated/alphagradient.algolib.TemplateAlgo.setup.html">
+     alphagradient.algolib.TemplateAlgo.setup
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../generated/alphagradient.algolib.TemplateAlgo.cycle.html">
+     alphagradient.algolib.TemplateAlgo.cycle
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../generated/alphagradient.algolib.TemplateAlgo.run.html">
+     alphagradient.algolib.TemplateAlgo.run
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../generated/alphagradient.algolib.TemplateAlgo.template_property.html">
+     alphagradient.algolib.TemplateAlgo.template_property
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../generated/alphagradient.algolib.TemplateAlgo.template_method.html">
+     alphagradient.algolib.TemplateAlgo.template_method
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+  </div>
+</nav>
+              </div>
+              <div class="sidebar-end-items">
+              </div>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+<div class="tocsection onthispage mt-5 pt-1 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
+
+<nav id="bd-toc-nav">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#prerequisite-knowledge">
+   Prerequisite Knowledge
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#theory">
+   Theory
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#other-sections">
+   Other Sections
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#api">
+   API
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#constructor">
+   Constructor
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#implementation">
+   Implementation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#attributes">
+   Attributes
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#internal-methods">
+   Internal Methods
+  </a>
+ </li>
+</ul>
+
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <section id="template">
+<span id="algolib-template"></span><h1>Template<a class="headerlink" href="#template" title="Permalink to this headline">#</a></h1>
+<p>This is a template for documenting AlphaGradient algorithms. Feel free to copy
+this document directly from <a class="reference external" href="https://raw.githubusercontent.com/nathanheidacker/alphagradient/blob/main/docs/source/algolib/TemplateAlgo.rst">this link</a>, and follow its structure as a guide for creating your own documentation. Simply replace the content of each section according the guide written within, deleting unused sections or adding new ones as required. To begin, replace the topmost header with the name of your Algorithm. This header should follow the name of the class <strong>exactly</strong>, as should the name of this file. The reference at the top of the page should also follow the format <code class="code docutils literal notranslate"><span class="pre">..</span> <span class="pre">_algolib.youralgorithmname:</span></code> in all lowercase.</p>
+<section id="prerequisite-knowledge">
+<h2>Prerequisite Knowledge<a class="headerlink" href="#prerequisite-knowledge" title="Permalink to this headline">#</a></h2>
+<p>Before diving into the theory underlying the algorithm, use this section to briefly explain any obscure or otherwise advanced concepts utilized in your algorithm. Assume a working knowledge of basic finance and algorithmic trading concepts, but anything that requires more specialized knowledge should probably be explained here. Providing links to online articles explaining the concept (such as those on investopedia) is a good place to start.</p>
+<p>Essentially, we want to make sure that even someone with a relatively elementary understanding of finance has a good chance of understanding the algorithm. The level of understanding does not have to be thorough–rather, just enough that the results of the algorithm are explicable.</p>
+<p>Algorithms that operate on relatively simple principles likely don’t require this section. If your algorithm refrains from doing anything excessively complicated, or if such complexities are better explained in the ‘theory’ section, feel free to delete this section.</p>
+</section>
+<section id="theory">
+<h2>Theory<a class="headerlink" href="#theory" title="Permalink to this headline">#</a></h2>
+<p>This is the meat and potatoes–what your algorithm does, how it works, and why it works. This section is essentially a much higher level, abstract version of your algorithm’s ‘cycle’ docstring. Without getting into implementation details, explain what the algorithm tries to accomplish, how it accomplishes it, as well as why it’s effective in the first place.</p>
+<p>This section will likely be (and likely <em>should</em> be) the longest of any contained within this document. For more experienced readers, it should leave very little to be questioned about the function of the algorithm. Novice readers should come away with some basic understanding of what the algorithm accomplishes.</p>
+</section>
+<section id="other-sections">
+<h2>Other Sections<a class="headerlink" href="#other-sections" title="Permalink to this headline">#</a></h2>
+<p>It may be logical to compartmentalize your explanation into more discrete sections. We aren’t too concerned with the organization of the documentation so long that it follows a logical flow from start to finish, and minimally contains the required sections (Theory and API). Subheadings (eg. splitting theory into many distinct subsections) is also perfectly acceptable, and often aids in readability. Feel free to add sections and organize structure to your liking. As long as it makes sense and maintains readability, its acceptable.</p>
+</section>
+<section id="api">
+<h2>API<a class="headerlink" href="#api" title="Permalink to this headline">#</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This section is purely for explanation of the sections that succeed it; please be sure to delete it before submission.</p>
+</div>
+<p>The sections below documenting the Algorithm’s API should not contain any raw text. They exist purely to index an algorithms constructor, attributes, and methods, and should contain only autosummary directives with the respective Algorithm components.</p>
+<p>Below, code examples of the necessary rst markup have been provided that produce the corresponding sections in HTML. Be sure to follow them exactly: direct the toctree to the relative path <cite>../../generated</cite> and use the <cite>class.rst</cite> template for the generator.</p>
+<p>The API sections below are only those that are absolutely required. If your algorithm expands on these categories or adds new ones in a way that makes sense, feel free to change the structure appropriately.</p>
+<p>Notes, warnings, deprecation notices and version notices are exceptions to the rule against raw text; please use them as you see fit to inform the user of necessary changes.</p>
+<p>Below is the rst markup necessary to produce the API sections.</p>
+<div class="highlight-rst notranslate"><div class="highlight"><pre><span></span><span class="gh">Constructor</span>
+<span class="gh">-----------</span>
+<span class="p">..</span> <span class="ow">autosummary</span><span class="p">::</span>
+    <span class="nc">:toctree:</span> ../generated
+    <span class="nc">:template:</span> algorithm.rst
+
+    TemplateAlgo
+
+<span class="gh">Implementation</span>
+<span class="gh">--------------</span>
+<span class="p">..</span> <span class="ow">autosummary</span><span class="p">::</span>
+    <span class="nc">:toctree:</span> ../generated
+
+    TemplateAlgo.setup
+    TemplateAlgo.cycle
+    TemplateAlgo.run
+
+<span class="gh">Attributes</span>
+<span class="gh">----------</span>
+<span class="p">..</span> <span class="ow">autosummary</span><span class="p">::</span>
+    <span class="nc">:toctree:</span> ../generated
+
+    TemplateAlgo.template_property
+
+<span class="gh">Internal Methods</span>
+<span class="gh">----------------</span>
+<span class="p">..</span> <span class="ow">autosummary</span><span class="p">::</span>
+    <span class="nc">:toctree:</span> ../generated
+
+    TemplateAlgo.template_method
+</pre></div>
+</div>
+</section>
+<section id="constructor">
+<h2>Constructor<a class="headerlink" href="#constructor" title="Permalink to this headline">#</a></h2>
+<table class="autosummary longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../generated/alphagradient.algolib.TemplateAlgo.html#alphagradient.algolib.TemplateAlgo" title="alphagradient.algolib.TemplateAlgo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TemplateAlgo</span></code></a>(*args, template_requires, **kwargs)</p></td>
+<td><p>Shows how to create and document an AlphaGradient algorithm</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">#</a></h2>
+<table class="autosummary longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../generated/alphagradient.algolib.TemplateAlgo.setup.html#alphagradient.algolib.TemplateAlgo.setup" title="alphagradient.algolib.TemplateAlgo.setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TemplateAlgo.setup</span></code></a>(**kwargs)</p></td>
+<td><p>Shows how to create and document a setup function</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../generated/alphagradient.algolib.TemplateAlgo.cycle.html#alphagradient.algolib.TemplateAlgo.cycle" title="alphagradient.algolib.TemplateAlgo.cycle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TemplateAlgo.cycle</span></code></a>(**kwargs)</p></td>
+<td><p>Shows how to create and document a cycle function</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../generated/alphagradient.algolib.TemplateAlgo.run.html#alphagradient.algolib.TemplateAlgo.run" title="alphagradient.algolib.TemplateAlgo.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TemplateAlgo.run</span></code></a>(**kwargs)</p></td>
+<td><p>Shows how to create and document a custom run function</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">#</a></h2>
+<table class="autosummary longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../generated/alphagradient.algolib.TemplateAlgo.template_property.html#alphagradient.algolib.TemplateAlgo.template_property" title="alphagradient.algolib.TemplateAlgo.template_property"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TemplateAlgo.template_property</span></code></a></p></td>
+<td><p>Shows how to create and document an algorithm property</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="internal-methods">
+<h2>Internal Methods<a class="headerlink" href="#internal-methods" title="Permalink to this headline">#</a></h2>
+<table class="autosummary longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../generated/alphagradient.algolib.TemplateAlgo.template_method.html#alphagradient.algolib.TemplateAlgo.template_method" title="alphagradient.algolib.TemplateAlgo.template_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TemplateAlgo.template_method</span></code></a>(*some_args, ...)</p></td>
+<td><p>Shows how to create and document an algorithm method</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="publishing.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Publishing an Algorithm</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="../generated/alphagradient.algolib.TemplateAlgo.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">alphagradient.algolib.TemplateAlgo</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2022, Nathan Heidacker.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.5.0.<br>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

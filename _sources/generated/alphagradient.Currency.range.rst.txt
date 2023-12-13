@@ -1,0 +1,6 @@
+alphagradient.Currency.range
+============================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Currency.range

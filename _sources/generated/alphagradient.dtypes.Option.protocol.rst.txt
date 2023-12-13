@@ -1,0 +1,6 @@
+alphagradient.dtypes.Option.protocol
+====================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoproperty:: Option.protocol

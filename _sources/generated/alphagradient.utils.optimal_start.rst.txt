@@ -1,0 +1,6 @@
+﻿alphagradient.utils.optimal\_start
+==================================
+
+.. currentmodule:: alphagradient.utils
+
+.. autofunction:: optimal_start

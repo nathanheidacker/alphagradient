@@ -1,0 +1,6 @@
+alphagradient.dtypes.Option.range
+=================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: Option.range

@@ -1,0 +1,6 @@
+﻿alphagradient.utils.get\_time
+=============================
+
+.. currentmodule:: alphagradient.utils
+
+.. autofunction:: get_time

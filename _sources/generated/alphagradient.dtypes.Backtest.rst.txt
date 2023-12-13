@@ -1,0 +1,36 @@
+﻿alphagradient.dtypes.Backtest
+=============================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoclass:: Backtest
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Backtest.completion_report
+      Backtest.finalize
+      Backtest.profile
+      Backtest.update
+
+
+
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Backtest.completion
+      Backtest.date
+      Backtest.day
+
+

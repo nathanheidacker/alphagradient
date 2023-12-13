@@ -1,0 +1,6 @@
+alphagradient.Currency.convert
+==============================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Currency.convert

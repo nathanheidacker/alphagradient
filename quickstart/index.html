@@ -1,0 +1,952 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Quickstart Guide &#8212; AlphaGradient v0.0.2 documentation</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/alphagradient.css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/design-tabs.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="User Guide" href="../guide/index.html" />
+    <link rel="prev" title="AlphaGradient Documentation" href="../index.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+
+<a class="navbar-brand" href="../index.html">
+  <img src="../_static/aglogowtext.png" class="logo" alt="logo">
+</a>
+
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 current active nav-item">
+ <a class="current reference internal nav-link" href="#">
+  Quickstart Guide
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../guide/index.html">
+  User Guide
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../api/index.html">
+  API Reference
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../algolib/index.html">
+  Algorithm Library
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../about.html">
+  About
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/nathanheidacker/alphagradient" rel="noopener" target="_blank" title="GitHub"><span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar">
+              <div class="sidebar-start-items"><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    
+  </div>
+</nav>
+              </div>
+              <div class="sidebar-end-items">
+              </div>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+<div class="tocsection onthispage mt-5 pt-1 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
+
+<nav id="bd-toc-nav">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#what-is-this">
+   What is this?
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#installation">
+   Installation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#assets">
+   Assets
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#explanation">
+     Explanation
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#examples">
+     Examples
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#portfolios">
+   Portfolios
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id1">
+     Explanation
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#positions">
+     Positions
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id2">
+     Examples
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#universes">
+   Universes
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id3">
+     Explanation
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#persistent-data">
+     Persistent Data
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#universe-initialization">
+     Universe Initialization
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id4">
+     Examples
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#filtering">
+     Filtering
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id5">
+     Examples
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#environments">
+   Environments
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id6">
+     Explanation
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#initializing-an-environment-object">
+     Initializing an Environment Object
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id7">
+     Examples
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#algorithms">
+   Algorithms
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id8">
+     Explanation
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#defining-setup">
+     Defining Setup
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#defining-cycle">
+     Defining Cycle
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#basic-examples">
+     Basic Examples
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#advanced-example">
+     Advanced Example
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#backtesting">
+   Backtesting
+  </a>
+ </li>
+</ul>
+
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <section id="quickstart-guide">
+<span id="quickstart"></span><h1>Quickstart Guide<a class="headerlink" href="#quickstart-guide" title="Permalink to this headline">#</a></h1>
+<p>What you’re about to read is a quick guide on how to get started with AlphaGradient. It covers concepts briefly–just enough to understand what AlphaGradient’s core objects are and why they exist, but not nearly enough to understand their design or implementation. If you’re looking for different or more advanced information, please check out some of the other available resources…</p>
+<p>For fundamental design details starting from scratch, read through the <a class="reference internal" href="../guide/index.html#guide"><span class="std std-ref">user guide</span></a></p>
+<p>For implementation details and information about specific AlphaGradient modules, classes, methods and more, visit our <a class="reference internal" href="../api/index.html#api"><span class="std std-ref">API reference</span></a></p>
+<p>For information about the AlphaGradient project as a whole, check out our <a class="reference internal" href="../about.html#about"><span class="std std-ref">about page</span></a>.</p>
+<section id="what-is-this">
+<h2>What is this?<a class="headerlink" href="#what-is-this" title="Permalink to this headline">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">AlphaGradient</span></code> is a package for creating and backtesting financial algorithms in native python. AlphaGradient implements asset and portfolio-analagous datastructures that interact in intuitive ways, and provides a framework for developing algorithms that utilize these objects in highly parallelized backtests. AlphaGradient is built on top of the industry’s most widely adopted libraries, and requires (comparatively) little technical knowhow and time investment to pick up.</p>
+<dl class="simple">
+<dt>To be able to use AlphaGradient effectively, you must know…</dt><dd><ul class="simple">
+<li><p>basic finance</p></li>
+<li><p><strong>really</strong> basic python</p></li>
+</ul>
+</dd>
+</dl>
+<p>Where other libraries might require you to be a programmer first and a certified quantitative financial analyst second, AlphaGradient is truly geared towards hobbyist algorithmic traders who want to play around with ideas for financial algorithms. Within minutes, you can have a fully backtestable algorithm using nothing but basic python.</p>
+<p>AlphaGradient is to the algorithmic trader as console gaming is to the gamer; it gets the job done and comes at a bargain–batteries included. If you have even a passing interest in finance or algorithmic trading, this package makes it as easy as possible to get involved without having a background in computer science.</p>
+</section>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">#</a></h2>
+<p>We recommend installing AlphaGradient within a new virtual environment.</p>
+<p>The source code is currently hosted on GitHub at:
+<a class="reference external" href="https://github.com/nathanheidacker/alphagradient">https://github.com/nathanheidacker/alphagradient</a></p>
+<p>Binary installers for the latest released version are available at the <a class="reference external" href="https://pypi.org/project/alphagradient">Python Package Index (PyPI)</a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># using pip</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">alphagradient</span>
+</pre></div>
+</div>
+</section>
+<section id="assets">
+<h2>Assets<a class="headerlink" href="#assets" title="Permalink to this headline">#</a></h2>
+<section id="explanation">
+<h3>Explanation<a class="headerlink" href="#explanation" title="Permalink to this headline">#</a></h3>
+<p>In AlphaGradient, <a class="reference internal" href="../generated/alphagradient.Asset.html#alphagradient.Asset" title="alphagradient.Asset"><code class="xref py py-class docutils literal notranslate"><span class="pre">Assets</span></code></a> are the fundamental objects that underlie all financial algorithms, representing a unit measure of a single financial asset. For example, an asset may represent a single share of <a class="reference internal" href="../generated/alphagradient.Stock.html#alphagradient.Stock" title="alphagradient.Stock"><code class="xref py py-class docutils literal notranslate"><span class="pre">stock</span></code></a>, a single bond, or a single <a class="reference internal" href="../generated/alphagradient.Call.html#alphagradient.Call" title="alphagradient.Call"><code class="xref py py-class docutils literal notranslate"><span class="pre">call</span> <span class="pre">option</span> <span class="pre">contract</span></code></a>.</p>
+<p>Assets themselves do not constitute any kind of financial position, and only a single instance of an asset may exist at one time. For example, there may never at once be two assets that represent the same type of stock of the same company, or two assets that represent options contracts of exactly the same strike price, maturity, and underlying security.</p>
+<p>AlphaGradient assets should instead be conceived of as a more conceptually abstract representation of some unit measurement of an asset, from which financial <a class="reference internal" href="../generated/alphagradient.dtypes.Position.html#alphagradient.dtypes.Position" title="alphagradient.dtypes.Position"><code class="xref py py-class docutils literal notranslate"><span class="pre">positions</span></code></a> can be created.</p>
+</section>
+<section id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">alphagradient</span> <span class="k">as</span> <span class="nn">ag</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">floor</span>
+
+<span class="c1"># Date as of writing this documentation</span>
+<span class="n">today</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;2022-04-06 16:00:00&quot;</span><span class="p">)</span>
+
+<span class="c1"># Setting the global date to today</span>
+<span class="n">ag</span><span class="o">.</span><span class="n">globals</span><span class="o">.</span><span class="n">sync</span><span class="p">(</span><span class="n">today</span><span class="p">)</span>
+
+<span class="c1"># This works works even with two different data arguments, or none at all</span>
+<span class="n">spy</span> <span class="o">=</span> <span class="n">ag</span><span class="o">.</span><span class="n">Stock</span><span class="p">(</span><span class="s2">&quot;SPY&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="s2">&quot;path/to/your/data.csv&quot;</span><span class="p">)</span>
+<span class="n">other_spy</span> <span class="o">=</span> <span class="n">ag</span><span class="o">.</span><span class="n">Stock</span><span class="p">(</span><span class="s2">&quot;SPY&quot;</span><span class="p">)</span>
+
+<span class="c1"># Creating a SPY call that expires thursday next week</span>
+<span class="n">strike</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">spy</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">+</span> <span class="mi">5</span>
+<span class="n">expiry</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span><span class="s2">&quot;2022-04-14 16:00:00&quot;</span><span class="p">)</span>
+<span class="n">call</span> <span class="o">=</span> <span class="n">ag</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="n">spy</span><span class="p">,</span> <span class="n">strike</span><span class="o">=</span><span class="n">strike</span><span class="p">,</span> <span class="n">expiry</span><span class="o">=</span><span class="n">expiry</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># as of April 6th, 2022 EOD</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">spy</span>
+<span class="go">&lt;STOCK SPY: $446.52 /share&gt;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">spy</span> <span class="ow">is</span> <span class="n">other_spy</span>
+<span class="go">True</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">call</span>
+<span class="go">&lt;CALL SPY442C2022-04-22: $271.73 /contract&gt;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="portfolios">
+<h2>Portfolios<a class="headerlink" href="#portfolios" title="Permalink to this headline">#</a></h2>
+<section id="id1">
+<h3>Explanation<a class="headerlink" href="#id1" title="Permalink to this headline">#</a></h3>
+<p><a class="reference internal" href="../generated/alphagradient.Portfolio.html#alphagradient.Portfolio" title="alphagradient.Portfolio"><code class="xref py py-class docutils literal notranslate"><span class="pre">Portfolios</span></code></a> are the means by which one can trade assets within a financial algorithm. Portfolios provide functionality for entering and exiting both long and short positions, and automatically handle valuation of the assets in which they have a financial position. For example, a portfolio with a position in an asset with a terminal maturity will automatically handle the expiry of the position upon reaching the maturity.</p>
+<p>Portfolios store a detailed history of their positions at every valuation period. The class provides a multitude of ways of presenting and using this data for further analysis.</p>
+</section>
+<section id="positions">
+<h3>Positions<a class="headerlink" href="#positions" title="Permalink to this headline">#</a></h3>
+<p>A <a class="reference internal" href="../generated/alphagradient.dtypes.Position.html#alphagradient.dtypes.Position" title="alphagradient.dtypes.Position"><code class="xref py py-class docutils literal notranslate"><span class="pre">position</span></code></a> represents a financial stake in an asset. Portfolios create positions in assets when trading them. Like a portfolio, a position also keeps track of its own value history at every valuation.</p>
+<p>Positions in an asset may either be long or short–that is, owned or owed. Only certain assets provide functionality for entering a short position, and attempting to short assets that do not explicitly support it will raise an exception.</p>
+<p>Positions are typically not interacted with directly, but are modulated by using their respective portfolio as an interface.</p>
+</section>
+<section id="id2">
+<h3>Examples<a class="headerlink" href="#id2" title="Permalink to this headline">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a portfolio with $100,000 USD</span>
+<span class="n">initial</span> <span class="o">=</span> <span class="mi">100_000</span>
+<span class="n">portfolio</span> <span class="o">=</span> <span class="n">ag</span><span class="o">.</span><span class="n">Portfolio</span><span class="p">(</span><span class="n">initial</span><span class="p">)</span>
+
+<span class="c1"># Selling two covered calls</span>
+<span class="n">portfolio</span><span class="o">.</span><span class="n">buy</span><span class="p">(</span><span class="n">spy</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+<span class="n">portfolio</span><span class="o">.</span><span class="n">short</span><span class="p">(</span><span class="n">call</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="n">spy_position</span> <span class="o">=</span> <span class="n">portfolio</span><span class="o">.</span><span class="n">get_position</span><span class="p">(</span><span class="n">spy</span><span class="p">)</span>
+<span class="n">call_position</span> <span class="o">=</span> <span class="n">portfolio</span><span class="o">.</span><span class="n">get_position</span><span class="p">(</span><span class="n">call</span><span class="p">,</span> <span class="n">short</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that relative to the portfolio that holds them, short positions are always negative as they represent a debt that must be repaid.</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">portfolio</span><span class="o">.</span><span class="n">positions</span>
+<span class="go">{&#39;CASH&#39;: &lt;USD $11451.91&gt;, &#39;STOCK_SPY_LONG&#39;: &lt;200 shares @ $446.52 | RETURN: 0.0%&gt;, &#39;SPY451C2022-04-14_SHORT&#39;: &lt;2 contracts @ $-377.96 | RETURN: 0.0%&gt;}</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">portfolio</span><span class="o">.</span><span class="n">cash</span>
+<span class="go">&lt;USD $11451.91&gt;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">spy_position</span>
+<span class="go">&lt;200 STOCK_SPY shares @ $446.52 /share | VALUE: $89304.0 | RETURN: 0.0%&gt;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">call_position</span>
+<span class="go">&lt;2 SPY451C2022-04-14 contracts @ $-377.96 /contract | VALUE: $-755.91 | RETURN: 0.0%&gt;</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Stepping ahead in time by one week</span>
+<span class="n">today</span> <span class="o">+=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">ag</span><span class="o">.</span><span class="n">globals</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">today</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">portfolio</span><span class="o">.</span><span class="n">positions</span>
+<span class="go">{&#39;CASH&#39;: &lt;USD $11451.91&gt;, &#39;STOCK_SPY_LONG&#39;: &lt;200 shares @ $446.52 | RETURN: -0.72%&gt;, &#39;SPY451C2022-04-14_SHORT&#39;: &lt;2 contracts @ $-377.96 | RETURN: 96.03%&gt;}</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">spy</span>
+<span class="go">&lt;STOCK SPY: $443.31 /share&gt;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">call</span>
+<span class="go">&lt;CALL SPY451C2022-04-14: $14.99 /contract&gt;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">spy_position</span>
+<span class="go">&lt;200 STOCK_SPY shares @ $446.52 /share | VALUE: $88662.0 | RETURN: -0.72%&gt;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">call_position</span>
+<span class="go">&lt;2 SPY451C2022-04-14 contracts @ $-377.96 /contract | VALUE: $-29.98 | RETURN: 96.03%&gt;</span>
+<span class="go">```</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Liquidating all positions</span>
+<span class="n">portfolio</span><span class="o">.</span><span class="n">liquidate</span><span class="p">()</span>
+<span class="n">profit</span> <span class="o">=</span> <span class="n">portfolio</span><span class="o">.</span><span class="n">liquid</span> <span class="o">-</span> <span class="n">initial</span>
+<span class="n">roi</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">profit</span> <span class="o">/</span> <span class="n">initial</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">roi</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">roi</span><span class="si">}</span><span class="s2">%&quot;</span>
+</pre></div>
+</div>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">portfolio</span><span class="o">.</span><span class="n">positions</span>
+<span class="go">{&#39;CASH&#39;: &lt;USD $100083.93&gt;}</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">profit</span>
+<span class="go">83.92999999999302</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">roi</span>
+<span class="go">0.084%</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="universes">
+<h2>Universes<a class="headerlink" href="#universes" title="Permalink to this headline">#</a></h2>
+<section id="id3">
+<h3>Explanation<a class="headerlink" href="#id3" title="Permalink to this headline">#</a></h3>
+<p><a class="reference internal" href="../generated/alphagradient.Universe.html#alphagradient.Universe" title="alphagradient.Universe"><code class="xref py py-class docutils literal notranslate"><span class="pre">Universes</span></code></a> are AlphaGradient’s stock selection and filtering mechanism. Universes are (typically large) dictionaries of instantiated AlphaGradient stock objects that provide mechanisms for easy filtering by selection criteria.</p>
+</section>
+<section id="persistent-data">
+<h3>Persistent Data<a class="headerlink" href="#persistent-data" title="Permalink to this headline">#</a></h3>
+<p>All AlphaGradient assets have the ability to persist their formatted datasets in memory, such that they can be easily reloaded to dramatically decrease initialization times. Universes are a particularly good place to introduce this functionality because they typically initialize many hundreds or even <strong>thousands</strong> of stock objects at once, which may constitute as much as 6-7 GB of formatted price history data. The first time around, this initialization process may take as long as 15 minutes, depending on one’s internet and processor speed. With persistent memory, one can reinitialize over 10k Stock objects in just a few seconds.</p>
+<p>Calling <a class="reference internal" href="../generated/alphagradient.globals.persist.html#alphagradient.globals.persist" title="alphagradient.globals.persist"><code class="xref py py-meth docutils literal notranslate"><span class="pre">globals.persist</span></code></a> will create a directory in the current working directory (or wherever you want if you pass in a path argument) that stores formatted AlphaGradient assets for reinitialization. If this directory already exists in your current working directory, it will be found automatically when AlphaGradient is imported. Basically, its a good idea to work inside of some kind of isolated project directory that stores persistent versions of all of the assets you use frequently.</p>
+<p>It should be noted that this will work for all instantiated AlphaGradient assets, not just those that are created by Universe objects.</p>
+</section>
+<section id="universe-initialization">
+<h3>Universe Initialization<a class="headerlink" href="#universe-initialization" title="Permalink to this headline">#</a></h3>
+<p>By default, initializing a universe object with no arguments will only instantiate stock objects that are stored in the persistent directory. This means that, if none has been set or found, a Universe will initialize completely empty. One can pass in an array-like or iterable of Stock objects if they wish to initialize it with those specifically. If these objects have not yet been instantiated, you can also pass in an array-like or iterable of stock tickers (uppercase strings, eg <code class="code python docutils literal notranslate"><span class="punctuation"><span class="pre">[</span></span><span class="literal string double"><span class="pre">&quot;SPY&quot;</span></span><span class="punctuation"><span class="pre">,</span></span> <span class="literal string double"><span class="pre">&quot;DIA&quot;</span></span><span class="punctuation"><span class="pre">,</span></span> <span class="literal string double"><span class="pre">&quot;TSLA&quot;</span></span><span class="punctuation"><span class="pre">,</span></span> <span class="literal string double"><span class="pre">&quot;APPL&quot;</span></span><span class="punctuation"><span class="pre">]</span></span></code>).</p>
+<p>Lastly, one can pass in <code class="code python docutils literal notranslate"><span class="literal string double"><span class="pre">&quot;all&quot;</span></span></code>, which will initialize the Universe with all available securities listed on a host of US exchanges, including the NYSE, NYSE ARCA, NASDAQ and many more. This is a large undertaking, including over 12,000 publicly traded companies, and will likely take the average computer over 15 minutes to complete. For this reason, Universe objects are initialized with verbose=True by default, which will display a progress bar of their intitialization progress. It is for this reason that we <strong>strongly</strong> recommend you define a directory for persistent storage.</p>
+</section>
+<section id="id4">
+<h3>Examples<a class="headerlink" href="#id4" title="Permalink to this headline">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Persisting our asset data locally</span>
+<span class="n">ag</span><span class="o">.</span><span class="n">globals</span><span class="o">.</span><span class="n">persist</span><span class="p">()</span> <span class="c1"># creates folder called &#39;alphagradient.persistent&#39; in current directory</span>
+<span class="n">universe</span> <span class="o">=</span> <span class="n">ag</span><span class="o">.</span><span class="n">finance</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Heres the performance of a little script I made to demonstrate initializing from 0. This was peformed on a M1 Macbook Air with a modest internet connection (~100Mbps)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 make_universe.py
+
+Beginning Script...
+
+Initializing Universe: 12067 Stocks
+-----------------------------------
+[1]: adding 1 stock that is already instantiated
+[2]: initializing 12066 stocks to be added to Universe
+[3]: no local data detected, moving on to online initialization
+[4]: initializing 12066 stocks from online data (121 batches)
+100%|█████████████████████████████████████████████████████████████| 121/121 [13:08&lt;00:00,  6.52s/it]
+Successfully added 10419 of 12066 stocks (937 failures, 710 timeouts, 1647 total errors))
+
+[5]: retrying 710 timeouts
+[4]: initializing 710 stocks from online data (19 batches)
+100%|███████████████████████████████████████████████████████████████| 19/19 [00:56&lt;00:00,  2.97s/it]
+576 / 710 successful timeout reattempts (63 failures, 71 timeouts, 134 total errors)
+
+Elapsed Time:  847.0219991250001 seconds
+</pre></div>
+</div>
+<p>Here’s performance on the second run</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 make_universe.py
+
+Beginning Script...
+
+Initializing Universe: 10996 Stocks
+-----------------------------------
+[1]: adding 1 stock that is already instantiated
+[2]: initializing 10995 stocks to be added to Universe
+[3]: initializing 10995 stocks from local data
+100%|████████████████████████████████████████████████████████| 10995/10995 [00:15&lt;00:00, 702.14it/s]
+
+Successfully added 10995 of 10995 stocks (0 failures, 0 timeouts, 0 total errors))
+
+Elapsed Time:  17.487481792 seconds
+</pre></div>
+</div>
+<p>Notice that the second time, the stocks that have been identified as failures (rather than timeouts) are not included in the second initialization. These are stocks that may be delisted, mistyped, or non-existent altogether.</p>
+</section>
+<section id="filtering">
+<h3>Filtering<a class="headerlink" href="#filtering" title="Permalink to this headline">#</a></h3>
+<p>Universe objects are fundamentally just dictionaries; they associate a stock’s ticker with its instantiated asset. They provide all of the same functionality that a dictionary does when used normally. However, they also provide the ability to filter universe objects by accessing stock attributes on on the universe object. These filtering operations can also be joined to be performed in rapid succession.</p>
+<p>Filtering operations return a <a class="reference internal" href="../generated/alphagradient.dtypes.UniverseView.html#alphagradient.dtypes.UniverseView" title="alphagradient.dtypes.UniverseView"><code class="xref py py-class docutils literal notranslate"><span class="pre">UniverseView</span></code></a>, which is a ‘view’ of an initialized universe with filters applied in order. These filters can be rearranged, added to, or removed in any order to produce a different view or return to the original object.</p>
+</section>
+<section id="id5">
+<h3>Examples<a class="headerlink" href="#id5" title="Permalink to this headline">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># getting all stocks with value above $1000 USD</span>
+<span class="n">filtered</span> <span class="o">=</span> <span class="n">universe</span><span class="o">.</span><span class="n">filter</span><span class="p">[</span><span class="n">universe</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">1000</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">universe</span><span class="p">)</span>
+<span class="go">10995</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">filtered</span><span class="p">)</span>
+<span class="go">16</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filtered</span>
+<span class="go">{&#39;AMZN&#39;: &lt;STOCK AMZN: $3110.82 /share&gt;, &#39;AVGOP&#39;: &lt;STOCK AVGOP: $1855.54 /share&gt;, &#39;AZO&#39;: &lt;STOCK AZO: $2171.43 /share&gt;, &#39;BKNG&#39;: &lt;STOCK BKNG: $2260.11 /share&gt;, &#39;CABO&#39;: &lt;STOCK CABO: $1439.85 /share&gt;, &#39;CMG&#39;: &lt;STOCK CMG: $1590.0 /share&gt;, &#39;GOOG&#39;: &lt;STOCK GOOG: $2605.72 /share&gt;, &#39;GOOGL&#39;: &lt;STOCK GOOGL: $2597.88 /share&gt;, &#39;MELI&#39;: &lt;STOCK MELI: $1135.75 /share&gt;, &#39;MKL&#39;: &lt;STOCK MKL: $1479.23 /share&gt;, &#39;MTD&#39;: &lt;STOCK MTD: $1342.59 /share&gt;, &#39;NVR&#39;: &lt;STOCK NVR: $4419.99 /share&gt;, &#39;SEB&#39;: &lt;STOCK SEB: $4155.0 /share&gt;, &#39;TPL&#39;: &lt;STOCK TPL: $1458.55 /share&gt;, &#39;TSLA&#39;: &lt;STOCK TSLA: $1022.37 /share&gt;, &#39;WTM&#39;: &lt;STOCK WTM: $1075.63 /share&gt;}</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># stocks above $1000 who have positive alpha (using SPY as a benchmark)</span>
+<span class="n">filtered</span> <span class="o">=</span> <span class="n">filtered</span><span class="o">.</span><span class="n">filter</span><span class="p">[</span><span class="n">universe</span><span class="o">.</span><span class="n">alpha</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># the above operation is identical to this (chaining filtering operations)</span>
+<span class="n">filtered</span> <span class="o">=</span> <span class="n">universe</span><span class="o">.</span><span class="n">filter</span><span class="p">[</span><span class="n">universe</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">,</span> <span class="n">universe</span><span class="o">.</span><span class="n">alpha</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">filtered</span><span class="p">)</span>
+<span class="go">8</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filtered</span>
+<span class="go">{&#39;AVGOP&#39;: &lt;STOCK AVGOP: $1855.54 /share&gt;, &#39;AZO&#39;: &lt;STOCK AZO: $2171.43 /share&gt;, &#39;GOOG&#39;: &lt;STOCK GOOG: $2605.72 /share&gt;, &#39;GOOGL&#39;: &lt;STOCK GOOGL: $2597.88 /share&gt;, &#39;MKL&#39;: &lt;STOCK MKL: $1479.23 /share&gt;, &#39;MTD&#39;: &lt;STOCK MTD: $1342.59 /share&gt;, &#39;SEB&#39;: &lt;STOCK SEB: $4155.0 /share&gt;, &#39;TSLA&#39;: &lt;STOCK TSLA: $1022.37 /share&gt;}</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filtered</span><span class="o">.</span><span class="n">history</span>
+<span class="go">Universe: 10996 stocks</span>
+<span class="go">----------------------</span>
+<span class="go">stock.value &gt; 1000: 16 results | 99.854% (10980) removed | 99.854% (10980) total removed</span>
+<span class="go">stock.alpha() &gt; 0: 8 results | 50.0% (8) removed | 99.927% (10988) total removed</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="environments">
+<h2>Environments<a class="headerlink" href="#environments" title="Permalink to this headline">#</a></h2>
+<section id="id6">
+<h3>Explanation<a class="headerlink" href="#id6" title="Permalink to this headline">#</a></h3>
+<p>In much the same way that a python programmer uses virtual environments to manage dependencies among disparate workflows, so too should an AlphaGradient user make explicit the distinct environment of assets that they intend to use. Valuating assets at each time step is computationally expensive, and if thousands of assets are instantiated but only a few are being used in an algorithm, runtimes can unnecessarily increase by orders of magnitude.</p>
+<p>AlphaGradient <a class="reference internal" href="../generated/alphagradient.Environment.html#alphagradient.Environment" title="alphagradient.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environments</span></code></a> are the solution to this problem. They provide what is essentially an isolated, separate instance of AlphaGradient which tracks only those assets it is directed to track, and can iterate the valuation of those assets in isolation.</p>
+<p>Environments provide essentially a clone of the AlphaGradient API, with the exception that they only operate on assets created within the environment. Assets created outside the environment can also be added into it retrospectively.</p>
+</section>
+<section id="initializing-an-environment-object">
+<h3>Initializing an Environment Object<a class="headerlink" href="#initializing-an-environment-object" title="Permalink to this headline">#</a></h3>
+<p>Environment objects can be passed an iterable of assets when initialized, or nothing at all. However, all environments must have at least one portfolio. Environments accept a portfolio argument at initialization, which can be either a single portfolio or iterable of portfolios. The environment will determine a ‘primary’ portfolio, which will then be bound to <code class="xref py py-attr docutils literal notranslate"><span class="pre">env.main</span></code>. When passing an iterable for portfolios, be careful that the iterable is ordered, lest the primary portfolio be determined randomly.</p>
+<p>After an environment has been created, one can use it in the same way they would use the AlphaGradient base module to intantiate new objects, as well as access them. Where AlphaGradient has truly global access to all assets, Environments have ‘global’ access to all of the assets that they contain, which are accessed in exactly the same way.</p>
+</section>
+<section id="id7">
+<h3>Examples<a class="headerlink" href="#id7" title="Permalink to this headline">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Creating SPY stock</span>
+<span class="n">spy</span> <span class="o">=</span> <span class="n">ag</span><span class="o">.</span><span class="n">Stock</span><span class="p">(</span><span class="s2">&quot;SPY&quot;</span><span class="p">)</span>
+
+<span class="c1"># Initially this env will only contain spy</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">ag</span><span class="o">.</span><span class="n">Environment</span><span class="p">(</span><span class="n">assets</span><span class="o">=</span><span class="n">spy</span><span class="p">)</span>
+
+<span class="c1"># Creating a new asset within the environment</span>
+<span class="n">env</span><span class="o">.</span><span class="n">stock</span><span class="p">(</span><span class="s2">&quot;DIA&quot;</span><span class="p">)</span>
+
+<span class="c1"># Adding an asset from outside of the environment</span>
+<span class="n">qqq</span> <span class="o">=</span> <span class="n">ag</span><span class="o">.</span><span class="n">Stock</span><span class="p">(</span><span class="s2">&quot;QQQ&quot;</span><span class="p">)</span>
+<span class="n">env</span><span class="o">.</span><span class="n">track</span><span class="p">(</span><span class="n">qqq</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">env</span><span class="o">.</span><span class="n">assets</span>
+<span class="go">[&lt;STOCK SPY: $443.31 /share&gt;, &lt;STOCK DIA: $345.76 /share&gt;, &lt;STOCK QQQ: $346.35 /share&gt;]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">env</span><span class="o">.</span><span class="n">stock</span>
+<span class="go">{&#39;SPY&#39;: &lt;STOCK SPY: $443.31 /share&gt;, &#39;DIA&#39;: &lt;STOCK DIA: $345.76 /share&gt;, &#39;QQQ&#39;: &lt;STOCK QQQ: $346.35 /share&gt;}</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">env</span><span class="o">.</span><span class="n">stock</span><span class="o">.</span><span class="n">spy</span> <span class="ow">is</span> <span class="n">ag</span><span class="o">.</span><span class="n">stock</span><span class="o">.</span><span class="n">spy</span>
+<span class="go">True</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">env</span><span class="o">.</span><span class="n">date</span>
+<span class="go">2022-04-13 16:00:00</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">env</span><span class="o">.</span><span class="n">stock</span><span class="o">.</span><span class="n">spy</span>
+<span class="go">&lt;STOCK SPY: $443.31 /share&gt;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">env</span><span class="o">.</span><span class="n">date</span>
+<span class="go">2022-04-14 16:00:00</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">env</span><span class="o">.</span><span class="n">stock</span><span class="o">.</span><span class="n">spy</span>
+<span class="go">&lt;STOCK SPY: $437.79 /share&gt;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="algorithms">
+<h2>Algorithms<a class="headerlink" href="#algorithms" title="Permalink to this headline">#</a></h2>
+<section id="id8">
+<h3>Explanation<a class="headerlink" href="#id8" title="Permalink to this headline">#</a></h3>
+<p>Finally, AlphaGradient <a class="reference internal" href="../generated/alphagradient.Algorithm.html#alphagradient.Algorithm" title="alphagradient.Algorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">Algorithms</span></code></a> are a framework for organizing all of these components to create backtestable financial algorithms. To create a new algorithm, simply subclass from <a class="reference internal" href="../generated/alphagradient.Algorithm.html#alphagradient.Algorithm" title="alphagradient.Algorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">ag.Algorithm</span></code></a> and define two new functions, <a class="reference internal" href="../generated/alphagradient.Algorithm.setup.html#alphagradient.Algorithm.setup" title="alphagradient.Algorithm.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup</span></code></a> and <a class="reference internal" href="../generated/alphagradient.Algorithm.cycle.html#alphagradient.Algorithm.cycle" title="alphagradient.Algorithm.cycle"><code class="xref py py-class docutils literal notranslate"><span class="pre">cycle</span></code></a>, which are discussed below. Anything passed to an instantiated algorithm object when called will be passed to both of these functions.</p>
+<p>Both of these functions share an identical minimal function header. That is, if you don’t define any additional arguments that you need for your algorithm, the minimum that both will always be passed (and should therefore be capable of accepting) is: <code class="code python docutils literal notranslate"><span class="punctuation"><span class="pre">(</span></span><span class="operator"><span class="pre">*</span></span><span class="name"><span class="pre">args</span></span><span class="punctuation"><span class="pre">,</span></span> <span class="name"><span class="pre">start</span></span><span class="punctuation"><span class="pre">,</span></span> <span class="name"><span class="pre">end</span></span><span class="punctuation"><span class="pre">,</span></span> <span class="operator"><span class="pre">**</span></span><span class="name"><span class="pre">kwargs</span></span><span class="punctuation"><span class="pre">)</span></span></code>. start and end will <strong>always</strong> be passed to both of these functions as explicit keyword arguments, so you must accept them, even if you don’t use them. This means that the minimum function header for either setup OR cycle is as such:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="o">...</span>
+
+<span class="k">def</span> <span class="nf">cycle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>If you need to accept additional arguments for either your setup or cycle, you can just add them:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">additional_positional_parameter</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="o">...</span>
+
+<span class="k">def</span> <span class="nf">cycle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">additional_keyword_parameter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+<section id="defining-setup">
+<h3>Defining Setup<a class="headerlink" href="#defining-setup" title="Permalink to this headline">#</a></h3>
+<p><a class="reference internal" href="../generated/alphagradient.Algorithm.setup.html#alphagradient.Algorithm.setup" title="alphagradient.Algorithm.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Setup</span></code></a> is the first of two functions that must be defined in any new algorithm. Setup is a function that creates/resets and returns an <a class="reference internal" href="../generated/alphagradient.Environment.html#alphagradient.Environment" title="alphagradient.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a> object. The setup function is called prior to every backtest. The environment returned by setup will automatically be bound to the algorithm as <a class="reference internal" href="../generated/alphagradient.Algorithm.env.html#alphagradient.Algorithm.env" title="alphagradient.Algorithm.env"><code class="xref py py-attr docutils literal notranslate"><span class="pre">env</span></code></a>, so it can be referred to in <a class="reference internal" href="../generated/alphagradient.Algorithm.cycle.html#alphagradient.Algorithm.cycle" title="alphagradient.Algorithm.cycle"><code class="xref py py-meth docutils literal notranslate"><span class="pre">cycle</span></code></a>.</p>
+</section>
+<section id="defining-cycle">
+<h3>Defining Cycle<a class="headerlink" href="#defining-cycle" title="Permalink to this headline">#</a></h3>
+<p><a class="reference internal" href="../generated/alphagradient.Algorithm.cycle.html#alphagradient.Algorithm.cycle" title="alphagradient.Algorithm.cycle"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cycle</span></code></a> is the second of two functions that must be defined in any new algorithm. Cycle defines the algorithm’s behavior at each time step. Cycle should return None; it modifies the environment in place.</p>
+<p><a class="reference internal" href="../generated/alphagradient.Algorithm.setup.html#alphagradient.Algorithm.setup" title="alphagradient.Algorithm.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Setup</span></code></a> defines the algorithm’s initial environment, and cycle’s job is to alter it over the course of the algorithm’s runtime. Changes to the environment across the duration of the algorithms runtime are automatically recorded by the algorithm, and can be used to generate statistical performance measures after the <a class="reference internal" href="../generated/alphagradient.dtypes.Backtest.html#alphagradient.dtypes.Backtest" title="alphagradient.dtypes.Backtest"><code class="xref py py-class docutils literal notranslate"><span class="pre">backtest</span></code></a> is complete.</p>
+</section>
+<section id="basic-examples">
+<h3>Basic Examples<a class="headerlink" href="#basic-examples" title="Permalink to this headline">#</a></h3>
+<p>Here’s a super simple example to show the barebones minimum of an algorithm. It simply buys and holds SPY, starting with $1,000,000 USD.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">IndexHold</span><span class="p">(</span><span class="n">ag</span><span class="o">.</span><span class="n">Algorithm</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A tutorial algorithm! Buy and Hold!&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Our initial balance</span>
+        <span class="n">initial</span> <span class="o">=</span> <span class="mi">1_000_000</span>
+        <span class="n">spy</span> <span class="o">=</span> <span class="n">ag</span><span class="o">.</span><span class="n">Stock</span><span class="p">(</span><span class="s2">&quot;SPY&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Creating an environment object</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="n">ag</span><span class="o">.</span><span class="n">Environment</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">assets</span><span class="o">=</span><span class="n">spy</span><span class="p">)</span>
+
+        <span class="c1"># identical to env.main.invest(initial)</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">invest</span><span class="p">(</span><span class="n">initial</span><span class="p">)</span>
+
+        <span class="c1"># Calling this drastically improves runtime performance</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">env</span>
+
+    <span class="k">def</span> <span class="nf">cycle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Buying at the start...</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">&lt;=</span> <span class="n">start</span><span class="p">:</span>
+
+            <span class="c1"># Determining how much we can afford</span>
+            <span class="n">to_buy</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">liquid</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">stock</span><span class="o">.</span><span class="n">spy</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+            <span class="c1"># This buys the asset on the main portfolio</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">buy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">stock</span><span class="o">.</span><span class="n">spy</span><span class="p">,</span> <span class="n">to_buy</span><span class="p">)</span>
+
+        <span class="c1"># And holding till the end!</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">&gt;=</span> <span class="n">end</span><span class="p">:</span>
+
+            <span class="c1"># Selling everything</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">liquidate</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="advanced-example">
+<h3>Advanced Example<a class="headerlink" href="#advanced-example" title="Permalink to this headline">#</a></h3>
+<p>Here is a more advanced example that demonstates some common design patterns and emulates typical usage.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ThetaGang</span><span class="p">(</span><span class="n">ag</span><span class="o">.</span><span class="n">Algorithm</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An example algorithm in the algorithm library used to demonstrate some of</span>
+<span class="sd">    AlphaGradient&#39;s standard features and best practices</span>
+
+<span class="sd">    This is a tutorial algorithm that seeks to demonstrate some of AlphaGradient&#39;s</span>
+<span class="sd">    features and standard design practices. This algorithm sells the maximum number</span>
+<span class="sd">    of covered calls on SPY that it can, with a bounded strike price to prevent from</span>
+<span class="sd">    selling calls that could lose money when assigned</span>
+
+<span class="sd">    Here&#39;s a breakdown:</span>
+
+<span class="sd">        #. | At the beginning of the day, buy as many shares of SPY as we can to the</span>
+<span class="sd">           | nearest multiple of 100</span>
+
+<span class="sd">        #. | Using SPY shares as collateral, sells 1 DTE covered calls on SPY where</span>
+<span class="sd">           | the strike is determined by SPY&#39;s current value. The algorithm will never</span>
+<span class="sd">           | sell a call with a strike below it&#39;s average cost for the shares it owns.</span>
+<span class="sd">           | This prevents it from losing money in the case of call assignment.</span>
+
+<span class="sd">        #. | The strike bounding component of 2) is toggle-able by instantiating with</span>
+<span class="sd">           | bounded=False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">bounded</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># Determines whether or not a lower bound should be placed on the strike</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounded</span> <span class="o">=</span> <span class="n">bounded</span>
+
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Creating a basket with the given start parameter</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="n">ag</span><span class="o">.</span><span class="n">Environment</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">)</span>
+
+        <span class="c1"># Creating SPY stock, attaching it to self (will be referenced frequently)</span>
+        <span class="c1"># This call to the stock() method both instantiates the stock within the environment,</span>
+        <span class="c1"># AND returns it, allowing us to set it as an attribute</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spy</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">stock</span><span class="p">(</span><span class="s2">&quot;SPY&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Initial investment into the primary portfolio</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">invest</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spy</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="mi">150</span><span class="p">)</span>
+
+        <span class="c1"># We only want the algorithm to evaluate at market open and close of each day</span>
+        <span class="c1"># Finalizing will dramatically increase execution time, but is not necessary</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="n">manual</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;9:30 AM&quot;</span><span class="p">,</span> <span class="s2">&quot;4:00 PM&quot;</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">env</span>
+
+    <span class="k">def</span> <span class="nf">cycle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The actions to perform at every valuation point&quot;&quot;&quot;</span>
+
+        <span class="c1"># Selling as many covered calls on SPY as we can</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">covered_call</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">generate_call</span><span class="p">())</span>
+
+        <span class="c1"># The above line of code is a shortcut for:</span>
+        <span class="c1"># self.env.main.covered_call(self.generate_call())</span>
+
+        <span class="c1"># Showing the changes at every time step</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">change_report</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">generate_call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generates the ideal SPY call to be sold based on current circumstances&quot;&quot;&quot;</span>
+
+        <span class="c1"># Getting our current position in the Asset &lt;STOCK SPY&gt;</span>
+        <span class="n">spy_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">get_position</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spy</span><span class="p">)</span>
+
+        <span class="c1"># Determining our optimal strike price</span>
+        <span class="n">optimal</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spy</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">+</span> <span class="n">delta</span>
+
+        <span class="c1"># Determining a lower bound for our strike price (the ceiling of our basis)</span>
+        <span class="n">lower_bound</span> <span class="o">=</span> <span class="n">optimal</span>
+        <span class="k">if</span> <span class="n">spy_position</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounded</span><span class="p">:</span>
+        <span class="n">lower_bound</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">spy_position</span><span class="o">.</span><span class="n">average_cost</span><span class="p">)</span>
+
+        <span class="c1"># Determining our strike price</span>
+        <span class="n">strike</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">optimal</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">)</span>
+
+        <span class="c1"># Determining the call expiry date (1 DTE)</span>
+        <span class="n">expiry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">date</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># We can&#39;t sell calls with expiries on weekends or outside of market hours</span>
+        <span class="n">expiry</span> <span class="o">=</span> <span class="n">ag</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">nearest_expiry</span><span class="p">(</span><span class="n">expiry</span><span class="p">)</span>
+
+        <span class="c1"># Creating the call using the environment so that it doesnt have to be added retroactively</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spy</span><span class="p">,</span> <span class="n">strike</span><span class="p">,</span> <span class="n">expiry</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This is a relatively complex algorithm, but here’s what it looks like without the comments. It’s less than 30 lines of code.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ThetaGang</span><span class="p">(</span><span class="n">ag</span><span class="o">.</span><span class="n">Algorithm</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">bounded</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounded</span> <span class="o">=</span> <span class="n">bounded</span>
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="n">ag</span><span class="o">.</span><span class="n">Environment</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spy</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">stock</span><span class="p">(</span><span class="s2">&quot;SPY&quot;</span><span class="p">)</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">invest</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spy</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="mi">150</span><span class="p">)</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="n">manual</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;9:30 AM&quot;</span><span class="p">,</span> <span class="s2">&quot;4:00 PM&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">env</span>
+
+    <span class="k">def</span> <span class="nf">cycle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">covered_call</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">generate_call</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">change_report</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">generate_call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">spy_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">get_position</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spy</span><span class="p">)</span>
+        <span class="n">optimal</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spy</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">+</span> <span class="n">delta</span>
+        <span class="n">lower_bound</span> <span class="o">=</span> <span class="n">optimal</span>
+        <span class="k">if</span> <span class="n">spy_position</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounded</span><span class="p">:</span>
+        <span class="n">lower_bound</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">spy_position</span><span class="o">.</span><span class="n">average_cost</span><span class="p">)</span>
+        <span class="n">strike</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">optimal</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">)</span>
+        <span class="n">expiry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">date</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">expiry</span> <span class="o">=</span> <span class="n">ag</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">nearest_expiry</span><span class="p">(</span><span class="n">expiry</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spy</span><span class="p">,</span> <span class="n">strike</span><span class="p">,</span> <span class="n">expiry</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="backtesting">
+<h2>Backtesting<a class="headerlink" href="#backtesting" title="Permalink to this headline">#</a></h2>
+<p>Ok, so we’ve made a few algorithms, but how do we know if they work? Assume that the script below is a continuation of everything we’ve built up to this point, and is called backtest.py</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># pretend the algorithms have been defined above this point</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+
+    <span class="c1"># Timing total runtime</span>
+    <span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">perf_counter</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">perf_counter</span><span class="p">()</span>
+
+    <span class="c1"># Instantiating our algos</span>
+    <span class="n">index_algo</span> <span class="o">=</span> <span class="n">IndexHold</span><span class="p">()</span>
+    <span class="n">theta_algo</span> <span class="o">=</span> <span class="n">ThetaGang</span><span class="p">(</span><span class="n">bounded</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># This start date will give us some backtesting space</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span><span class="s2">&quot;2010-01-03&quot;</span><span class="p">)</span>
+
+    <span class="c1"># This is the number of years we want to run for</span>
+    <span class="n">runtime</span> <span class="o">=</span> <span class="mi">10</span> <span class="c1"># num years here</span>
+    <span class="n">runtime</span> <span class="o">*=</span> <span class="mi">365</span>
+
+    <span class="c1"># Running the algorithms will return a Run object, which contain backtest results</span>
+    <span class="n">index_backtest</span> <span class="o">=</span> <span class="n">index_algo</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">runtime</span><span class="p">)</span>
+    <span class="n">theta_backtest</span> <span class="o">=</span> <span class="n">theta_algo</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">runtime</span><span class="p">)</span>
+
+    <span class="c1"># Some output fluff</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Backtest performance from </span><span class="si">{</span><span class="n">start</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">start</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">runtime</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Getting their performance metrics</span>
+    <span class="n">tests</span> <span class="o">=</span> <span class="p">[</span><span class="n">index_backtest</span><span class="p">,</span> <span class="n">theta_backtest</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">test</span> <span class="ow">in</span> <span class="n">tests</span><span class="p">:</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">profile</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">test</span><span class="o">.</span><span class="n">algo_name</span><span class="si">}</span><span class="s2"> Backtest: Profit: </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;PROFIT&quot;</span><span class="p">]</span><span class="si">}</span><span class="s2"> | ROI: </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;ROI&quot;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Printing total runtime</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Elapsed time: </span><span class="si">{</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">time</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Here’s the output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 backtest.py
+
+&lt;IndexHold Algorithm Backtest: 3650 days, 0:00:00&gt;: 100%|███████████████████████████████████████████████████████| 7300/7300 [00:04&lt;00:00, 1591.71it/s]
+&lt;ThetaGang Algorithm Backtest: 3650 days, 0:00:00&gt;: 100%|████████████████████████████████████████████████████████| 7300/7300 [00:16&lt;00:00, 448.67it/s]
+
+Backtest performance from 2010-01-03 00:00:00 to 2020-01-01 00:00:00
+IndexHold Backtest: Profit: $1852415.81 | ROI: 185.24% | 2.85x
+ThetaGang Backtest: Profit: $1195490.83 | ROI: 5427.5% | 55.28x
+
+Elapsed Time:  20.984690541000003 seconds
+</pre></div>
+</div>
+<p>Both of these algorithms are currently availble for anyone to test out under AlphaGradient’s algolibrary. Access them from the algolib module such as in the example below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">algo</span> <span class="o">=</span> <span class="n">ag</span><span class="o">.</span><span class="n">algolib</span><span class="o">.</span><span class="n">IndexHold</span><span class="p">()</span>
+
+<span class="c1"># or</span>
+
+<span class="n">algo</span> <span class="o">=</span> <span class="n">ag</span><span class="o">.</span><span class="n">algolib</span><span class="o">.</span><span class="n">ThetaGang</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="../index.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">AlphaGradient Documentation</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="../guide/index.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">User Guide</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2022, Nathan Heidacker.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.5.0.<br>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

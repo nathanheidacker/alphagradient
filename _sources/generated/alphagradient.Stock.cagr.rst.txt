@@ -1,0 +1,6 @@
+alphagradient.Stock.cagr
+========================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Stock.cagr

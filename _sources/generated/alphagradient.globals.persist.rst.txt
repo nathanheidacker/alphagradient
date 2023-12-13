@@ -1,0 +1,6 @@
+﻿alphagradient.globals.persist
+=============================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: globals.persist

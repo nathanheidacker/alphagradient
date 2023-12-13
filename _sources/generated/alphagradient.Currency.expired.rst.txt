@@ -1,0 +1,6 @@
+alphagradient.Currency.expired
+==============================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Currency.expired

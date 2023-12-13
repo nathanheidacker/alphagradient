@@ -1,0 +1,6 @@
+alphagradient.dtypes.Position.view
+==================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: Position.view

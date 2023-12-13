@@ -1,0 +1,6 @@
+alphagradient.dtypes.UniverseView.clear
+=======================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: UniverseView.clear

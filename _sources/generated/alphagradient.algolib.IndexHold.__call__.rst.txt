@@ -1,0 +1,6 @@
+alphagradient.algolib.IndexHold.\_\_call\_\_
+============================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. automethod:: IndexHold.__call__

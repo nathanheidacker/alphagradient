@@ -1,0 +1,6 @@
+alphagradient.dtypes.UniverseView.pop
+=====================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. automethod:: UniverseView.pop

@@ -1,0 +1,6 @@
+alphagradient.Stock.required
+============================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Stock.required

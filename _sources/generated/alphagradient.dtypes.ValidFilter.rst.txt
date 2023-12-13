@@ -1,0 +1,6 @@
+﻿alphagradient.dtypes.ValidFilter
+================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autodata:: ValidFilter

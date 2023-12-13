@@ -1,0 +1,6 @@
+﻿alphagradient.dtypes.TimeLike
+=============================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autodata:: TimeLike

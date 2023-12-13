@@ -1,0 +1,6 @@
+alphagradient.dtypes.Stats.runs
+===============================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoproperty:: Stats.runs

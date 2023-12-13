@@ -1,0 +1,6 @@
+alphagradient.Stock.unit
+========================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Stock.unit

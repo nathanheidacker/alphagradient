@@ -1,0 +1,6 @@
+﻿alphagradient.dtypes.AssetDuplicationError
+==========================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoexception:: AssetDuplicationError

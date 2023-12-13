@@ -1,0 +1,6 @@
+alphagradient.Cash.code
+=======================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Cash.code

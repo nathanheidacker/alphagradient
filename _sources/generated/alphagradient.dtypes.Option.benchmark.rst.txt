@@ -1,0 +1,6 @@
+alphagradient.dtypes.Option.benchmark
+=====================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoproperty:: Option.benchmark

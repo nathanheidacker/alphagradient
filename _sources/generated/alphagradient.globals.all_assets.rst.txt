@@ -1,0 +1,6 @@
+﻿alphagradient.globals.all\_assets
+=================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: globals.all_assets

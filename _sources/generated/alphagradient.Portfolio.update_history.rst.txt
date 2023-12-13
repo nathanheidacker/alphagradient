@@ -1,0 +1,6 @@
+alphagradient.Portfolio.update\_history
+=======================================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Portfolio.update_history

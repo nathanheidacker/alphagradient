@@ -1,0 +1,6 @@
+alphagradient.algolib.TemplateAlgo.cycle
+========================================
+
+.. currentmodule:: alphagradient.algolib
+
+.. automethod:: TemplateAlgo.cycle

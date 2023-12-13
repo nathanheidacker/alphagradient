@@ -1,0 +1,6 @@
+alphagradient.Universe.supported
+================================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Universe.supported

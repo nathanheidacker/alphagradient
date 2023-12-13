@@ -1,0 +1,44 @@
+﻿alphagradient.dtypes.Performance
+================================
+
+.. currentmodule:: alphagradient.dtypes
+
+.. autoclass:: Performance
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Performance.alpha
+      Performance.beta
+      Performance.cagr
+      Performance.change_report
+      Performance.changes
+      Performance.finalize
+      Performance.index_periods
+      Performance.ma
+      Performance.periods
+      Performance.quote
+      Performance.range
+      Performance.roi
+      Performance.vol
+
+
+
+
+   
+
+
+..
+   HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+   .. autosummary::
+      :toctree:
+      
+      Performance.data
+      Performance.date
+
+

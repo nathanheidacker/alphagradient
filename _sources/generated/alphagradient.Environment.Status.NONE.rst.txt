@@ -1,0 +1,6 @@
+alphagradient.Environment.Status.NONE
+=====================================
+
+.. currentmodule:: alphagradient
+
+.. autoattribute:: Environment.Status.NONE

@@ -1,0 +1,6 @@
+alphagradient.\_types.to\_list
+==============================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: _types.to_list

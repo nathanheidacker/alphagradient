@@ -1,0 +1,6 @@
+alphagradient.Universe.errors
+=============================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Universe.errors

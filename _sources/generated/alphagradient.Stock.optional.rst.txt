@@ -1,0 +1,6 @@
+alphagradient.Stock.optional
+============================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Stock.optional

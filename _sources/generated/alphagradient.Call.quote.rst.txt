@@ -1,0 +1,6 @@
+alphagradient.Call.quote
+========================
+
+.. currentmodule:: alphagradient
+
+.. automethod:: Call.quote

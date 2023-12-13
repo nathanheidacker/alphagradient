@@ -1,0 +1,6 @@
+﻿alphagradient.globals.date
+==========================
+
+.. currentmodule:: alphagradient
+
+.. autoattribute:: globals.date

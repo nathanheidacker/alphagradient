@@ -1,0 +1,6 @@
+alphagradient.Currency.rfr
+==========================
+
+.. currentmodule:: alphagradient
+
+.. autoproperty:: Currency.rfr
